@@ -321,7 +321,7 @@ func resourceFabricRoutingProtocol() *schema.Resource {
 		DeleteContext: resourceFabricRoutingProtocolDelete,
 		Importer: &schema.ResourceImporter{
 			// Custom state context function, to parse import argument as  connection_uuid/rp_uuid
-			StateContext: func(_ context.Context, d *schema.ResourceData, meta interface{}) ([]*schema.ResourceData, error) {
+			StateContext: func(_ context.Context, d *schema.ResourceData, _ interface{}) ([]*schema.ResourceData, error) {
 				parts := strings.SplitN(d.Id(), "/", 2)
 				if len(parts) != 2 || parts[0] == "" || parts[1] == "" {
 					return nil, fmt.Errorf("unexpected format of ID (%s), expected <conn-uuid>/<rp-uuid>", d.Id())
@@ -351,7 +351,7 @@ func resourceFabricRoutingProtocolRead(ctx context.Context, d *schema.ResourceDa
 		return diag.FromErr(equinix_errors.FormatFabricError(err))
 	}
 
-	_ = setIdFromAPIResponse(fabricRoutingProtocolData, false, d)
+	_ = setIDFromAPIResponse(fabricRoutingProtocolData, false, d)
 
 	return setFabricRoutingProtocolMap(d, fabricRoutingProtocolData)
 }
@@ -360,9 +360,9 @@ func resourceFabricRoutingProtocolCreate(ctx context.Context, d *schema.Resource
 	client := meta.(*config.Config).NewFabricClientForSDK(ctx, d)
 
 	start := time.Now()
-	routingType := d.Get("type").(string)
+	type_ := d.Get("type").(string)
 
-	createRequest, err := routingProtocolPayloadFromType(routingType, d)
+	createRequest, err := routingProtocolPayloadFromType(type_, d)
 	if err != nil {
 		return diag.Errorf("error creating create request from Terraform configuration values: %s", err)
 	}
@@ -373,7 +373,7 @@ func resourceFabricRoutingProtocolCreate(ctx context.Context, d *schema.Resource
 		return diag.FromErr(equinix_errors.FormatFabricError(err))
 	}
 
-	_ = setIdFromAPIResponse(fabricRoutingProtocolData, false, d)
+	_ = setIDFromAPIResponse(fabricRoutingProtocolData, false, d)
 
 	createTimeout := d.Timeout(schema.TimeoutCreate) - 30*time.Second - time.Since(start)
 	if _, err = waitUntilRoutingProtocolIsProvisioned(d.Id(), d.Get("connection_uuid").(string), meta, d, ctx, createTimeout); err != nil {
@@ -386,9 +386,9 @@ func resourceFabricRoutingProtocolCreate(ctx context.Context, d *schema.Resource
 func resourceFabricRoutingProtocolUpdate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	client := meta.(*config.Config).NewFabricClientForSDK(ctx, d)
 
-	routingType := d.Get("type").(string)
+	type_ := d.Get("type").(string)
 
-	updateRequest, err := routingProtocolPayloadFromType(routingType, d)
+	updateRequest, err := routingProtocolPayloadFromType(type_, d)
 	if err != nil {
 		return diag.Errorf("error creating update request from Terraform configuration values: %s", err)
 	}
@@ -399,7 +399,7 @@ func resourceFabricRoutingProtocolUpdate(ctx context.Context, d *schema.Resource
 		return diag.FromErr(equinix_errors.FormatFabricError(err))
 	}
 
-	changeUUID := setIdFromAPIResponse(updatedRpResp, true, d)
+	changeUUID := setIDFromAPIResponse(updatedRpResp, true, d)
 
 	updateTimeout := d.Timeout(schema.TimeoutUpdate) - 30*time.Second - time.Since(start)
 	_, err = waitForRoutingProtocolUpdateCompletion(changeUUID, d.Id(), d.Get("connection_uuid").(string), meta, d, ctx, updateTimeout)
@@ -445,7 +445,7 @@ func resourceFabricRoutingProtocolDelete(ctx context.Context, d *schema.Resource
 	return diags
 }
 
-func setIdFromAPIResponse(resp *fabricv4.RoutingProtocolData, isChange bool, d *schema.ResourceData) string {
+func setIDFromAPIResponse(resp *fabricv4.RoutingProtocolData, isChange bool, d *schema.ResourceData) string {
 	var changeUUID string
 
 	switch rpData := resp.GetActualInstance().(type) {
@@ -466,11 +466,11 @@ func setIdFromAPIResponse(resp *fabricv4.RoutingProtocolData, isChange bool, d *
 	return changeUUID
 }
 
-func routingProtocolPayloadFromType(routingType string, d *schema.ResourceData) (fabricv4.RoutingProtocolBase, error) {
+func routingProtocolPayloadFromType(type_ string, d *schema.ResourceData) (fabricv4.RoutingProtocolBase, error) {
 	payload := fabricv4.RoutingProtocolBase{}
-	if routingType == "BGP" {
+	if type_ == "BGP" {
 		bgpRP := fabricv4.RoutingProtocolBGPType{}
-		bgpType := fabricv4.RoutingProtocolBGPTypeType(routingType)
+		bgpType := fabricv4.RoutingProtocolBGPTypeType(type_)
 		bgpRP.SetType(bgpType)
 
 		name := d.Get("name").(string)
@@ -521,9 +521,9 @@ func routingProtocolPayloadFromType(routingType string, d *schema.ResourceData) 
 		}
 		payload = fabricv4.RoutingProtocolBGPTypeAsRoutingProtocolBase(&bgpRP)
 	}
-	if routingType == "DIRECT" {
+	if type_ == "DIRECT" {
 		directRP := fabricv4.RoutingProtocolDirectType{}
-		directType := fabricv4.RoutingProtocolDirectTypeType(routingType)
+		directType := fabricv4.RoutingProtocolDirectTypeType(type_)
 		directRP.SetType(directType)
 
 		name := d.Get("name").(string)
@@ -666,6 +666,7 @@ func waitUntilRoutingProtocolIsProvisioned(uuid string, connUUID string, meta in
 	return dbConn, err
 }
 
+// WaitUntilRoutingProtocolIsDeprovisioned waits until the routing protocol resource is deprovisioned.
 func WaitUntilRoutingProtocolIsDeprovisioned(uuid string, connUuid string, meta interface{}, d *schema.ResourceData, ctx context.Context, timeout time.Duration) error {
 	log.Printf("Waiting for routing protocol to be deprovisioned, uuid %s", uuid)
 
@@ -691,13 +692,13 @@ func WaitUntilRoutingProtocolIsDeprovisioned(uuid string, connUuid string, meta 
 	return err
 }
 
-func waitForRoutingProtocolUpdateCompletion(rpChangeUuid string, uuid string, connUuid string, meta interface{}, d *schema.ResourceData, ctx context.Context, timeout time.Duration) (*fabricv4.RoutingProtocolChangeData, error) {
+func waitForRoutingProtocolUpdateCompletion(rpChangeUUID string, uuid string, connUuid string, meta interface{}, d *schema.ResourceData, ctx context.Context, timeout time.Duration) (*fabricv4.RoutingProtocolChangeData, error) {
 	log.Printf("Waiting for routing protocol update to complete, uuid %s", uuid)
 	stateConf := &retry.StateChangeConf{
 		Target: []string{"COMPLETED"},
 		Refresh: func() (interface{}, string, error) {
 			client := meta.(*config.Config).NewFabricClientForSDK(ctx, d)
-			dbConn, _, err := client.RoutingProtocolsApi.GetConnectionRoutingProtocolsChangeByUuid(ctx, connUuid, uuid, rpChangeUuid).Execute()
+			dbConn, _, err := client.RoutingProtocolsApi.GetConnectionRoutingProtocolsChangeByUuid(ctx, connUuid, uuid, rpChangeUUID).Execute()
 			if err != nil {
 				return "", "", equinix_errors.FormatFabricError(err)
 			}
@@ -729,9 +730,9 @@ func routingProtocolDirectIpv4TerraformToGo(routingProtocolDirectIpv4Request []i
 	rpDirectIpv4 := fabricv4.DirectConnectionIpv4{}
 
 	directIpv4Map := routingProtocolDirectIpv4Request[0].(map[string]interface{})
-	equinixIfaceIp := directIpv4Map["equinix_iface_ip"].(string)
-	if equinixIfaceIp != "" {
-		rpDirectIpv4.SetEquinixIfaceIp(equinixIfaceIp)
+	equinixIfaceIP := directIpv4Map["equinix_iface_ip"].(string)
+	if equinixIfaceIP != "" {
+		rpDirectIpv4.SetEquinixIfaceIp(equinixIfaceIP)
 	}
 
 	return rpDirectIpv4
@@ -743,9 +744,9 @@ func routingProtocolDirectIpv6TerraformToGo(routingProtocolDirectIpv6Request []i
 	}
 	rpDirectIpv6 := fabricv4.DirectConnectionIpv6{}
 	directIpv6Map := routingProtocolDirectIpv6Request[0].(map[string]interface{})
-	equinixIfaceIp := directIpv6Map["equinix_iface_ip"].(string)
-	if equinixIfaceIp != "" {
-		rpDirectIpv6.SetEquinixIfaceIp(equinixIfaceIp)
+	equinixIfaceIP := directIpv6Map["equinix_iface_ip"].(string)
+	if equinixIfaceIP != "" {
+		rpDirectIpv6.SetEquinixIfaceIp(equinixIfaceIP)
 	}
 
 	return rpDirectIpv6
@@ -758,9 +759,9 @@ func routingProtocolBgpIpv4TerraformToGo(routingProtocolBgpIpv4Request []interfa
 
 	rpBgpIpv4 := fabricv4.BGPConnectionIpv4{}
 	bgpIpv4Map := routingProtocolBgpIpv4Request[0].(map[string]interface{})
-	customerPeerIp := bgpIpv4Map["customer_peer_ip"].(string)
-	if customerPeerIp != "" {
-		rpBgpIpv4.SetCustomerPeerIp(customerPeerIp)
+	customerPeerIP := bgpIpv4Map["customer_peer_ip"].(string)
+	if customerPeerIP != "" {
+		rpBgpIpv4.SetCustomerPeerIp(customerPeerIP)
 	}
 	enabled := bgpIpv4Map["enabled"].(bool)
 	rpBgpIpv4.SetEnabled(enabled)
@@ -789,9 +790,9 @@ func routingProtocolBgpIpv6TerraformToGo(routingProtocolBgpIpv6Request []interfa
 
 	rpBgpIpv6 := fabricv4.BGPConnectionIpv6{}
 	bgpIpv6Map := routingProtocolBgpIpv6Request[0].(map[string]interface{})
-	customerPeerIp := bgpIpv6Map["customer_peer_ip"].(string)
-	if customerPeerIp != "" {
-		rpBgpIpv6.SetCustomerPeerIp(customerPeerIp)
+	customerPeerIP := bgpIpv6Map["customer_peer_ip"].(string)
+	if customerPeerIP != "" {
+		rpBgpIpv6.SetCustomerPeerIp(customerPeerIP)
 	}
 	enabled := bgpIpv6Map["enabled"].(bool)
 	rpBgpIpv6.SetEnabled(enabled)
