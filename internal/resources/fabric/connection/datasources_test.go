@@ -67,7 +67,7 @@ func TestAccFabricDataSourceConnection_PFCR(t *testing.T) {
 					resource.TestCheckResourceAttr(
 						"data.equinix_fabric_connections.connections", "data.0.a_side.0.access_point.0.link_protocol.0.type", "DOT1Q"),
 					resource.TestCheckResourceAttr(
-						"data.equinix_fabric_connections.connections", "data.0.a_side.0.access_point.0.link_protocol.0.vlan_tag", "1350"),
+						"data.equinix_fabric_connections.connections", "data.0.a_side.0.access_point.0.link_protocol.0.vlan_tag", "123"),
 					resource.TestCheckResourceAttr(
 						"data.equinix_fabric_connections.connections", "data.0.a_side.0.access_point.0.location.0.metro_code", "DC"),
 					resource.TestCheckResourceAttr(
@@ -75,7 +75,7 @@ func TestAccFabricDataSourceConnection_PFCR(t *testing.T) {
 					resource.TestCheckResourceAttr(
 						"data.equinix_fabric_connections.connections", "data.0.z_side.0.access_point.0.link_protocol.0.type", "DOT1Q"),
 					resource.TestCheckResourceAttr(
-						"data.equinix_fabric_connections.connections", "data.0.z_side.0.access_point.0.link_protocol.0.vlan_tag", "1360"),
+						"data.equinix_fabric_connections.connections", "data.0.z_side.0.access_point.0.link_protocol.0.vlan_tag", "456"),
 					resource.TestCheckResourceAttr(
 						"data.equinix_fabric_connections.connections", "data.0.z_side.0.access_point.0.location.0.metro_code", "SV"),
 				),

@@ -246,7 +246,7 @@ func testAccFabricCreatePort2EPTPTPConfig(spName, name, portUuid, zSideMetro str
 				}
 				link_protocol {
 					type= "DOT1Q"
-					vlan_tag= "2000"
+					vlan_tag= "100"
 				}
 			}
 		}
