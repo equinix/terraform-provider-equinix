@@ -64,6 +64,7 @@ func TestAccFabricCreateRoutingProtocols_PFCR(t *testing.T) {
 					resource.TestCheckResourceAttr("equinix_fabric_routing_protocol.bgp", "bgp_ipv6.0.inbound_med", "4"),
 					resource.TestCheckResourceAttr("equinix_fabric_routing_protocol.bgp", "bgp_ipv6.0.outbound_med", "7"),
 					resource.TestCheckResourceAttr("equinix_fabric_routing_protocol.bgp", "customer_asn", "100"),
+					resource.TestCheckResourceAttrSet("equinix_fabric_routing_protocol.bgp", "equinix_asn"),
 
 					resource.TestCheckResourceAttrSet("data.equinix_fabric_routing_protocol.direct", "id"),
 					resource.TestCheckResourceAttr("data.equinix_fabric_routing_protocol.direct", "type", "DIRECT"),
@@ -85,6 +86,7 @@ func TestAccFabricCreateRoutingProtocols_PFCR(t *testing.T) {
 					resource.TestCheckResourceAttr("data.equinix_fabric_routing_protocol.bgp", "bgp_ipv6.0.equinix_peer_ip", "190::1:1"),
 					resource.TestCheckResourceAttr("data.equinix_fabric_routing_protocol.bgp", "bgp_ipv6.0.enabled", "true"),
 					resource.TestCheckResourceAttr("data.equinix_fabric_routing_protocol.bgp", "customer_asn", "100"),
+					resource.TestCheckResourceAttrSet("data.equinix_fabric_routing_protocol.bgp", "equinix_asn"),
 				),
 			},
 		},
