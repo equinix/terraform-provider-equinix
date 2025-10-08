@@ -958,19 +958,19 @@ resource "equinix_network_device" "f5xc-single" {
 ```
 
 ```terraform
-# Create C8000V BYOL device with cloud init rest api support
+# Create C8000V HA - BYOL device with cloud init rest api support
 
 data "equinix_network_account" "sv" {
   metro_code = "SV"
 }
 
-resource "equinix_network_device" "c8000v-byol-withtout-default-password" {
+resource "equinix_network_device" "c8000v-byol" {
   name                      = "tf-c8000v-byol"
   metro_code                = data.equinix_network_account.sv.metro_code
   type_code                 = "C8000V"
   self_managed              = true
   byol                      = true
-  generate_default_password = false
+  generate_default_password = true
   package_code              = "network-essentials"
   notifications             = ["john@equinix.com", "marry@equinix.com", "fred@equinix.com"]
   term_length               = 12
@@ -985,6 +985,15 @@ resource "equinix_network_device" "c8000v-byol-withtout-default-password" {
   }
   vendor_configuration = { restApiSupportRequirement = "true" }
   acl_template_id      = "0bff6e05-f0e7-44cd-804a-25b92b835f8b"
+  secondary_device {
+    name            = "tf-c8000v-byol-secondary"
+    metro_code      = data.equinix_network_account.sv.metro_code
+    hostname        = "csr1000v-s"
+    notifications   = ["john@equinix.com", "marry@equinix.com"]
+    account_number  = data.equinix_network_account.sv.number
+    vendor_configuration = { restApiSupportRequirement = "true" }
+    acl_template_id      = "0bff6e05-f0e7-44cd-804a-25b92b835f8b"
+  }
 }
 ```
 
