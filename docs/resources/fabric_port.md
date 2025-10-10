@@ -106,6 +106,7 @@ resource "equinix_fabric_port" "order" {
 ### Optional
 
 - `additional_info` (Attributes List) List of key/value objects to provide additional context to the Port order (see [below for nested schema](#nestedatt--additional_info))
+- `device` (Attributes) Port device configuration (see [below for nested schema](#nestedatt--device))
 - `name` (String) Designated name of the port
 - `order` (Attributes) Details of the Port Order such as purchaseOrder details and signature (see [below for nested schema](#nestedatt--order))
 - `timeouts` (Attributes) (see [below for nested schema](#nestedatt--timeouts))
@@ -165,6 +166,10 @@ Required:
 - `demarcation_point` (Attributes) Customer physical port (see [below for nested schema](#nestedatt--physical_ports--demarcation_point))
 - `type` (String) Physical Port type
 
+Optional:
+
+- `interface` (Attributes) Physical port interface (see [below for nested schema](#nestedatt--physical_ports--interface))
+
 <a id="nestedatt--physical_ports--demarcation_point"></a>
 ### Nested Schema for `physical_ports.demarcation_point`
 
@@ -175,6 +180,14 @@ Required:
 - `connector_type` (String) Port connector type
 - `ibx` (String) IBX Metro code for the physical port
 - `patch_panel` (String) Port patch panel
+
+
+<a id="nestedatt--physical_ports--interface"></a>
+### Nested Schema for `physical_ports.interface`
+
+Optional:
+
+- `type` (String) Interface type for the physical port
 
 
 
@@ -212,16 +225,31 @@ Required:
 - `value` (String) The value of the key/value pair
 
 
+<a id="nestedatt--device"></a>
+### Nested Schema for `device`
+
+Optional:
+
+- `name` (String) Device name for the port
+- `redundancy` (Attributes) Device redundancy configuration (see [below for nested schema](#nestedatt--device--redundancy))
+
+<a id="nestedatt--device--redundancy"></a>
+### Nested Schema for `device.redundancy`
+
+Optional:
+
+- `group` (String) Redundancy group identifier
+- `priority` (String) Redundancy priority (PRIMARY or SECONDARY)
+
+
+
 <a id="nestedatt--order"></a>
 ### Nested Schema for `order`
-
-Required:
-
-- `purchase_order` (Attributes) Purchase order details (see [below for nested schema](#nestedatt--order--purchase_order))
 
 Optional:
 
 - `customer_reference_id` (String) Customer order reference Id
+- `purchase_order` (Attributes) Purchase order details (see [below for nested schema](#nestedatt--order--purchase_order))
 - `signature` (Attributes) Port order confirmation signature details (see [below for nested schema](#nestedatt--order--signature))
 
 Read-Only:
