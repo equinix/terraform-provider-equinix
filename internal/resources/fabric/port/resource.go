@@ -347,7 +347,6 @@ func buildCreateRequest(ctx context.Context, plan resourceModel) (fabricv4.PortR
 		request.SetRedundancy(portRedundancy)
 	}
 
-	// Handle device field at port level
 	if !plan.Device.IsNull() && !plan.Device.IsUnknown() {
 		var deviceModel deviceModel
 		diags := plan.Device.As(ctx, &deviceModel, basetypes.ObjectAsOptions{})
@@ -358,7 +357,6 @@ func buildCreateRequest(ctx context.Context, plan resourceModel) (fabricv4.PortR
 		portDevice := fabricv4.PortDevice{}
 		portDevice.SetName(deviceModel.Name.ValueString())
 
-		// Handle device redundancy
 		if !deviceModel.Redundancy.IsNull() && !deviceModel.Redundancy.IsUnknown() {
 			var deviceRedundancy deviceRedundancyModel
 			diags := deviceModel.Redundancy.As(ctx, &deviceRedundancy, basetypes.ObjectAsOptions{})
@@ -456,7 +454,6 @@ func buildPhysicalPorts(ctx context.Context, physicalPortsObject fwtypes.ListNes
 			physicalPorts[i].SetInterface(portInterface)
 		}
 
-		// Handle demarcation point
 		var demarcationPoint demarcationPointModel
 		diags := v.DemarcationPoint.As(ctx, &demarcationPoint, basetypes.ObjectAsOptions{})
 		if diags.HasError() {
