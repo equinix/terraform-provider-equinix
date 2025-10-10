@@ -347,6 +347,35 @@ func buildCreateRequest(ctx context.Context, plan resourceModel) (fabricv4.PortR
 		request.SetRedundancy(portRedundancy)
 	}
 
+	// Handle device field at port level
+	if !plan.Device.IsNull() && !plan.Device.IsUnknown() {
+		var deviceModel deviceModel
+		diags := plan.Device.As(ctx, &deviceModel, basetypes.ObjectAsOptions{})
+		if diags.HasError() {
+			mDiags.Append(diags...)
+			return fabricv4.PortRequest{}, mDiags
+		}
+		portDevice := fabricv4.PortDevice{}
+		portDevice.SetName(deviceModel.Name.ValueString())
+
+		// Handle device redundancy
+		if !deviceModel.Redundancy.IsNull() && !deviceModel.Redundancy.IsUnknown() {
+			var deviceRedundancy deviceRedundancyModel
+			diags := deviceModel.Redundancy.As(ctx, &deviceRedundancy, basetypes.ObjectAsOptions{})
+			if diags.HasError() {
+				mDiags.Append(diags...)
+				return fabricv4.PortRequest{}, mDiags
+			}
+			portDeviceRedundancy := fabricv4.PortDeviceRedundancy{}
+			portDeviceRedundancy.SetPriority(fabricv4.PortDeviceRedundancyPriority(deviceRedundancy.Priority.ValueString()))
+			if !deviceRedundancy.Group.IsNull() && !deviceRedundancy.Group.IsUnknown() {
+				portDeviceRedundancy.SetGroup(deviceRedundancy.Group.ValueString())
+			}
+			portDevice.SetRedundancy(portDeviceRedundancy)
+		}
+		request.SetDevice(portDevice)
+	}
+
 	if !plan.PhysicalPorts.IsNull() && !plan.PhysicalPorts.IsUnknown() {
 		physicalPorts, diags := buildPhysicalPorts(ctx, plan.PhysicalPorts)
 		if diags.HasError() {
@@ -413,6 +442,21 @@ func buildPhysicalPorts(ctx context.Context, physicalPortsObject fwtypes.ListNes
 	physicalPorts := make([]fabricv4.PhysicalPort, len(physicalPortModels))
 	for i, v := range physicalPortModels {
 		physicalPorts[i].SetType(fabricv4.PhysicalPortType(v.Type.ValueString()))
+
+		// Handle interface field for each physical port
+		if !v.Interface.IsNull() && !v.Interface.IsUnknown() {
+			var interfaceModel interfaceModel
+			diags := v.Interface.As(ctx, &interfaceModel, basetypes.ObjectAsOptions{})
+			if diags.HasError() {
+				mDiags.Append(diags...)
+				return []fabricv4.PhysicalPort{}, mDiags
+			}
+			portInterface := fabricv4.PortInterface{}
+			portInterface.SetType(interfaceModel.Type.ValueString())
+			physicalPorts[i].SetInterface(portInterface)
+		}
+
+		// Handle demarcation point
 		var demarcationPoint demarcationPointModel
 		diags := v.DemarcationPoint.As(ctx, &demarcationPoint, basetypes.ObjectAsOptions{})
 		if diags.HasError() {
