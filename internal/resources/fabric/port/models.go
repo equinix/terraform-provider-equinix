@@ -30,6 +30,7 @@ type basePortModel struct {
 	Account                fwtypes.ObjectValueOf[accountModel]                  `tfsdk:"account"`
 	Project                fwtypes.ObjectValueOf[projectModel]                  `tfsdk:"project"`
 	Redundancy             fwtypes.ObjectValueOf[redundancyModel]               `tfsdk:"redundancy"`
+	Device                 fwtypes.ObjectValueOf[deviceModel]                   `tfsdk:"device"`
 	LagEnabled             types.Bool                                           `tfsdk:"lag_enabled"`
 	PhysicalPorts          fwtypes.ListNestedObjectValueOf[physicalPortModel]   `tfsdk:"physical_ports"`
 	PhysicalPortsSpeed     types.Int32                                          `tfsdk:"physical_ports_speed"`
@@ -75,7 +76,22 @@ type redundancyModel struct {
 
 type physicalPortModel struct {
 	Type             types.String                                 `tfsdk:"type"`
+	Interface        fwtypes.ObjectValueOf[interfaceModel]        `tfsdk:"interface"`
 	DemarcationPoint fwtypes.ObjectValueOf[demarcationPointModel] `tfsdk:"demarcation_point"`
+}
+
+type interfaceModel struct {
+	Type types.String `tfsdk:"type"`
+}
+
+type deviceModel struct {
+	Name       types.String                                 `tfsdk:"name"`
+	Redundancy fwtypes.ObjectValueOf[deviceRedundancyModel] `tfsdk:"redundancy"`
+}
+
+type deviceRedundancyModel struct {
+	Priority types.String `tfsdk:"priority"`
+	Group    types.String `tfsdk:"group"`
 }
 
 type demarcationPointModel struct {
@@ -159,7 +175,7 @@ func (m *basePortModel) parse(ctx context.Context, port *fabricv4.Port) diag.Dia
 		m.Name = types.StringValue(name)
 	}
 	if sourceType := port.GetConnectivitySourceType(); sourceType != "" {
-		m.Name = types.StringValue(string(sourceType))
+		m.ConnectivitySourceType = types.StringValue(string(sourceType))
 	}
 	m.LagEnabled = types.BoolValue(port.GetLagEnabled())
 	if speed := port.GetPhysicalPortsSpeed(); speed > 0 {
@@ -220,6 +236,11 @@ func (m *basePortModel) parse(ctx context.Context, port *fabricv4.Port) diag.Dia
 	}
 	m.Redundancy = fwtypes.NewObjectValueOf[redundancyModel](ctx, &redundancy)
 
+	//// Parse device at port level if it exists
+	//if port.Device != nil {
+	//	m.Device = parseDevice(ctx, port.GetDevice())
+	//}
+
 	if len(port.PhysicalPorts) > 0 {
 		m.PhysicalPorts = parsePhysicalPorts(ctx, port.GetPhysicalPorts())
 	}
@@ -266,11 +287,57 @@ func parsePhysicalPorts(ctx context.Context, portPhysicalPorts []fabricv4.Physic
 			Type:             types.StringValue(string(portPhysicalPort.GetType())),
 			DemarcationPoint: parseDemarcationPoint(ctx, portPhysicalPort.GetDemarcationPoint()),
 		}
+
+		//// Parse interface for each physical port if it exists
+		//if portPhysicalPort.Interface != nil {
+		//	physicalPort.Interface = parseInterface(ctx, portPhysicalPort.GetInterface())
+		//}
+
 		physicalPorts[i] = physicalPort
 	}
 
 	return fwtypes.NewListNestedObjectValueOfValueSlice[physicalPortModel](ctx, physicalPorts)
 }
+
+//func parseInterface(ctx context.Context, portInterface fabricv4.PortInterface) fwtypes.ObjectValueOf[interfaceModel] {
+//	interfaceType := portInterface.GetType()
+//
+//	interfaceObj := interfaceModel{}
+//
+//	// Only set Type if it has a value
+//	if interfaceType != "" {
+//		interfaceObj.Type = types.StringValue(interfaceType)
+//	} else {
+//		interfaceObj.Type = types.StringNull() // ← Handle empty string
+//	}
+//
+//	return fwtypes.NewObjectValueOf[interfaceModel](ctx, &interfaceObj)
+//}
+
+//func parseDevice(ctx context.Context, portDevice fabricv4.PortDevice) fwtypes.ObjectValueOf[deviceModel] {
+//	deviceObj := deviceModel{
+//		Name: types.StringValue(portDevice.GetName()),
+//	}
+//
+//	// Parse device redundancy if it exists
+//	if portDevice.Redundancy != nil {
+//		redundancy := portDevice.GetRedundancy()
+//		deviceRedundancy := &deviceRedundancyModel{
+//			Priority: types.StringValue(string(redundancy.GetPriority())),
+//		}
+//
+//		// Only set Group if it has a value
+//		if group := redundancy.GetGroup(); group != "" {
+//			deviceRedundancy.Group = types.StringValue(group)
+//		} else {
+//			deviceRedundancy.Group = types.StringNull() // ← FIX: Explicitly set to null if empty
+//		}
+//
+//		deviceObj.Redundancy = fwtypes.NewObjectValueOf[deviceRedundancyModel](ctx, deviceRedundancy)
+//	}
+//
+//	return fwtypes.NewObjectValueOf[deviceModel](ctx, &deviceObj)
+//}
 
 func parseDemarcationPoint(ctx context.Context, demPoint fabricv4.PortDemarcationPoint) fwtypes.ObjectValueOf[demarcationPointModel] {
 	demarcationPoint := demarcationPointModel{

@@ -153,6 +153,33 @@ Additional Documentation:
 				Description: "Boolean value to enable the created port with Link Aggregation Groups",
 				Required:    true,
 			},
+			"device": schema.SingleNestedAttribute{
+				Description: "Port device configuration",
+				Optional:    true,
+				CustomType:  fwtypes.NewObjectTypeOf[deviceModel](ctx),
+				Attributes: map[string]schema.Attribute{
+					"name": schema.StringAttribute{
+						Description: "Device name for the port",
+						Optional:    true,
+					},
+					"redundancy": schema.SingleNestedAttribute{
+						Description: "Device redundancy configuration",
+						Optional:    true,
+
+						CustomType: fwtypes.NewObjectTypeOf[deviceRedundancyModel](ctx),
+						Attributes: map[string]schema.Attribute{
+							"priority": schema.StringAttribute{
+								Description: "Redundancy priority (PRIMARY or SECONDARY)",
+								Optional:    true,
+							},
+							"group": schema.StringAttribute{
+								Description: "Redundancy group identifier",
+								Optional:    true,
+							},
+						},
+					},
+				},
+			},
 			"physical_ports": schema.ListNestedAttribute{
 				Description: "Physical ports that will implement this port order",
 				Required:    true,
@@ -162,6 +189,18 @@ Additional Documentation:
 						"type": schema.StringAttribute{
 							Description: "Physical Port type",
 							Required:    true,
+						},
+						"interface": schema.SingleNestedAttribute{
+							Description: "Physical port interface configuration",
+							Optional:    true,
+							CustomType:  fwtypes.NewObjectTypeOf[interfaceModel](ctx),
+							Attributes: map[string]schema.Attribute{
+								"type": schema.StringAttribute{
+									Description: "Interface type for the physical port",
+									Optional:    true,
+									Computed:    true,
+								},
+							},
 						},
 						"demarcation_point": schema.SingleNestedAttribute{
 							Description: "Customer physical port",
@@ -217,7 +256,7 @@ Additional Documentation:
 				Attributes: map[string]schema.Attribute{
 					"purchase_order": schema.SingleNestedAttribute{
 						Description: "Purchase order details",
-						Required:    true,
+						Optional:    true,
 						CustomType:  fwtypes.NewObjectTypeOf[purchaseOrderModel](ctx),
 						Attributes: map[string]schema.Attribute{
 							"number": schema.StringAttribute{
