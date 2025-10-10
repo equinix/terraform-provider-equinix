@@ -101,26 +101,6 @@ Additional Documentation:
 						Computed:    true,
 						Description: "Legal name of the accountholder.",
 					},
-					//"org_id": schema.StringAttribute{
-					//	Computed:    true,
-					//	Description: "Equinix-assigned ID of the subscriber's organization.",
-					//},
-					//"organization_name": schema.StringAttribute{
-					//	Computed:    true,
-					//	Description: "Equinix-assigned name of the subscriber's organization.",
-					//},
-					//"global_org_id": schema.StringAttribute{
-					//	Computed:    true,
-					//	Description: "Equinix-assigned ID of the subscriber's parent organization.",
-					//},
-					//"global_organization_name": schema.StringAttribute{
-					//	Computed:    true,
-					//	Description: "Equinix-assigned name of the subscriber's parent organization.",
-					//},
-					//"global_cust_id": schema.StringAttribute{
-					//	Computed:    true,
-					//	Description: "Equinix-assigned ID of the subscriber's parent organization.",
-					//},
 					"ucm_id": schema.StringAttribute{
 						Computed:    true,
 						Description: "Enterprise datastore id",
@@ -191,7 +171,7 @@ Additional Documentation:
 							Required:    true,
 						},
 						"interface": schema.SingleNestedAttribute{
-							Description: "Physical port interface configuration",
+							Description: "Physical port interface",
 							Optional:    true,
 							CustomType:  fwtypes.NewObjectTypeOf[interfaceModel](ctx),
 							Attributes: map[string]schema.Attribute{
