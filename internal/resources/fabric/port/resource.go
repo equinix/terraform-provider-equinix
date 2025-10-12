@@ -261,7 +261,6 @@ func buildCreateRequest(ctx context.Context, plan resourceModel) (fabricv4.PortR
 	if !plan.ConnectivitySourceType.IsNull() && !plan.ConnectivitySourceType.IsUnknown() {
 		request.SetConnectivitySourceType(fabricv4.PortConnectivitySourceType(plan.ConnectivitySourceType.ValueString()))
 	}
-	//request.SetConnectivitySourceType(fabricv4.PortConnectivitySourceType(plan.ConnectivitySourceType.ValueString()))
 	request.SetLagEnabled(plan.LagEnabled.ValueBool())
 	request.SetName(plan.Name.ValueString())
 	request.SetPhysicalPortsSpeed(plan.PhysicalPortsSpeed.ValueInt32())
