@@ -277,7 +277,6 @@ func (r *Resource) Update(
 
 	needsUpdate := config.Name.ValueString() != state.Name.ValueString() ||
 		config.Description.ValueString() != state.Description.ValueString() ||
-		config.MetricName.ValueString() != state.MetricName.ValueString() ||
 		config.Enabled.ValueBool() != state.Enabled.ValueBool() ||
 		!config.ResourceSelector.Equal(state.ResourceSelector) ||
 		!config.MetricSelector.Equal(state.MetricSelector) ||
