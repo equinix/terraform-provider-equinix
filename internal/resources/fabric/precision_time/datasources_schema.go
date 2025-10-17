@@ -166,7 +166,7 @@ func getEptServiceSchema(ctx context.Context) map[string]schema.Attribute {
 					Optional:    true,
 					Computed:    true,
 					Validators: []validator.String{
-						stringvalidator.OneOf("UP", "DOW", "DEGRADED"),
+						stringvalidator.OneOf("UP", "DOWN", "DEGRADED"),
 					},
 				},
 			},
