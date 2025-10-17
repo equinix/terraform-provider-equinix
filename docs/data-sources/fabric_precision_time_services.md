@@ -112,6 +112,7 @@ Read-Only:
 - `href` (String) Equinix generated Portal link for the created Precision Time Service
 - `ipv4` (Attributes) An object that has Network IP Configurations for Timing Master Servers. (see [below for nested schema](#nestedatt--data--ipv4))
 - `name` (String) Name of Precision Time Service. Applicable values: Maximum: 24 characters; Allowed characters: alpha-numeric, hyphens ('-') and underscores ('_')
+- `operation` (Attributes) Precision Time Service Operation (see [below for nested schema](#nestedatt--data--operation))
 - `order` (Attributes) Precision Time Order (see [below for nested schema](#nestedatt--data--order))
 - `package` (Attributes) Precision Time Service Package Details (see [below for nested schema](#nestedatt--data--package))
 - `precision_time_price` (Attributes) Precision Time Service Price (see [below for nested schema](#nestedatt--data--precision_time_price))
@@ -215,6 +216,14 @@ Required:
 - `network_mask` (String) IPv4 address that defines the range of consecutive subnets in the network.
 - `primary` (String) IPv4 address for the Primary Timing Master Server.
 - `secondary` (String) IPv4 address for the Secondary Timing Master Server.
+
+
+<a id="nestedatt--data--operation"></a>
+### Nested Schema for `data.operation`
+
+Optional:
+
+- `operational_status` (String)
 
 
 <a id="nestedatt--data--order"></a>

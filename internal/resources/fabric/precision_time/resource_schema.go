@@ -69,6 +69,20 @@ Additional Documentation:
 					},
 				},
 			},
+			"operation": schema.SingleNestedAttribute{
+				Description: "Precision Time Service Operation",
+				Computed:    true,
+				CustomType:  fwtypes.NewObjectTypeOf[operationModel](ctx),
+				Attributes: map[string]schema.Attribute{
+					"operational_status": schema.StringAttribute{
+						Description: "Current operational status of the Precision Time Service",
+						Computed:    true,
+						Validators: []validator.String{
+							stringvalidator.OneOf("UP", "DOWN", "DEGRADED"),
+						},
+					},
+				},
+			},
 			"connections": schema.ListNestedAttribute{
 				Description: "An array of objects with unique identifiers of connections.",
 				CustomType:  fwtypes.NewListNestedObjectTypeOf[connectionModel](ctx),

@@ -94,6 +94,7 @@ resource "equinix_fabric_cloud_router" "new_cloud_router"{
 - `change_log` (Set of Object) Captures Fabric Cloud Router lifecycle change information (see [below for nested schema](#nestedatt--change_log))
 - `connections_count` (Number) Number of connections associated with this Fabric Cloud Router instance
 - `equinix_asn` (Number) Equinix ASN
+- `gateway_attachments_count` (Number) Number of gateway attachments associated with this Access point
 - `id` (String) The ID of this resource.
 - `state` (String) Fabric Cloud Router overall state
 

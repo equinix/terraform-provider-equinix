@@ -52,6 +52,7 @@ type basePrecisionTimeModel struct {
 	Type                    types.String                                                  `tfsdk:"type"`
 	Name                    types.String                                                  `tfsdk:"name"`
 	Package                 fwtypes.ObjectValueOf[packageModel]                           `tfsdk:"package"`
+	Operation               fwtypes.ObjectValueOf[operationModel]                         `tfsdk:"operation"`
 	Connections             fwtypes.ListNestedObjectValueOf[connectionModel]              `tfsdk:"connections"`
 	Ipv4                    fwtypes.ObjectValueOf[ipv4Model]                              `tfsdk:"ipv4"`
 	NtpAdvanceConfiguration fwtypes.ListNestedObjectValueOf[ntpAdvanceConfigurationModel] `tfsdk:"ntp_advanced_configuration"`
@@ -69,6 +70,10 @@ type basePrecisionTimeModel struct {
 type packageModel struct {
 	Code types.String `tfsdk:"code"`
 	Href types.String `tfsdk:"href"`
+}
+
+type operationModel struct {
+	OperationalStatus types.String `tfsdk:"operational_status"`
 }
 
 type connectionModel struct {
@@ -212,6 +217,12 @@ func (m *basePrecisionTimeModel) parse(ctx context.Context, ept *fabricv4.Precis
 		return mDiags
 	}
 
+	m.Operation, diags = parseOperation(ctx, ept.GetOperation())
+	if diags.HasError() {
+		mDiags.Append(diags...)
+		return mDiags
+	}
+
 	m.Connections, diags = parseConnections(ctx, ept.GetConnections())
 	if diags.HasError() {
 		mDiags.Append(diags...)
@@ -287,6 +298,25 @@ func parsePackage(ctx context.Context, packageEpt fabricv4.PrecisionTimePackageP
 
 	result.Href = types.StringValue(packageEpt.GetHref())
 	return fwtypes.NewObjectValueOf[packageModel](ctx, &result), diags
+}
+
+func parseOperation(ctx context.Context, operation interface{}) (fwtypes.ObjectValueOf[operationModel], diag.Diagnostics) {
+	diags := diag.Diagnostics{}
+	result := operationModel{}
+
+	// Handle nil operation
+	if operation == nil {
+		return fwtypes.NewObjectValueOfNull[operationModel](ctx), diags
+	}
+
+	// Try to cast to expected type or extract operational status
+	if op, ok := operation.(interface{ GetOperationalStatus() string }); ok {
+		if op.GetOperationalStatus() != "" {
+			result.OperationalStatus = types.StringValue(op.GetOperationalStatus())
+		}
+	}
+
+	return fwtypes.NewObjectValueOf[operationModel](ctx, &result), diags
 }
 
 func parseChangeLog(ctx context.Context, changeLog fabricv4.Changelog) (fwtypes.ObjectValueOf[changeLogModel], diag.Diagnostics) {

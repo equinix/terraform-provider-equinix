@@ -193,6 +193,11 @@ func fabricCloudRouterResourceSchema() map[string]*schema.Schema {
 			Computed:    true,
 			Description: "Number of connections associated with this Fabric Cloud Router instance",
 		},
+		"gateway_attachments_count": {
+			Type:        schema.TypeInt,
+			Computed:    true,
+			Description: "Number of gateway attachments associated with this Access point",
+		},
 	}
 }
 
@@ -352,21 +357,22 @@ func fabricCloudRouterMap(fcr *fabricv4.CloudRouter) map[string]interface{} {
 	order := fcr.GetOrder()
 	marketplaceSubscription := fcr.GetMarketplaceSubscription()
 	return map[string]interface{}{
-		"name":                     fcr.GetName(),
-		"uuid":                     fcr.GetUuid(),
-		"href":                     fcr.GetHref(),
-		"type":                     string(fcr.GetType()),
-		"state":                    string(fcr.GetState()),
-		"package":                  packageCloudRouterGoToTerraform(&cloudRouterPackage),
-		"location":                 equinix_fabric_schema.LocationWithoutIBXGoToTerraform(&location),
-		"change_log":               equinix_fabric_schema.ChangeLogGoToTerraform(&changeLog),
-		"account":                  accountCloudRouterGoToTerraform(&account),
-		"notifications":            equinix_fabric_schema.NotificationsGoToTerraform(notifications),
-		"project":                  equinix_fabric_schema.ProjectGoToTerraform(&project),
-		"equinix_asn":              fcr.GetEquinixAsn(),
-		"connections_count":        fcr.GetConnectionsCount(),
-		"order":                    equinix_fabric_schema.OrderGoToTerraform(&order),
-		"marketplace_subscription": marketplaceSubscriptionCloudRouterGoToTerraform(&marketplaceSubscription),
+		"name":                      fcr.GetName(),
+		"uuid":                      fcr.GetUuid(),
+		"href":                      fcr.GetHref(),
+		"type":                      string(fcr.GetType()),
+		"state":                     string(fcr.GetState()),
+		"package":                   packageCloudRouterGoToTerraform(&cloudRouterPackage),
+		"location":                  equinix_fabric_schema.LocationWithoutIBXGoToTerraform(&location),
+		"change_log":                equinix_fabric_schema.ChangeLogGoToTerraform(&changeLog),
+		"account":                   accountCloudRouterGoToTerraform(&account),
+		"notifications":             equinix_fabric_schema.NotificationsGoToTerraform(notifications),
+		"project":                   equinix_fabric_schema.ProjectGoToTerraform(&project),
+		"equinix_asn":               fcr.GetEquinixAsn(),
+		"connections_count":         fcr.GetConnectionsCount(),
+		"gateway_attachments_count": fcr.GetGatewayAttachmentsCount(),
+		"order":                     equinix_fabric_schema.OrderGoToTerraform(&order),
+		"marketplace_subscription":  marketplaceSubscriptionCloudRouterGoToTerraform(&marketplaceSubscription),
 	}
 }
 
