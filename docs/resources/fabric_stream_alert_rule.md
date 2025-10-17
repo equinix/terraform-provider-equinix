@@ -53,19 +53,16 @@ output "stream_alert_rule_state" {
 
 ### Required
 
-- `critical_threshold` (String) Stream alert rule metric critical threshold
 - `description` (String) Customer-provided stream alert rule description
-- `metric_name` (String) Stream alert rule metric name
 - `name` (String) Customer-provided stream alert rule name
-- `operand` (String) Stream alert rule metric operand
 - `stream_id` (String) The stream UUID that contains this alert rule
 - `type` (String) Type of the stream alert rule
-- `warning_threshold` (String) Stream alert rule metric warning threshold
-- `window_size` (String) Stream alert rule metric window size
 
 ### Optional
 
+- `detection_method` (Attributes) Detection method for stream alert rule (see [below for nested schema](#nestedatt--detection_method))
 - `enabled` (Boolean) Stream alert rule enabled status
+- `metric_selector` (Attributes) Metric selector for the stream alert rule (see [below for nested schema](#nestedatt--metric_selector))
 - `resource_selector` (Attributes) Resource selector for the stream alert rule (see [below for nested schema](#nestedatt--resource_selector))
 - `timeouts` (Attributes) (see [below for nested schema](#nestedatt--timeouts))
 
@@ -76,6 +73,29 @@ output "stream_alert_rule_state" {
 - `id` (String) The unique identifier of the resource
 - `state` (String) Value representing provisioning status for the stream alert rule
 - `uuid` (String) Equinix assigned unique identifier for the stream alert rule
+
+<a id="nestedatt--detection_method"></a>
+### Nested Schema for `detection_method`
+
+Required:
+
+- `type` (String) Stream Alert Rule detection method type
+
+Optional:
+
+- `critical_threshold` (String) Stream alert rule metric critical threshold
+- `operand` (String) Stream alert rule metric operand
+- `warning_threshold` (String) Stream alert rule metric warning threshold
+- `window_size` (String) Stream alert rule metric window size
+
+
+<a id="nestedatt--metric_selector"></a>
+### Nested Schema for `metric_selector`
+
+Required:
+
+- `include` (List of String) List of metrics to include
+
 
 <a id="nestedatt--resource_selector"></a>
 ### Nested Schema for `resource_selector`
