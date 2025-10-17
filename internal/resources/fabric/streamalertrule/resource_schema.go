@@ -54,10 +54,6 @@ Additional Documentation:
 				Default:     booldefault.StaticBool(true),
 				Computed:    true,
 			},
-			"metric_name": schema.StringAttribute{
-				Description: "Stream alert rule metric name",
-				Required:    true,
-			},
 			"resource_selector": schema.SingleNestedAttribute{
 				Description: "Resource selector for the stream alert rule",
 				Optional:    true,
@@ -74,21 +70,56 @@ Additional Documentation:
 					},
 				},
 			},
-			"window_size": schema.StringAttribute{
-				Description: "Stream alert rule metric window size",
-				Required:    true,
+			"metric_selector": schema.SingleNestedAttribute{
+				Description: "Metric selector for the stream alert rule",
+				Optional:    true,
+				Computed:    true,
+				CustomType:  fwtypes.NewObjectTypeOf[selectorModel](ctx),
+				PlanModifiers: []planmodifier.Object{
+					objectplanmodifier.UseStateForUnknown(),
+				},
+				Attributes: map[string]schema.Attribute{
+					"include": schema.ListAttribute{
+						Description: "List of metrics to include",
+						ElementType: types.StringType,
+						Required:    true,
+					},
+				},
 			},
-			"operand": schema.StringAttribute{
-				Description: "Stream alert rule metric operand",
-				Required:    true,
-			},
-			"warning_threshold": schema.StringAttribute{
-				Description: "Stream alert rule metric warning threshold",
-				Required:    true,
-			},
-			"critical_threshold": schema.StringAttribute{
-				Description: "Stream alert rule metric critical threshold",
-				Required:    true,
+			"detection_method": schema.SingleNestedAttribute{
+				Description: "Detection method for stream alert rule",
+				Optional:    true,
+				Computed:    true,
+				CustomType:  fwtypes.NewObjectTypeOf[selectorModel](ctx),
+				PlanModifiers: []planmodifier.Object{
+					objectplanmodifier.UseStateForUnknown(),
+				},
+				Attributes: map[string]schema.Attribute{
+					"type": schema.StringAttribute{
+						Description: "Stream Alert Rule detection method type",
+						Required:    true,
+					},
+					"window_size": schema.StringAttribute{
+						Description: "Stream alert rule metric window size",
+						Optional:    true,
+						Computed:    true,
+					},
+					"operand": schema.StringAttribute{
+						Description: "Stream alert rule metric operand",
+						Optional:    true,
+						Computed:    true,
+					},
+					"warning_threshold": schema.StringAttribute{
+						Description: "Stream alert rule metric warning threshold",
+						Optional:    true,
+						Computed:    true,
+					},
+					"critical_threshold": schema.StringAttribute{
+						Description: "Stream alert rule metric critical threshold",
+						Optional:    true,
+						Computed:    true,
+					},
+				},
 			},
 			"href": schema.StringAttribute{
 				Description: "Equinix assigned URI of the stream alert rule",
