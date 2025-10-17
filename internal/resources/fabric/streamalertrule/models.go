@@ -28,7 +28,6 @@ type baseStreamAlertRulesModel struct {
 	Name             types.String                               `tfsdk:"name"`
 	Description      types.String                               `tfsdk:"description"`
 	Enabled          types.Bool                                 `tfsdk:"enabled"`
-	MetricName       types.String                               `tfsdk:"metric_name"`
 	ResourceSelector fwtypes.ObjectValueOf[selectorModel]       `tfsdk:"resource_selector"` // Object of selectorModel
 	MetricSelector   fwtypes.ObjectValueOf[selectorModel]       `tfsdk:"metric_selector"`
 	DetectionMethod  fwtypes.ObjectValueOf[metricSelectorModel] `tfsdk:"detection_method"`

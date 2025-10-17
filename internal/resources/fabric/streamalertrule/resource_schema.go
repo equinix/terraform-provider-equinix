@@ -90,7 +90,7 @@ Additional Documentation:
 				Description: "Detection method for stream alert rule",
 				Optional:    true,
 				Computed:    true,
-				CustomType:  fwtypes.NewObjectTypeOf[selectorModel](ctx),
+				CustomType:  fwtypes.NewObjectTypeOf[metricSelectorModel](ctx),
 				PlanModifiers: []planmodifier.Object{
 					objectplanmodifier.UseStateForUnknown(),
 				},

@@ -133,7 +133,7 @@ func getStreamAlertRuleSchema(ctx context.Context) map[string]schema.Attribute {
 			Description: "Detection method for stream alert rule",
 			Optional:    true,
 			Computed:    true,
-			CustomType:  fwtypes.NewObjectTypeOf[selectorModel](ctx),
+			CustomType:  fwtypes.NewObjectTypeOf[metricSelectorModel](ctx),
 			Attributes: map[string]schema.Attribute{
 				"type": schema.StringAttribute{
 					Description: "Stream Alert Rule detection method type",
