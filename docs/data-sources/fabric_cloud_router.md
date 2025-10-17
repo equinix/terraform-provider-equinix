@@ -72,6 +72,7 @@ output "type" {
 - `connections_count` (Number) Number of connections associated with this Fabric Cloud Router instance
 - `description` (String) Customer-provided Fabric Cloud Router description
 - `equinix_asn` (Number) Equinix ASN
+- `gateway_attachments_count` (Number) Number of gateway attachments associated with this Access point
 - `href` (String) Fabric Cloud Router URI information
 - `id` (String) The ID of this resource.
 - `location` (Set of Object) Fabric Cloud Router location (see [below for nested schema](#nestedatt--location))
