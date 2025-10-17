@@ -5,7 +5,8 @@ subcategory: "Fabric"
 # equinix_fabric_stream_alert_rule (Resource)
 
 Fabric V4 API compatible resource allows creation and management of Equinix Fabric Stream Alert Rules'
-~> Note Equinix Fabric v4 Stream Alert Rule resource is currently in Beta. The interfaces related to equinix_fabric_stream_alert_rule may change ahead of general availability. Please, do not hesitate to report any problems that you experience by opening a new issue https://github.com/equinix/terraform-provider-equinix/issues/new?template=bug.md
+}
+
 
 Additional Documentation:
 * Getting Started: https://docs.equinix.com/en-us/Content/KnowledgeCenter/Fabric/GettingStarted/Integrating-with-Fabric-V4-APIs/IntegrateWithSink.htm
@@ -56,17 +57,20 @@ output "stream_alert_rule_state" {
 
 ### Required
 
+- `critical_threshold` (String) Stream alert rule metric critical threshold
 - `description` (String) Customer-provided stream alert rule description
-- `detection_method` (Attributes) Detection method for stream alert rule (see [below for nested schema](#nestedatt--detection_method))
-- `metric_selector` (Attributes) Metric selector for the stream alert rule (see [below for nested schema](#nestedatt--metric_selector))
+- `metric_name` (String) Stream alert rule metric name
 - `name` (String) Customer-provided stream alert rule name
-- `resource_selector` (Attributes) Resource selector for the stream alert rule (see [below for nested schema](#nestedatt--resource_selector))
+- `operand` (String) Stream alert rule metric operand
 - `stream_id` (String) The stream UUID that contains this alert rule
 - `type` (String) Type of the stream alert rule
+- `warning_threshold` (String) Stream alert rule metric warning threshold
+- `window_size` (String) Stream alert rule metric window size
 
 ### Optional
 
 - `enabled` (Boolean) Stream alert rule enabled status
+- `resource_selector` (Attributes) Resource selector for the stream alert rule (see [below for nested schema](#nestedatt--resource_selector))
 - `timeouts` (Attributes) (see [below for nested schema](#nestedatt--timeouts))
 
 ### Read-Only
@@ -76,29 +80,6 @@ output "stream_alert_rule_state" {
 - `id` (String) The unique identifier of the resource
 - `state` (String) Value representing provisioning status for the stream alert rule
 - `uuid` (String) Equinix assigned unique identifier for the stream alert rule
-
-<a id="nestedatt--detection_method"></a>
-### Nested Schema for `detection_method`
-
-Required:
-
-- `type` (String) Stream Alert Rule detection method type
-
-Optional:
-
-- `critical_threshold` (String) Stream alert rule metric critical threshold
-- `operand` (String) Stream alert rule metric operand
-- `warning_threshold` (String) Stream alert rule metric warning threshold
-- `window_size` (String) Stream alert rule metric window size
-
-
-<a id="nestedatt--metric_selector"></a>
-### Nested Schema for `metric_selector`
-
-Required:
-
-- `include` (List of String) List of metrics to include
-
 
 <a id="nestedatt--resource_selector"></a>
 ### Nested Schema for `resource_selector`
