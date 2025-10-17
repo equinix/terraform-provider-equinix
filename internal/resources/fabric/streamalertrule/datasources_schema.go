@@ -116,33 +116,57 @@ func getStreamAlertRuleSchema(ctx context.Context) map[string]schema.Attribute {
 				},
 			},
 		},
-		"metric_name": schema.StringAttribute{
-			Description: "Stream alert rule metric name",
+		"metric_selector": schema.SingleNestedAttribute{
+			Description: "Metric selector for the stream alert rule",
+			Optional:    true,
 			Computed:    true,
+			CustomType:  fwtypes.NewObjectTypeOf[selectorModel](ctx),
+			Attributes: map[string]schema.Attribute{
+				"include": schema.ListAttribute{
+					Description: "List of metrics to include",
+					ElementType: types.StringType,
+					Required:    true,
+				},
+			},
+		},
+		"detection_method": schema.SingleNestedAttribute{
+			Description: "Detection method for stream alert rule",
+			Optional:    true,
+			Computed:    true,
+			CustomType:  fwtypes.NewObjectTypeOf[selectorModel](ctx),
+			Attributes: map[string]schema.Attribute{
+				"type": schema.StringAttribute{
+					Description: "Stream Alert Rule detection method type",
+					Required:    true,
+				},
+				"window_size": schema.StringAttribute{
+					Description: "Stream alert rule metric window size",
+					Optional:    true,
+					Computed:    true,
+				},
+				"operand": schema.StringAttribute{
+					Description: "Stream alert rule metric operand",
+					Optional:    true,
+					Computed:    true,
+				},
+				"warning_threshold": schema.StringAttribute{
+					Description: "Stream alert rule metric warning threshold",
+					Optional:    true,
+					Computed:    true,
+				},
+				"critical_threshold": schema.StringAttribute{
+					Description: "Stream alert rule metric critical threshold",
+					Optional:    true,
+					Computed:    true,
+				},
+			},
 		},
 		"uuid": schema.StringAttribute{
 			Description: "Equinix assigned unique identifier of the stream subscription resource",
 			Computed:    true,
 		},
-
-		"window_size": schema.StringAttribute{
-			Description: "Stream alert rule metric window size",
-			Computed:    true,
-		},
 		"href": schema.StringAttribute{
 			Description: "Equinix assigned URI of the stream alert rule resource",
-			Computed:    true,
-		},
-		"operand": schema.StringAttribute{
-			Description: "Stream alert rule metric operand",
-			Computed:    true,
-		},
-		"warning_threshold": schema.StringAttribute{
-			Description: "Stream alert rule metric warning threshold",
-			Computed:    true,
-		},
-		"critical_threshold": schema.StringAttribute{
-			Description: "Stream alert rule metric critical threshold",
 			Computed:    true,
 		},
 		"state": schema.StringAttribute{

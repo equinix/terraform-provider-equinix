@@ -24,20 +24,26 @@ type streamAlertRuleResourceModel struct {
 }
 
 type baseStreamAlertRulesModel struct {
-	Type              types.String                          `tfsdk:"type"`
-	Name              types.String                          `tfsdk:"name"`
-	Description       types.String                          `tfsdk:"description"`
-	Enabled           types.Bool                            `tfsdk:"enabled"`
-	MetricName        types.String                          `tfsdk:"metric_name"`
-	ResourceSelector  fwtypes.ObjectValueOf[selectorModel]  `tfsdk:"resource_selector"` // Object of selectorModel
-	WindowSize        types.String                          `tfsdk:"window_size"`
-	WarningThreshold  types.String                          `tfsdk:"warning_threshold"`
-	CriticalThreshold types.String                          `tfsdk:"critical_threshold"`
-	Operand           types.String                          `tfsdk:"operand"`
-	Href              types.String                          `tfsdk:"href"`
-	UUID              types.String                          `tfsdk:"uuid"`
-	State             types.String                          `tfsdk:"state"`
-	ChangeLog         fwtypes.ObjectValueOf[changeLogModel] `tfsdk:"change_log"` // Object of changeLogModel
+	Type             types.String                               `tfsdk:"type"`
+	Name             types.String                               `tfsdk:"name"`
+	Description      types.String                               `tfsdk:"description"`
+	Enabled          types.Bool                                 `tfsdk:"enabled"`
+	MetricName       types.String                               `tfsdk:"metric_name"`
+	ResourceSelector fwtypes.ObjectValueOf[selectorModel]       `tfsdk:"resource_selector"` // Object of selectorModel
+	MetricSelector   fwtypes.ObjectValueOf[selectorModel]       `tfsdk:"metric_selector"`
+	DetectionMethod  fwtypes.ObjectValueOf[metricSelectorModel] `tfsdk:"detection_method"`
+	Href             types.String                               `tfsdk:"href"`
+	UUID             types.String                               `tfsdk:"uuid"`
+	State            types.String                               `tfsdk:"state"`
+	ChangeLog        fwtypes.ObjectValueOf[changeLogModel]      `tfsdk:"change_log"` // Object of changeLogModel
+}
+
+type metricSelectorModel struct {
+	Type              types.String `tfsdk:"type"`
+	WindowSize        types.String `tfsdk:"window_size"`
+	Operand           types.String `tfsdk:"operand"`
+	WarningThreshold  types.String `tfsdk:"warning_threshold"`
+	CriticalThreshold types.String `tfsdk:"critical_threshold"`
 }
 
 // changeLogModel represents the change log details for a stream alert rule
@@ -89,22 +95,39 @@ func (m *baseStreamAlertRulesModel) parse(ctx context.Context, streamAlertRule *
 	m.UUID = types.StringValue(streamAlertRule.GetUuid())
 	m.State = types.StringValue(string(streamAlertRule.GetState()))
 	m.Enabled = types.BoolValue(streamAlertRule.GetEnabled())
-	m.WindowSize = types.StringValue(streamAlertRule.GetWindowSize())
-	m.WarningThreshold = types.StringValue(streamAlertRule.GetWarningThreshold())
-	m.CriticalThreshold = types.StringValue(streamAlertRule.GetCriticalThreshold())
-	m.Operand = types.StringValue(string(streamAlertRule.GetOperand()))
-	m.MetricName = types.StringValue(string(streamAlertRule.GetMetricName()))
 
 	// Parse ResourceSelector
 	getResourceSelector := streamAlertRule.GetResourceSelector()
-	inclusions, diags := fwtypes.NewListValueOf[types.String](ctx, int_fw.StringSliceToAttrValue(getResourceSelector.GetInclude()))
+	resourceInclusions, diags := fwtypes.NewListValueOf[types.String](ctx, int_fw.StringSliceToAttrValue(getResourceSelector.GetInclude()))
 	if diags.HasError() {
 		return diags
 	}
-	selector := selectorModel{
-		Include: inclusions,
+	resourceSelector := selectorModel{
+		Include: resourceInclusions,
 	}
-	m.ResourceSelector = fwtypes.NewObjectValueOf[selectorModel](ctx, &selector)
+	m.ResourceSelector = fwtypes.NewObjectValueOf[selectorModel](ctx, &resourceSelector)
+
+	// Parse MetricSelector
+	getMetricSelector := streamAlertRule.GetMetricSelector()
+	metricInclusions, diags := fwtypes.NewListValueOf[types.String](ctx, int_fw.StringSliceToAttrValue(getMetricSelector.GetInclude()))
+	if diags.HasError() {
+		return diags
+	}
+	metricSelector := selectorModel{
+		Include: metricInclusions,
+	}
+	m.MetricSelector = fwtypes.NewObjectValueOf[selectorModel](ctx, &metricSelector)
+
+	// Parse DetectionMethod
+	getDetectionMethod := streamAlertRule.GetDetectionMethod()
+	detectionMethod := metricSelectorModel{
+		Type:              types.StringValue(string(getDetectionMethod.GetType())),
+		WindowSize:        types.StringValue(getDetectionMethod.GetWindowSize()),
+		Operand:           types.StringValue(string(getDetectionMethod.GetOperand())),
+		WarningThreshold:  types.StringValue(getDetectionMethod.GetWarningThreshold()),
+		CriticalThreshold: types.StringValue(getDetectionMethod.GetCriticalThreshold()),
+	}
+	m.DetectionMethod = fwtypes.NewObjectValueOf[metricSelectorModel](ctx, &detectionMethod)
 
 	// Parse ChangeLog
 	streamAlertRuleChangeLog := streamAlertRule.GetChangeLog()
