@@ -958,19 +958,19 @@ resource "equinix_network_device" "f5xc-single" {
 ```
 
 ```terraform
-# Create C8000V BYOL device with cloud init rest api support
+# Create C8000V HA - BYOL device with cloud init rest api support
 
 data "equinix_network_account" "sv" {
   metro_code = "SV"
 }
 
-resource "equinix_network_device" "c8000v-byol-withtout-default-password" {
+resource "equinix_network_device" "c8000v-byol" {
   name                      = "tf-c8000v-byol"
   metro_code                = data.equinix_network_account.sv.metro_code
   type_code                 = "C8000V"
   self_managed              = true
   byol                      = true
-  generate_default_password = false
+  generate_default_password = true
   package_code              = "network-essentials"
   notifications             = ["john@equinix.com", "marry@equinix.com", "fred@equinix.com"]
   term_length               = 12
@@ -985,6 +985,63 @@ resource "equinix_network_device" "c8000v-byol-withtout-default-password" {
   }
   vendor_configuration = { restApiSupportRequirement = "true" }
   acl_template_id      = "0bff6e05-f0e7-44cd-804a-25b92b835f8b"
+  secondary_device {
+    name            = "tf-c8000v-byol-secondary"
+    metro_code      = data.equinix_network_account.sv.metro_code
+    hostname        = "csr1000v-s"
+    notifications   = ["john@equinix.com", "marry@equinix.com"]
+    account_number  = data.equinix_network_account.sv.number
+    vendor_configuration = { restApiSupportRequirement = "true" }
+    acl_template_id      = "0bff6e05-f0e7-44cd-804a-25b92b835f8b"
+  }
+}
+```
+
+```terraform
+# Create Aruba Edgeconnect SDWAN HA device with 2different account numbers with purchase orders
+
+data "equinix_network_account" "sv" {
+  metro_code = "SV"
+}
+
+
+resource "equinix_network_device" "ARUBA-EDGECONNECT-AM" {
+  name                  = "TF_Aruba_Edge_Connect"
+  project_id            = "XXXXX"
+  metro_code            = data.equinix_network_account.sv.metro_code
+  type_code             = "EDGECONNECT-SDWAN"
+  self_managed          = true
+  byol                  = true
+  package_code          = "EC-V"
+  notifications         = ["test@eq.com"]
+  account_number        = data.equinix_network_account.sv.number
+  version               = "9.4.2.3"
+  core_count            = 2
+  term_length           = 1
+  additional_bandwidth  = 50
+  interface_count       = 32
+  acl_template_id       = "XXXXXXX"
+  purchase_order_number = "PO-Primary-Account-123"
+  vendor_configuration  = {
+    accountKey : "xxxxx"
+    accountName : "xxxx"
+    applianceTag : "tests"
+    hostname : "test"
+  }
+  secondary_device {
+    name                  = "TF_CHECKPOINT"
+    metro_code            = data.equinix_network_account.sv.metro_code
+    account_number        = data.equinix_network_account.sv.number
+    purchase_order_number = "PO-Secondary-Account-123"
+    acl_template_id       = "XXXXXXX"
+    notifications         = ["test@eq.com"]
+    vendor_configuration  = {
+      accountKey : "xxxxx"
+      accountName : "xxxx"
+      applianceTag : "test"
+      hostname : "test"
+    }
+  }
 }
 ```
 

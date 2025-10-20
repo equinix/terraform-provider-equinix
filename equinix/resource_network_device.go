@@ -721,6 +721,13 @@ func createNetworkDeviceSchema() map[string]*schema.Schema {
 						ValidateFunc: validation.StringIsNotEmpty,
 						Description:  neDeviceDescriptions["AccountNumber"],
 					},
+					neDeviceSchemaNames["PurchaseOrderNumber"]: {
+						Type:         schema.TypeString,
+						Optional:     true,
+						ForceNew:     true,
+						ValidateFunc: validation.StringLenBetween(1, 30),
+						Description:  neDeviceDescriptions["PurchaseOrderNumber"],
+					},
 					neDeviceSchemaNames["Notifications"]: {
 						Type:     schema.TypeSet,
 						Required: true,
@@ -1502,6 +1509,7 @@ func updateNetworkDeviceResource(primary *ne.Device, secondary *ne.Device, d *sc
 			secondary.LicenseFile = secondaryFromSchema.LicenseFile
 			secondary.LicenseToken = secondaryFromSchema.LicenseToken
 			secondary.CloudInitFileID = secondaryFromSchema.CloudInitFileID
+			secondary.PurchaseOrderNumber = secondaryFromSchema.PurchaseOrderNumber
 		}
 		if err := d.Set(neDeviceSchemaNames["Secondary"], flattenNetworkDeviceSecondary(secondary)); err != nil {
 			return fmt.Errorf("error reading Secondary: %s", err)
@@ -1540,6 +1548,7 @@ func flattenNetworkDeviceSecondary(device *ne.Device) interface{} {
 	transformed[neDeviceSchemaNames["SSHIPAddress"]] = device.SSHIPAddress
 	transformed[neDeviceSchemaNames["SSHIPFqdn"]] = device.SSHIPFqdn
 	transformed[neDeviceSchemaNames["AccountNumber"]] = device.AccountNumber
+	transformed[neDeviceSchemaNames["PurchaseOrderNumber"]] = device.PurchaseOrderNumber
 	transformed[neDeviceSchemaNames["Notifications"]] = device.Notifications
 	transformed[neDeviceSchemaNames["RedundancyType"]] = device.RedundancyType
 	transformed[neDeviceSchemaNames["ProjectID"]] = device.ProjectID
@@ -1604,6 +1613,9 @@ func expandNetworkDeviceSecondary(devices []interface{}) *ne.Device {
 	}
 	if v, ok := device[neDeviceSchemaNames["AdditionalBandwidth"]]; ok && !isEmpty(v) {
 		transformed.AdditionalBandwidth = ne.Int(v.(int))
+	}
+	if v, ok := device[neDeviceSchemaNames["PurchaseOrderNumber"]]; ok && !isEmpty(v) {
+		transformed.PurchaseOrderNumber = ne.String(v.(string))
 	}
 	if v, ok := device[neDeviceSchemaNames["WanInterfaceId"]]; ok && !isEmpty(v) {
 		transformed.WanInterfaceId = ne.String(v.(string))

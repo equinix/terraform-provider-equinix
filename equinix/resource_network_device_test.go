@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"io"
 	"os"
+	"strings"
 	"testing"
 	"time"
 
@@ -27,6 +28,7 @@ func TestNetworkDevice_createFromResourceData(t *testing.T) {
 		TypeCode:                  ne.String("CSR1000V"),
 		MetroCode:                 ne.String("SV"),
 		Throughput:                ne.Int(100),
+		Tier:                      ne.Int(1),
 		ThroughputUnit:            ne.String("Mbps"),
 		HostName:                  ne.String("test"),
 		PackageCode:               ne.String("SEC"),
@@ -54,6 +56,7 @@ func TestNetworkDevice_createFromResourceData(t *testing.T) {
 	}
 	rawData := map[string]interface{}{
 		neDeviceSchemaNames["Name"]:                      ne.StringValue(expectedPrimary.Name),
+		neDeviceSchemaNames["Tier"]:                      ne.IntValue(expectedPrimary.Tier),
 		neDeviceSchemaNames["TypeCode"]:                  ne.StringValue(expectedPrimary.TypeCode),
 		neDeviceSchemaNames["MetroCode"]:                 ne.StringValue(expectedPrimary.MetroCode),
 		neDeviceSchemaNames["Throughput"]:                ne.IntValue(expectedPrimary.Throughput),
@@ -68,6 +71,7 @@ func TestNetworkDevice_createFromResourceData(t *testing.T) {
 		neDeviceSchemaNames["ACLTemplateUUID"]:           ne.StringValue(expectedPrimary.ACLTemplateUUID),
 		neDeviceSchemaNames["AccountNumber"]:             ne.StringValue(expectedPrimary.AccountNumber),
 		neDeviceSchemaNames["PurchaseOrderNumber"]:       ne.StringValue(expectedPrimary.PurchaseOrderNumber),
+		neDeviceSchemaNames["WanInterfaceId"]:            ne.StringValue(expectedPrimary.WanInterfaceId),
 		neDeviceSchemaNames["TermLength"]:                ne.IntValue(expectedPrimary.TermLength),
 		neDeviceSchemaNames["AdditionalBandwidth"]:       ne.IntValue(expectedPrimary.AdditionalBandwidth),
 		neDeviceSchemaNames["OrderReference"]:            ne.StringValue(expectedPrimary.OrderReference),
@@ -103,6 +107,7 @@ func TestNetworkDevice_updateResourceData(t *testing.T) {
 		Throughput:                ne.Int(100),
 		ThroughputUnit:            ne.String("Mbps"),
 		HostName:                  ne.String("test"),
+		Tier:                      ne.Int(1),
 		PackageCode:               ne.String("SEC"),
 		Version:                   ne.String("9.0.1"),
 		IsBYOL:                    ne.Bool(true),
@@ -162,6 +167,7 @@ func TestNetworkDevice_updateResourceData(t *testing.T) {
 	assert.Equal(t, ne.IntValue(inputPrimary.InterfaceCount), d.Get(neDeviceSchemaNames["InterfaceCount"]), "InterfaceCount matches")
 	assert.Empty(t, d.Get(neDeviceSchemaNames["WanInterfaceId"]), "Wan Interface Id is empty")
 	assert.Equal(t, ne.IntValue(inputPrimary.CoreCount), d.Get(neDeviceSchemaNames["CoreCount"]), "CoreCount matches")
+	assert.Equal(t, ne.IntValue(inputPrimary.Tier), d.Get(neDeviceSchemaNames["Tier"]), "Tier matches")
 	assert.Equal(t, ne.BoolValue(inputPrimary.IsSelfManaged), d.Get(neDeviceSchemaNames["IsSelfManaged"]), "IsSelfManaged matches")
 	assert.Equal(t, inputPrimary.VendorConfiguration, converters.InterfaceMapToStringMap(d.Get(neDeviceSchemaNames["VendorConfiguration"]).(map[string]interface{})), "VendorConfiguration matches")
 	assert.Equal(t, inputPrimary.UserPublicKey, expandNetworkDeviceUserKeys(d.Get(neDeviceSchemaNames["UserPublicKey"]).(*schema.Set))[0], "UserPublicKey matches")
@@ -172,6 +178,82 @@ func TestNetworkDevice_updateResourceData(t *testing.T) {
 	assert.Equal(t, ne.StringValue(inputPrimary.DiverseFromDeviceName), d.Get(neDeviceSchemaNames["DiverseFromDeviceName"]), "DiverseFromDeviceName matches")
 	assert.Equal(t, ne.BoolValue(inputPrimary.IsGenerateDefaultPassword), d.Get(neDeviceSchemaNames["IsGenerateDefaultPassword"]), "IsGenerateDefaultPassword matches")
 	assert.Equal(t, secondarySchemaLicenseFile, ne.StringValue(expandNetworkDeviceSecondary(d.Get(neDeviceSchemaNames["Secondary"]).([]interface{})).LicenseFile), "Secondary LicenseFile matches")
+}
+
+func TestUpdateResourceData_secondarySetError(t *testing.T) {
+	inputPrimary := &ne.Device{
+		Name:                      ne.String("device"),
+		TypeCode:                  ne.String("CSR1000V"),
+		ProjectID:                 ne.String("68ccfd49-39b1-478e-957a-67c72f719d7a"),
+		MetroCode:                 ne.String("SV"),
+		Throughput:                ne.Int(100),
+		ThroughputUnit:            ne.String("Mbps"),
+		HostName:                  ne.String("test"),
+		Tier:                      ne.Int(1),
+		PackageCode:               ne.String("SEC"),
+		Version:                   ne.String("9.0.1"),
+		IsBYOL:                    ne.Bool(true),
+		LicenseToken:              ne.String("sWf3df4gaAvbbexw45ga4f"),
+		ACLTemplateUUID:           ne.String("a624178c-6d59-4798-9a7f-2ddf2c7c5881"),
+		AccountNumber:             ne.String("123456"),
+		Notifications:             []string{"bla@bla.com"},
+		PurchaseOrderNumber:       ne.String("1234567890"),
+		TermLength:                ne.Int(1),
+		AdditionalBandwidth:       ne.Int(50),
+		OrderReference:            ne.String("12312121sddsf1231"),
+		InterfaceCount:            ne.Int(10),
+		WanInterfaceId:            ne.String("6"),
+		CoreCount:                 ne.Int(2),
+		IsSelfManaged:             ne.Bool(true),
+		DiverseFromDeviceUUID:     ne.String("68ccfd49-39b1-478e-957a-67c72f719d7a"),
+		DiverseFromDeviceName:     ne.String("diverseFromDeviceName"),
+		IsGenerateDefaultPassword: ne.Bool(false),
+		VendorConfiguration: map[string]string{
+			"key": "value",
+		},
+		UserPublicKey: &ne.DeviceUserPublicKey{
+			Username: ne.String("user"),
+			KeyName:  ne.String("key"),
+		},
+		ASN:      ne.Int(11222),
+		ZoneCode: ne.String("Zone2"),
+	}
+
+	inputSecondary := &ne.Device{
+		UUID:        ne.String("secondary-uuid"),
+		LicenseFile: ne.String("api-license-file.lic"),
+		Status:      ne.String("PROVISIONED"),
+	}
+
+	// Create schema where Secondary is Computed but not Optional
+	// This can cause Set to fail in certain scenarios
+	modifiedSchema := createNetworkDeviceSchema()
+	modifiedSchema[neDeviceSchemaNames["Secondary"]] = &schema.Schema{
+		Type:     schema.TypeList,
+		Computed: true, // Only computed, not optional
+		Elem: &schema.Resource{
+			Schema: map[string]*schema.Schema{
+				"license_file": {
+					Type:     schema.TypeString,
+					Computed: true,
+				},
+			},
+		},
+	}
+
+	d := schema.TestResourceDataRaw(t, modifiedSchema, map[string]interface{}{})
+	d.SetId("test-device-id")
+
+	err := updateNetworkDeviceResource(inputPrimary, inputSecondary, d)
+
+	if err == nil {
+		t.Fatal("expected error from updateNetworkDeviceResource, got nil")
+	}
+
+	expectedError := "error reading Secondary:"
+	if !strings.Contains(err.Error(), expectedError) {
+		t.Errorf("expected error to contain '%s', got: %s", expectedError, err.Error())
+	}
 }
 
 func TestNetworkDevice_flattenSecondary(t *testing.T) {
@@ -193,6 +275,8 @@ func TestNetworkDevice_flattenSecondary(t *testing.T) {
 		SSHIPAddress:        ne.String("1.1.1.1"),
 		SSHIPFqdn:           ne.String("test-1.1.1.1-SV.test.equinix.com"),
 		AccountNumber:       ne.String("123456"),
+		PurchaseOrderNumber: ne.String("1234567890"),
+		WanInterfaceId:      ne.String("5"),
 		Notifications:       []string{"bla@bla.com"},
 		RedundancyType:      ne.String("PRIMARY"),
 		RedundantUUID:       ne.String("c2a147a3-ff47-4a24-a6e5-d6d7ce6459f3"),
@@ -239,6 +323,7 @@ func TestNetworkDevice_flattenSecondary(t *testing.T) {
 			neDeviceSchemaNames["SSHIPAddress"]:        input.SSHIPAddress,
 			neDeviceSchemaNames["SSHIPFqdn"]:           input.SSHIPFqdn,
 			neDeviceSchemaNames["AccountNumber"]:       input.AccountNumber,
+			neDeviceSchemaNames["PurchaseOrderNumber"]: input.PurchaseOrderNumber,
 			neDeviceSchemaNames["Notifications"]:       input.Notifications,
 			neDeviceSchemaNames["RedundancyType"]:      input.RedundancyType,
 			neDeviceSchemaNames["RedundantUUID"]:       input.RedundantUUID,
@@ -288,6 +373,9 @@ func TestNetworkDevice_expandSecondary(t *testing.T) {
 			neDeviceSchemaNames["Name"]:                "device",
 			neDeviceSchemaNames["MetroCode"]:           "SV",
 			neDeviceSchemaNames["HostName"]:            "SV5",
+			neDeviceSchemaNames["PurchaseOrderNumber"]: "PO123",
+			neDeviceSchemaNames["WanInterfaceId"]:      "5",
+			neDeviceSchemaNames["Tier"]:                1,
 			neDeviceSchemaNames["LicenseToken"]:        "sWf3df4gaAvbbexw45ga4f",
 			neDeviceSchemaNames["LicenseFile"]:         "/tmp/licenseFile",
 			neDeviceSchemaNames["ACLTemplateUUID"]:     "a624178c-6d59-4798-9a7f-2ddf2c7c5881",
@@ -309,6 +397,8 @@ func TestNetworkDevice_expandSecondary(t *testing.T) {
 		UUID:                ne.String(input[0].(map[string]interface{})[neDeviceSchemaNames["UUID"]].(string)),
 		Name:                ne.String(input[0].(map[string]interface{})[neDeviceSchemaNames["Name"]].(string)),
 		MetroCode:           ne.String(input[0].(map[string]interface{})[neDeviceSchemaNames["MetroCode"]].(string)),
+		PurchaseOrderNumber: ne.String(input[0].(map[string]interface{})[neDeviceSchemaNames["PurchaseOrderNumber"]].(string)),
+		WanInterfaceId:      ne.String(input[0].(map[string]interface{})[neDeviceSchemaNames["WanInterfaceId"]].(string)),
 		HostName:            ne.String(input[0].(map[string]interface{})[neDeviceSchemaNames["HostName"]].(string)),
 		LicenseToken:        ne.String(input[0].(map[string]interface{})[neDeviceSchemaNames["LicenseToken"]].(string)),
 		LicenseFile:         ne.String(input[0].(map[string]interface{})[neDeviceSchemaNames["LicenseFile"]].(string)),
@@ -316,6 +406,7 @@ func TestNetworkDevice_expandSecondary(t *testing.T) {
 		AccountNumber:       ne.String(input[0].(map[string]interface{})[neDeviceSchemaNames["AccountNumber"]].(string)),
 		Notifications:       converters.SetToStringList(input[0].(map[string]interface{})[neDeviceSchemaNames["Notifications"]].(*schema.Set)),
 		AdditionalBandwidth: ne.Int(input[0].(map[string]interface{})[neDeviceSchemaNames["AdditionalBandwidth"]].(int)),
+		Tier:                ne.Int(input[0].(map[string]interface{})[neDeviceSchemaNames["Tier"]].(int)),
 		VendorConfiguration: map[string]string{
 			"key": "value",
 		},
@@ -334,7 +425,7 @@ func TestNetworkDevice_uploadLicenseFile(t *testing.T) {
 	licenseFileID := "someTestID"
 	device := &ne.Device{LicenseFile: ne.String("/path/to/" + fileName), MetroCode: ne.String("SV"), TypeCode: ne.String("VSRX")}
 	var rxMetroCode, rxFileName, rxTypeCode, rxMgmtMode, rxLicMode string
-	uploadFunc := func(metroCode, deviceTypeCode, deviceManagementMode, licenseMode, fileName string, reader io.Reader) (*string, error) {
+	uploadFunc := func(metroCode, deviceTypeCode, deviceManagementMode, licenseMode, fileName string, _ io.Reader) (*string, error) {
 		rxMetroCode = metroCode
 		rxFileName = fileName
 		rxTypeCode = deviceTypeCode
@@ -342,7 +433,7 @@ func TestNetworkDevice_uploadLicenseFile(t *testing.T) {
 		rxLicMode = licenseMode
 		return &licenseFileID, nil
 	}
-	openFunc := func(name string) (*os.File, error) {
+	openFunc := func(_ string) (*os.File, error) {
 		return &os.File{}, nil
 	}
 	// when
