@@ -62,6 +62,7 @@ output "ept_service_connection" {
 - `id` (String) The unique identifier of the resource
 - `ipv4` (Attributes) An object that has Network IP Configurations for Timing Master Servers. (see [below for nested schema](#nestedatt--ipv4))
 - `name` (String) Name of Precision Time Service. Applicable values: Maximum: 24 characters; Allowed characters: alpha-numeric, hyphens ('-') and underscores ('_')
+- `operation` (Attributes) Precision Time Service Operation (see [below for nested schema](#nestedatt--operation))
 - `order` (Attributes) Precision Time Order (see [below for nested schema](#nestedatt--order))
 - `package` (Attributes) Precision Time Service Package Details (see [below for nested schema](#nestedatt--package))
 - `precision_time_price` (Attributes) Precision Time Service Price (see [below for nested schema](#nestedatt--precision_time_price))
@@ -165,6 +166,14 @@ Required:
 - `network_mask` (String) IPv4 address that defines the range of consecutive subnets in the network.
 - `primary` (String) IPv4 address for the Primary Timing Master Server.
 - `secondary` (String) IPv4 address for the Secondary Timing Master Server.
+
+
+<a id="nestedatt--operation"></a>
+### Nested Schema for `operation`
+
+Optional:
+
+- `operational_status` (String)
 
 
 <a id="nestedatt--order"></a>
