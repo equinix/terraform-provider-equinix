@@ -13,6 +13,7 @@ import (
 func dataSourceAllStreamAlertRulesSchema(ctx context.Context) schema.Schema {
 	return schema.Schema{
 		Description: `Fabric V4 API compatible data source that allows user to fetch Equinix Fabric Stream Alert Rules with pagination
+~> Note Equinix Fabric v4 Stream Alert Rules datasource is currently in Beta. The interfaces related to equinix_fabric_stream_alert_rule may change ahead of general availability. Please, do not hesitate to report any problems that you experience by opening a new issue https://github.com/equinix/terraform-provider-equinix/issues/new?template=bug.md
 
 Additional Documentation:
 * Getting Started: https://docs.equinix.com/en-us/Content/KnowledgeCenter/Fabric/GettingStarted/Integrating-with-Fabric-V4-APIs/IntegrateWithSink.htm
@@ -78,6 +79,7 @@ func dataSourceStreamAlertRuleByID(ctx context.Context) schema.Schema {
 
 	return schema.Schema{
 		Description: `Fabric V4 API compatible data source that allows user to fetch Equinix Fabric Stream Alert Rule by Stream Id and Alert Rule Id
+~> Note Equinix Fabric v4 Stream Alert Rule By ID datasource is currently in Beta. The interfaces related to equinix_fabric_stream_alert_rule may change ahead of general availability. Please, do not hesitate to report any problems that you experience by opening a new issue https://github.com/equinix/terraform-provider-equinix/issues/new?template=bug.md
 
 Additional Documentation:
 * Getting Started: https://docs.equinix.com/en-us/Content/KnowledgeCenter/Fabric/GettingStarted/Integrating-with-Fabric-V4-APIs/IntegrateWithSink.htm
