@@ -255,7 +255,7 @@ func (r *Resource) Delete(ctx context.Context, request resource.DeleteRequest, r
 	for _, instance := range vlan.Instances {
 		for _, port := range instance.NetworkPorts {
 			for _, v := range port.AttachedVirtualNetworks {
-				if v.ID == vlan.ID {
+				if isVlanEqual(vlan.ID, v) {
 					_, resp, err = client.Ports.Unassign(port.ID, vlan.ID)
 					if equinix_errors.IgnoreResponseErrors(equinix_errors.HttpForbidden, equinix_errors.HttpNotFound)(resp, err) != nil {
 						response.Diagnostics.AddError("Error unassign port with Vlan",
