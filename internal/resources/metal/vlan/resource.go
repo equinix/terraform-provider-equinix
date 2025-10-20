@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"path"
 	"strings"
 
 	"github.com/equinix/equinix-sdk-go/services/metalv1"
@@ -236,7 +237,7 @@ func (r *Resource) Delete(ctx context.Context, request resource.DeleteRequest, r
 
 	vlan, resp, err := client.ProjectVirtualNetworks.Get(
 		data.ID.ValueString(),
-		&packngo.GetOptions{Includes: []string{"instances", "virtual_networks", "meta_gateway"}},
+		&packngo.GetOptions{Includes: []string{"instances", "virtual_networks", "metal_gateway"}},
 	)
 	if err != nil {
 		if equinix_errors.IgnoreResponseErrors(equinix_errors.HttpForbidden, equinix_errors.HttpNotFound)(resp, err) != nil {
@@ -255,7 +256,7 @@ func (r *Resource) Delete(ctx context.Context, request resource.DeleteRequest, r
 	for _, instance := range vlan.Instances {
 		for _, port := range instance.NetworkPorts {
 			for _, v := range port.AttachedVirtualNetworks {
-				if v.ID == vlan.ID {
+				if path.Base(v.Href) == vlan.ID {
 					_, resp, err = client.Ports.Unassign(port.ID, vlan.ID)
 					if equinix_errors.IgnoreResponseErrors(equinix_errors.HttpForbidden, equinix_errors.HttpNotFound)(resp, err) != nil {
 						response.Diagnostics.AddError("Error unassign port with Vlan",
