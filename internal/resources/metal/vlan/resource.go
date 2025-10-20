@@ -237,7 +237,7 @@ func (r *Resource) Delete(ctx context.Context, request resource.DeleteRequest, r
 
 	vlan, resp, err := client.ProjectVirtualNetworks.Get(
 		data.ID.ValueString(),
-		&packngo.GetOptions{Includes: []string{"instances", "virtual_networks", "meta_gateway"}},
+		&packngo.GetOptions{Includes: []string{"instances", "virtual_networks", "metal_gateway"}},
 	)
 	if err != nil {
 		if equinix_errors.IgnoreResponseErrors(equinix_errors.HttpForbidden, equinix_errors.HttpNotFound)(resp, err) != nil {
