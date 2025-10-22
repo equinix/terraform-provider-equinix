@@ -73,7 +73,6 @@ func portOperationSch() map[string]*schema.Schema {
 	}
 }
 
-// PortRedundancySch returns the schema for port redundancy information
 func PortRedundancySch() map[string]*schema.Schema {
 	return map[string]*schema.Schema{
 		"enabled": {
@@ -94,7 +93,6 @@ func PortRedundancySch() map[string]*schema.Schema {
 	}
 }
 
-// FabricPortResourceSchema returns the schema for Fabric Port resource
 func FabricPortResourceSchema() map[string]*schema.Schema {
 	return map[string]*schema.Schema{
 		"type": {
@@ -232,7 +230,7 @@ func readFabricPortsResponseSchema() map[string]*schema.Schema {
 		"filter": {
 			Type:        schema.TypeSet,
 			Required:    true,
-			Description: "Filter by - either name or uuid",
+			Description: "Exactly one of name or uuid.",
 			MaxItems:    1,
 			Elem:        &schema.Resource{Schema: readGetPortsByNameOrUUIDQueryParamSch()},
 		},
@@ -432,7 +430,7 @@ func setPortsListMap(d *schema.ResourceData, portResponse *fabricv4.AllPortsResp
 	return diags
 }
 
-func resourceFabricPortGetByPortNameOrUUID(ctx context.Context, d *schema.ResourceData, meta interface{}) (diags diag.Diagnostics) {
+func resourceFabricPortGetByPortName(ctx context.Context, d *schema.ResourceData, meta interface{}) (diags diag.Diagnostics) {
 	defer func() {
 		if r := recover(); r != nil {
 			log.Printf("[ERROR] Panic occurred during GET /fabric/v4/ports: %+v", r)
@@ -449,30 +447,39 @@ func resourceFabricPortGetByPortNameOrUUID(ctx context.Context, d *schema.Resour
 	}()
 
 	client := meta.(*config.Config).NewFabricClientForSDK(ctx, d)
-	filterParam := d.Get("filter").(*schema.Set).List()
+	filterParam := d.Get("filter").(*schema.Set).List() // reverted key
 	if len(filterParam) == 0 {
 		return diag.FromErr(fmt.Errorf("filter must be provided with either name or uuid"))
 	}
 	fMap := filterParam[0].(map[string]interface{})
-	name := getStringValue(fMap, "name")
-	uuid := getStringValue(fMap, "uuid")
+	name := ""
+	uuid := ""
+	if v, ok := fMap["name"]; ok && v != nil {
+		if s, ok2 := v.(string); ok2 && s != "" {
+			name = s
+		}
+	}
+	if v, ok := fMap["uuid"]; ok && v != nil {
+		if s, ok2 := v.(string); ok2 && s != "" {
+			uuid = s
+		}
+	}
 	if name == "" && uuid == "" {
-		return diag.FromErr(fmt.Errorf("either name or uuid must be specified in filter"))
+		return diag.FromErr(fmt.Errorf("exactly one of name or uuid must be specified in filter"))
 	}
 	if name != "" && uuid != "" {
-		return diag.FromErr(fmt.Errorf("only one of name or uuid must be specified in filter"))
+		return diag.FromErr(fmt.Errorf("only one of name or uuid may be specified in filter"))
 	}
 
 	if uuid != "" {
 		port, _, err := client.PortsApi.GetPortByUuid(ctx, uuid).Execute()
 		if err != nil {
-			log.Printf("[WARN] Port not found by uuid - %s , error - %s", uuid, err)
+			log.Printf("[WARN] Port not found by uuid %s , error %s", uuid, err)
 			if !strings.Contains(err.Error(), "500") {
 				d.SetId("")
 			}
 			return diag.FromErr(equinix_errors.FormatFabricError(err))
 		}
-
 		d.SetId(port.GetUuid())
 		mappedPorts := []map[string]interface{}{fabricPortMap(port)}
 		err2 := equinix_schema.SetMap(d, map[string]interface{}{"data": mappedPorts})
@@ -484,7 +491,7 @@ func resourceFabricPortGetByPortNameOrUUID(ctx context.Context, d *schema.Resour
 
 	ports, _, err := client.PortsApi.GetPorts(ctx).Name(name).Execute()
 	if err != nil {
-		log.Printf("[WARN] Ports not found by name - %s , error - %s", name, err)
+		log.Printf("[WARN] Ports not found by name %s , error %s", name, err)
 		if !strings.Contains(err.Error(), "500") {
 			d.SetId("")
 		}
@@ -492,18 +499,9 @@ func resourceFabricPortGetByPortNameOrUUID(ctx context.Context, d *schema.Resour
 	}
 
 	if len(ports.Data) < 1 {
-		return diag.FromErr(fmt.Errorf("no records are found for the port name provided - %s", name))
+		return diag.FromErr(fmt.Errorf("no records found for the provided port name - %s", name))
 	}
 
 	d.SetId(ports.Data[0].GetUuid())
 	return setPortsListMap(d, ports)
-}
-
-func getStringValue(m map[string]interface{}, key string) string {
-	if v, ok := m[key]; ok {
-		if s, ok := v.(string); ok && s != "" {
-			return s
-		}
-	}
-	return ""
 }

@@ -4,7 +4,9 @@ subcategory: "Fabric"
 
 # equinix_fabric_ports (Data Source)
 
-Fabric V4 API compatible data resource that allow user to fetch ports by name or uuid.
+Fabric V4 API compatible data resource that allows user to fetch ports by exact name or uuid.
+
+Limitation: SDK v0.59.0 does not expose the SearchPorts endpoint; only direct lookups by name or uuid are supported. Advanced filters (metroCode, projectId, accountNumber, orgId, device/name, etc.) are not available until SearchPorts returns.
 
 Additional documentation:
 * Getting Started: https://docs.equinix.com/en-us/Content/Interconnection/Fabric/IMPLEMENTATION/fabric-ports-implement.htm
@@ -82,7 +84,7 @@ output "device_redundancy_priority" {
 
 ### Required
 
-- `filter` (Block Set, Min: 1, Max: 1) Filter by - either name or uuid (see [below for nested schema](#nestedblock--filter))
+- `filter` (Block Set, Min: 1, Max: 1) Exactly one of name or uuid. (see [below for nested schema](#nestedblock--filter))
 
 ### Read-Only
 
