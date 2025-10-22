@@ -29,7 +29,9 @@ func dataSourceFabricGetPortsByName() *schema.Resource {
 	return &schema.Resource{
 		ReadContext: dataSourceFabricGetPortsByNameResponseRead,
 		Schema:      readFabricPortsResponseSchema(),
-		Description: `Fabric V4 API compatible data resource that allow user to fetch port by name
+		Description: `Fabric V4 API compatible data resource that allows user to fetch ports by exact name or uuid.
+
+Limitation: SDK v0.59.0 does not expose the SearchPorts endpoint; only direct lookups by name or uuid are supported. Advanced filters (metroCode, projectId, accountNumber, orgId, device/name, etc.) are not available until SearchPorts returns.
 
 Additional documentation:
 * Getting Started: https://docs.equinix.com/en-us/Content/Interconnection/Fabric/IMPLEMENTATION/fabric-ports-implement.htm
