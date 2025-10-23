@@ -27,7 +27,7 @@ type DataSourceAllStreams struct {
 	framework.BaseDataSource
 }
 
-// Schema returns the  data source schema
+// Schema returns the data source schema
 func (r *DataSourceAllStreams) Schema(
 	ctx context.Context,
 	_ datasource.SchemaRequest,
