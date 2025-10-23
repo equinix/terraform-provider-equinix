@@ -4,11 +4,15 @@ resource "equinix_fabric_stream_alert_rule" "new_stream_alert_rule" {
   type               = "METRIC_ALERT"
   description        = "<description>"
   enabled            = true
-  operand            = "ABOVE"
-  window_size        = "<window_size>"
-  warning_threshold  = "<warning_threshold>"
-  critical_threshold = "<critical_threshold>"
-  metric_name        = "equinix.fabric.connection.bandwidth_tx.usage"
+  metric_selector = {
+    include = ["equinix.fabric.connection.bandwidth_tx.usage"]
+  }
+  detection_method = {
+    operand            = "ABOVE"
+    window_size        = "<window_size>"
+    warning_threshold  = "<warning_threshold>"
+    critical_threshold = "<critical_threshold>"
+  }
   resource_selector = {
     include = ["*/connections/<connection_id>"]
   }

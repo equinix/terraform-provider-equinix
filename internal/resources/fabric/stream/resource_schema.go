@@ -1,3 +1,4 @@
+// Package stream for Fabric Stream resource and data sources
 package stream
 
 import (
@@ -42,8 +43,7 @@ Additional Documentation:
 			},
 			"project": schema.SingleNestedAttribute{
 				Description: "Equinix Project attribute object",
-				Optional:    true,
-				Computed:    true,
+				Required:    true,
 				PlanModifiers: []planmodifier.Object{
 					objectplanmodifier.UseStateForUnknown(),
 				},

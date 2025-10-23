@@ -20,11 +20,15 @@ resource "equinix_fabric_stream_alert_rule" "new_stream_alert_rule" {
   type               = "METRIC_ALERT"
   description        = "<description>"
   enabled            = true
-  operand            = "ABOVE"
-  window_size        = "<window_size>"
-  warning_threshold  = "<warning_threshold>"
-  critical_threshold = "<critical_threshold>"
-  metric_name        = "equinix.fabric.connection.bandwidth_tx.usage"
+  metric_selector = {
+    include = ["equinix.fabric.connection.bandwidth_tx.usage"]
+  }
+  detection_method = {
+    operand            = "ABOVE"
+    window_size        = "<window_size>"
+    warning_threshold  = "<warning_threshold>"
+    critical_threshold = "<critical_threshold>"
+  }
   resource_selector = {
     include = ["*/connections/<connection_id>"]
   }
@@ -53,16 +57,16 @@ output "stream_alert_rule_state" {
 ### Required
 
 - `description` (String) Customer-provided stream alert rule description
+- `detection_method` (Attributes) Detection method for stream alert rule (see [below for nested schema](#nestedatt--detection_method))
+- `metric_selector` (Attributes) Metric selector for the stream alert rule (see [below for nested schema](#nestedatt--metric_selector))
 - `name` (String) Customer-provided stream alert rule name
+- `resource_selector` (Attributes) Resource selector for the stream alert rule (see [below for nested schema](#nestedatt--resource_selector))
 - `stream_id` (String) The stream UUID that contains this alert rule
 - `type` (String) Type of the stream alert rule
 
 ### Optional
 
-- `detection_method` (Attributes) Detection method for stream alert rule (see [below for nested schema](#nestedatt--detection_method))
 - `enabled` (Boolean) Stream alert rule enabled status
-- `metric_selector` (Attributes) Metric selector for the stream alert rule (see [below for nested schema](#nestedatt--metric_selector))
-- `resource_selector` (Attributes) Resource selector for the stream alert rule (see [below for nested schema](#nestedatt--resource_selector))
 - `timeouts` (Attributes) (see [below for nested schema](#nestedatt--timeouts))
 
 ### Read-Only
