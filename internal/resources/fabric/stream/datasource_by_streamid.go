@@ -1,3 +1,4 @@
+// Package stream for Fabric Stream resource and data sources
 package stream
 
 import (
@@ -9,6 +10,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/datasource"
 )
 
+// NewDataSourceByStreamID stream by id
 func NewDataSourceByStreamID() datasource.DataSource {
 	return &DataSourceByStreamID{
 		BaseDataSource: framework.NewBaseDataSource(
@@ -19,10 +21,12 @@ func NewDataSourceByStreamID() datasource.DataSource {
 	}
 }
 
+// DataSourceByStreamID represents stream data source by id
 type DataSourceByStreamID struct {
 	framework.BaseDataSource
 }
 
+// Schema returns the data source schema
 func (r *DataSourceByStreamID) Schema(
 	ctx context.Context,
 	_ datasource.SchemaRequest,

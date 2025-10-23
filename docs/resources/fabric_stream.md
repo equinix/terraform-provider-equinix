@@ -34,11 +34,11 @@ output "stream_state" {
 
 - `description` (String) Customer-provided description of the stream resource
 - `name` (String) Customer-provided name of the stream resource
+- `project` (Attributes) Equinix Project attribute object (see [below for nested schema](#nestedatt--project))
 - `type` (String) Equinix defined Streaming Type
 
 ### Optional
 
-- `project` (Attributes) Equinix Project attribute object (see [below for nested schema](#nestedatt--project))
 - `timeouts` (Attributes) (see [below for nested schema](#nestedatt--timeouts))
 
 ### Read-Only

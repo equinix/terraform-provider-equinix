@@ -24,7 +24,7 @@ func CheckStreamDelete(s *terraform.State) error {
 		}
 
 		if stream, _, err := client.StreamsApi.GetStreamByUuid(ctx, rs.Primary.ID).Execute(); err == nil &&
-			stream.GetState() == string(fabricv4.STREAMSUBSCRIPTIONSTATE_PROVISIONED) {
+			string(stream.GetState()) == string(fabricv4.STREAMSUBSCRIPTIONSTATE_PROVISIONED) {
 			return fmt.Errorf("fabric stream %s still exists and is %s",
 				rs.Primary.ID, string(fabricv4.STREAMSUBSCRIPTIONSTATE_PROVISIONED))
 		}

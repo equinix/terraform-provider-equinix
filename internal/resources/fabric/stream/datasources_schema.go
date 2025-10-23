@@ -1,3 +1,4 @@
+// Package stream for Fabric Stream resource and data sources
 package stream
 
 import (

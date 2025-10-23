@@ -1,3 +1,4 @@
+// Package stream for Fabric Stream resource and data sources
 package stream
 
 import (
@@ -10,6 +11,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/types/basetypes"
 )
 
+// NewDataSourceAllStreams retrieves all streams
 func NewDataSourceAllStreams() datasource.DataSource {
 	return &DataSourceAllStreams{
 		BaseDataSource: framework.NewBaseDataSource(
@@ -20,10 +22,12 @@ func NewDataSourceAllStreams() datasource.DataSource {
 	}
 }
 
+// DataSourceAllStreams represents all streams data source
 type DataSourceAllStreams struct {
 	framework.BaseDataSource
 }
 
+// Schema returns the data source schema
 func (r *DataSourceAllStreams) Schema(
 	ctx context.Context,
 	_ datasource.SchemaRequest,
@@ -32,6 +36,7 @@ func (r *DataSourceAllStreams) Schema(
 	resp.Schema = dataSourceAllStreamsSchema(ctx)
 }
 
+// Read retrieves stream
 func (r *DataSourceAllStreams) Read(ctx context.Context, request datasource.ReadRequest, response *datasource.ReadResponse) {
 	client := r.Meta.NewFabricClientForFramework(ctx, request.ProviderMeta)
 

@@ -1,3 +1,4 @@
+// Package stream for Fabric Stream resource and data sources
 package stream
 
 import (
@@ -14,18 +15,21 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/types/basetypes"
 )
 
+// DataSourceByIDModel stream datasource model
 type DataSourceByIDModel struct {
 	StreamID types.String `tfsdk:"stream_id"`
 	ID       types.String `tfsdk:"id"`
 	BaseStreamModel
 }
 
+// DataSourceAllStreamsModel streams datasource model
 type DataSourceAllStreamsModel struct {
 	ID         types.String                                     `tfsdk:"id"`
 	Pagination fwtypes.ObjectValueOf[PaginationModel]           `tfsdk:"pagination"`
 	Data       fwtypes.ListNestedObjectValueOf[BaseStreamModel] `tfsdk:"data"`
 }
 
+// PaginationModel stream pagination model
 type PaginationModel struct {
 	Offset   types.Int32  `tfsdk:"offset"`
 	Limit    types.Int32  `tfsdk:"limit"`
@@ -34,12 +38,14 @@ type PaginationModel struct {
 	Previous types.String `tfsdk:"previous"`
 }
 
+// ResourceModel stream resource model
 type ResourceModel struct {
 	ID       types.String   `tfsdk:"id"`
 	Timeouts timeouts.Value `tfsdk:"timeouts"`
 	BaseStreamModel
 }
 
+// BaseStreamModel stream base model
 type BaseStreamModel struct {
 	Type                     types.String                          `tfsdk:"type"`
 	Name                     types.String                          `tfsdk:"name"`
@@ -53,10 +59,12 @@ type BaseStreamModel struct {
 	ChangeLog                fwtypes.ObjectValueOf[ChangeLogModel] `tfsdk:"change_log"` // Object of ChangeLogModel
 }
 
+// ProjectModel stream project model
 type ProjectModel struct {
 	ProjectID types.String `tfsdk:"project_id"`
 }
 
+// ChangeLogModel stream changeLog model
 type ChangeLogModel struct {
 	CreatedBy         types.String `tfsdk:"created_by"`
 	CreatedByFullName types.String `tfsdk:"created_by_full_name"`
@@ -183,7 +191,7 @@ func parseStream(ctx context.Context, stream *fabricv4.Stream,
 	*description = types.StringValue(stream.GetDescription())
 	*href = types.StringValue(stream.GetHref())
 	*uuid = types.StringValue(stream.GetUuid())
-	*state = types.StringValue(stream.GetState())
+	*state = types.StringValue(string(stream.GetState()))
 	*assetsCount = types.Int32Value(stream.GetAssetsCount())
 	*streamSubscriptionCount = types.Int32Value(stream.GetStreamSubscriptionsCount())
 

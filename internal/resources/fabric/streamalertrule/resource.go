@@ -126,31 +126,27 @@ func buildCreateRequest(ctx context.Context, plan streamAlertRuleResourceModel) 
 	request.SetDescription(plan.Description.ValueString())
 	request.SetEnabled(plan.Enabled.ValueBool())
 
-	if !plan.ResourceSelector.IsNull() && !plan.ResourceSelector.IsUnknown() {
-		// Build ResourceSelector
-		var resourceSelector fabricv4.ResourceSelector
-		resourceSelector, diags = buildStreamAlertRuleSelector(ctx, plan.ResourceSelector)
-		if diags.HasError() {
-			return fabricv4.AlertRulePostRequest{}, diags
-		}
-		request.SetResourceSelector(resourceSelector)
+	resourceSelector, resourceDiags := buildStreamAlertRuleSelector(ctx, plan.ResourceSelector)
+	if resourceDiags.HasError() {
+		diags.Append(resourceDiags...)
+		return fabricv4.AlertRulePostRequest{}, diags
 	}
-	if !plan.MetricSelector.IsNull() && !plan.MetricSelector.IsUnknown() {
-		var metricSelector fabricv4.MetricSelector
-		metricSelector, diags = buildStreamAlertRuleMetricSelector(ctx, plan.MetricSelector)
-		if diags.HasError() {
-			return fabricv4.AlertRulePostRequest{}, diags
-		}
-		request.SetMetricSelector(metricSelector)
+	request.SetResourceSelector(resourceSelector)
+
+	metricSelector, metricDiags := buildStreamAlertRuleMetricSelector(ctx, plan.MetricSelector)
+	if metricDiags.HasError() {
+		diags.Append(metricDiags...)
+		return fabricv4.AlertRulePostRequest{}, diags
 	}
-	if !plan.DetectionMethod.IsNull() && !plan.DetectionMethod.IsUnknown() {
-		var detectionMethod fabricv4.DetectionMethod
-		detectionMethod, diags = buildStreamAlertRuleDetectionMethod(ctx, plan.DetectionMethod)
-		if diags.HasError() {
-			return fabricv4.AlertRulePostRequest{}, diags
-		}
-		request.SetDetectionMethod(detectionMethod)
+	request.SetMetricSelector(metricSelector)
+
+	detectionMethod, detectionDiags := buildStreamAlertRuleDetectionMethod(ctx, plan.DetectionMethod)
+	if detectionDiags.HasError() {
+		diags.Append(detectionDiags...)
+		return fabricv4.AlertRulePostRequest{}, diags
 	}
+	request.SetDetectionMethod(detectionMethod)
+
 	return request, diags
 }
 
@@ -334,29 +330,26 @@ func buildUpdateRequest(ctx context.Context, config streamAlertRuleResourceModel
 	request.SetName(config.Name.ValueString())
 	request.SetDescription(config.Description.ValueString())
 
-	if !config.ResourceSelector.IsNull() && !config.ResourceSelector.IsUnknown() {
-		resourceSelector, diags := buildStreamAlertRuleSelector(ctx, config.ResourceSelector)
-		if diags.HasError() {
-			return request, diags
-		}
-		request.SetResourceSelector(resourceSelector)
+	resourceSelector, resourceDiags := buildStreamAlertRuleSelector(ctx, config.ResourceSelector)
+	if resourceDiags.HasError() {
+		diags.Append(resourceDiags...)
+		return request, diags
 	}
+	request.SetResourceSelector(resourceSelector)
 
-	if !config.MetricSelector.IsNull() && !config.MetricSelector.IsUnknown() {
-		metricSelector, diags := buildStreamAlertRuleMetricSelector(ctx, config.MetricSelector)
-		if diags.HasError() {
-			return request, diags
-		}
-		request.SetMetricSelector(metricSelector)
+	metricSelector, metricDiags := buildStreamAlertRuleMetricSelector(ctx, config.MetricSelector)
+	if metricDiags.HasError() {
+		diags.Append(metricDiags...)
+		return request, diags
 	}
+	request.SetMetricSelector(metricSelector)
 
-	if !config.DetectionMethod.IsNull() && !config.DetectionMethod.IsUnknown() {
-		detectionMethod, diags := buildStreamAlertRuleDetectionMethod(ctx, config.DetectionMethod)
-		if diags.HasError() {
-			return request, diags
-		}
-		request.SetDetectionMethod(detectionMethod)
+	detectionMethod, detectionDiags := buildStreamAlertRuleDetectionMethod(ctx, config.DetectionMethod)
+	if detectionDiags.HasError() {
+		diags.Append(detectionDiags...)
+		return request, diags
 	}
+	request.SetDetectionMethod(detectionMethod)
 
 	if !config.Enabled.IsNull() {
 		request.SetEnabled(config.Enabled.ValueBool())
