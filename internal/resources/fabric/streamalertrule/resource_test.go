@@ -131,11 +131,17 @@ func testAccFabricStreamAlertRuleConfig(uri, event_index, metric_index, source, 
 		  name               = "%s"
 		  type               = "METRIC_ALERT"
 		  description        = "%s"
-		  operand            = "ABOVE"
-		  window_size        = "PT15M"
-		  warning_threshold  = "35000000"
-		  critical_threshold = "40000000"
-		  metric_name        = "equinix.fabric.connection.bandwidth_tx.usage"
+		  detection_method = {
+			operand            = "ABOVE"
+		  	window_size        = "PT15M"
+		  	warning_threshold  = "35000000"
+		  	critical_threshold = "40000000"
+		  }
+		  metric_selector = {
+			"include": [
+				"equinix.fabric.connection.bandwidth_tx.usage"
+			]
+          }
 		  resource_selector   = {
 			"include" : [
 			  "*/connections/${equinix_fabric_connection.test_connection.id}"
@@ -196,12 +202,14 @@ func TestAccFabricStreamAlertRule_PFCR(t *testing.T) {
 						"equinix_fabric_stream_alert_rule.alert_rule", "type", "METRIC_ALERT"),
 					resource.TestCheckResourceAttr(
 						"equinix_fabric_stream_alert_rule.alert_rule", "description", alertRuleDescription),
-					resource.TestCheckResourceAttr("equinix_fabric_stream_alert_rule.alert_rule", "metric_name", "equinix.fabric.connection.bandwidth_tx.usage"),
-					resource.TestCheckResourceAttr("equinix_fabric_stream_alert_rule.alert_rule", "operand", "ABOVE"),
 					resource.TestCheckResourceAttr("equinix_fabric_stream_alert_rule.alert_rule", "enabled", "true"),
-					resource.TestCheckResourceAttr("equinix_fabric_stream_alert_rule.alert_rule", "window_size", "PT15M"),
-					resource.TestCheckResourceAttr("equinix_fabric_stream_alert_rule.alert_rule", "warning_threshold", "35000000"),
-					resource.TestCheckResourceAttr("equinix_fabric_stream_alert_rule.alert_rule", "critical_threshold", "40000000"),
+					resource.TestCheckResourceAttr("equinix_fabric_stream_alert_rule.alert_rule", "detection_method.type", "THRESHOLD"),
+					resource.TestCheckResourceAttr("equinix_fabric_stream_alert_rule.alert_rule", "detection_method.operand", "ABOVE"),
+					resource.TestCheckResourceAttr("equinix_fabric_stream_alert_rule.alert_rule", "detection_method.window_size", "PT15M"),
+					resource.TestCheckResourceAttr("equinix_fabric_stream_alert_rule.alert_rule", "detection_method.warning_threshold", "35000000"),
+					resource.TestCheckResourceAttr("equinix_fabric_stream_alert_rule.alert_rule", "detection_method.critical_threshold", "40000000"),
+					resource.TestCheckResourceAttr("equinix_fabric_stream_alert_rule.alert_rule", "metric_selector.include.0", "equinix.fabric.connection.bandwidth_tx.usage"),
+
 					resource.TestCheckResourceAttrSet("equinix_fabric_stream_alert_rule.alert_rule", "uuid"),
 					resource.TestCheckResourceAttrSet("equinix_fabric_stream_alert_rule.alert_rule", "href"),
 					resource.TestCheckResourceAttr(
@@ -211,11 +219,10 @@ func TestAccFabricStreamAlertRule_PFCR(t *testing.T) {
 					resource.TestCheckResourceAttr(
 						"data.equinix_fabric_stream_alert_rule.by_ids", "description", alertRuleDescription),
 					resource.TestCheckResourceAttr("data.equinix_fabric_stream_alert_rule.by_ids", "enabled", "true"),
-					resource.TestCheckResourceAttrSet("data.equinix_fabric_stream_alert_rule.by_ids", "window_size"),
-					resource.TestCheckResourceAttrSet("data.equinix_fabric_stream_alert_rule.by_ids", "critical_threshold"),
-					resource.TestCheckResourceAttrSet("data.equinix_fabric_stream_alert_rule.by_ids", "warning_threshold"),
-					resource.TestCheckResourceAttrSet("data.equinix_fabric_stream_alert_rule.by_ids", "metric_name"),
-					resource.TestCheckResourceAttrSet("data.equinix_fabric_stream_alert_rule.by_ids", "operand"),
+					resource.TestCheckResourceAttrSet("data.equinix_fabric_stream_alert_rule.by_ids", "detection_method.window_size"),
+					resource.TestCheckResourceAttrSet("data.equinix_fabric_stream_alert_rule.by_ids", "detection_method.critical_threshold"),
+					resource.TestCheckResourceAttrSet("data.equinix_fabric_stream_alert_rule.by_ids", "detection_method.warning_threshold"),
+					resource.TestCheckResourceAttrSet("data.equinix_fabric_stream_alert_rule.by_ids", "detection_method.operand"),
 					resource.TestCheckResourceAttrSet("data.equinix_fabric_stream_alert_rule.by_ids", "uuid"),
 					resource.TestCheckResourceAttrSet("data.equinix_fabric_stream_alert_rule.by_ids", "href"),
 
@@ -223,7 +230,6 @@ func TestAccFabricStreamAlertRule_PFCR(t *testing.T) {
 					resource.TestCheckResourceAttrSet("data.equinix_fabric_stream_alert_rules.all", "data.0.type"),
 					resource.TestCheckResourceAttrSet("data.equinix_fabric_stream_alert_rules.all", "data.0.description"),
 					resource.TestCheckResourceAttrSet("data.equinix_fabric_stream_alert_rules.all", "data.0.uuid"),
-					resource.TestCheckResourceAttrSet("data.equinix_fabric_stream_alert_rules.all", "data.0.metric_name"),
 				),
 				ExpectNonEmptyPlan: true,
 			},
@@ -236,12 +242,11 @@ func TestAccFabricStreamAlertRule_PFCR(t *testing.T) {
 						"equinix_fabric_stream_alert_rule.alert_rule", "type", "METRIC_ALERT"),
 					resource.TestCheckResourceAttr(
 						"equinix_fabric_stream_alert_rule.alert_rule", "description", updatedAlertRuleDescription),
-					resource.TestCheckResourceAttr("equinix_fabric_stream_alert_rule.alert_rule", "metric_name", "equinix.fabric.connection.bandwidth_tx.usage"),
-					resource.TestCheckResourceAttr("equinix_fabric_stream_alert_rule.alert_rule", "operand", "ABOVE"),
+					resource.TestCheckResourceAttr("equinix_fabric_stream_alert_rule.alert_rule", "detection_method.operand", "ABOVE"),
 					resource.TestCheckResourceAttr("equinix_fabric_stream_alert_rule.alert_rule", "enabled", "true"),
-					resource.TestCheckResourceAttr("equinix_fabric_stream_alert_rule.alert_rule", "window_size", "PT15M"),
-					resource.TestCheckResourceAttr("equinix_fabric_stream_alert_rule.alert_rule", "warning_threshold", "35000000"),
-					resource.TestCheckResourceAttr("equinix_fabric_stream_alert_rule.alert_rule", "critical_threshold", "40000000"),
+					resource.TestCheckResourceAttr("equinix_fabric_stream_alert_rule.alert_rule", "detection_method.window_size", "PT15M"),
+					resource.TestCheckResourceAttr("equinix_fabric_stream_alert_rule.alert_rule", "detection_method.warning_threshold", "35000000"),
+					resource.TestCheckResourceAttr("equinix_fabric_stream_alert_rule.alert_rule", "detection_method.critical_threshold", "40000000"),
 					resource.TestCheckResourceAttrSet("equinix_fabric_stream_alert_rule.alert_rule", "uuid"),
 					resource.TestCheckResourceAttrSet("equinix_fabric_stream_alert_rule.alert_rule", "href"),
 					resource.TestCheckResourceAttr(
@@ -251,11 +256,10 @@ func TestAccFabricStreamAlertRule_PFCR(t *testing.T) {
 					resource.TestCheckResourceAttr(
 						"data.equinix_fabric_stream_alert_rule.by_ids", "description", updatedAlertRuleDescription),
 					resource.TestCheckResourceAttr("data.equinix_fabric_stream_alert_rule.by_ids", "enabled", "true"),
-					resource.TestCheckResourceAttrSet("data.equinix_fabric_stream_alert_rule.by_ids", "window_size"),
-					resource.TestCheckResourceAttrSet("data.equinix_fabric_stream_alert_rule.by_ids", "critical_threshold"),
-					resource.TestCheckResourceAttrSet("data.equinix_fabric_stream_alert_rule.by_ids", "warning_threshold"),
-					resource.TestCheckResourceAttrSet("data.equinix_fabric_stream_alert_rule.by_ids", "metric_name"),
-					resource.TestCheckResourceAttrSet("data.equinix_fabric_stream_alert_rule.by_ids", "operand"),
+					resource.TestCheckResourceAttrSet("data.equinix_fabric_stream_alert_rule.by_ids", "detection_method.window_size"),
+					resource.TestCheckResourceAttrSet("data.equinix_fabric_stream_alert_rule.by_ids", "detection_method.critical_threshold"),
+					resource.TestCheckResourceAttrSet("data.equinix_fabric_stream_alert_rule.by_ids", "detection_method.warning_threshold"),
+					resource.TestCheckResourceAttrSet("data.equinix_fabric_stream_alert_rule.by_ids", "detection_method.operand"),
 					resource.TestCheckResourceAttrSet("data.equinix_fabric_stream_alert_rule.by_ids", "uuid"),
 					resource.TestCheckResourceAttrSet("data.equinix_fabric_stream_alert_rule.by_ids", "href"),
 
@@ -263,7 +267,6 @@ func TestAccFabricStreamAlertRule_PFCR(t *testing.T) {
 					resource.TestCheckResourceAttrSet("data.equinix_fabric_stream_alert_rules.all", "data.0.type"),
 					resource.TestCheckResourceAttrSet("data.equinix_fabric_stream_alert_rules.all", "data.0.description"),
 					resource.TestCheckResourceAttrSet("data.equinix_fabric_stream_alert_rules.all", "data.0.uuid"),
-					resource.TestCheckResourceAttrSet("data.equinix_fabric_stream_alert_rules.all", "data.0.metric_name"),
 				),
 				ExpectNonEmptyPlan: true,
 			},

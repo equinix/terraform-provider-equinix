@@ -55,8 +55,7 @@ Additional Documentation:
 			},
 			"resource_selector": schema.SingleNestedAttribute{
 				Description: "Resource selector for the stream alert rule",
-				Optional:    true,
-				Computed:    true,
+				Required:    true,
 				CustomType:  fwtypes.NewObjectTypeOf[selectorModel](ctx),
 				PlanModifiers: []planmodifier.Object{
 					objectplanmodifier.UseStateForUnknown(),
@@ -71,8 +70,7 @@ Additional Documentation:
 			},
 			"metric_selector": schema.SingleNestedAttribute{
 				Description: "Metric selector for the stream alert rule",
-				Optional:    true,
-				Computed:    true,
+				Required:    true,
 				CustomType:  fwtypes.NewObjectTypeOf[selectorModel](ctx),
 				PlanModifiers: []planmodifier.Object{
 					objectplanmodifier.UseStateForUnknown(),
@@ -87,8 +85,7 @@ Additional Documentation:
 			},
 			"detection_method": schema.SingleNestedAttribute{
 				Description: "Detection method for stream alert rule",
-				Optional:    true,
-				Computed:    true,
+				Required:    true,
 				CustomType:  fwtypes.NewObjectTypeOf[metricSelectorModel](ctx),
 				PlanModifiers: []planmodifier.Object{
 					objectplanmodifier.UseStateForUnknown(),
