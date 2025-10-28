@@ -54,8 +54,9 @@ provider "equinix" {
   # Desired scope of the requested security token. Must be an Access Policy ERN or a string of the form `roleassignments:<organization_id>`
   sts_auth_scope = "roleassignments:<organization_id>"
 
-  # An OIDC ID token issued by a trusted OIDC provider to a trusted client.
-  sts_source_token = "some_workload_identity_token"
+  # The name of the environment variable containing the STS source token
+  # For example, HCP Terraform automatically sets TFC_WORKLOAD_IDENTITY_TOKEN
+  sts_source_token_env_var = "TFC_WORKLOAD_IDENTITY_TOKEN"
 }
 ```
 
@@ -102,5 +103,5 @@ These parameters can be provided in [Terraform variable files](https://www.terra
 - `response_max_page_size` (Number) The maximum number of records in a single response for REST queries that produce paginated responses. (Default is client specific)
 - `sts_auth_scope` (String) The scope of the authentication token. Must be an access policy ERN or a string of the form `roleassignments:<org_id>`. This argument can also be specified with the `EQUINIX_STS_AUTH_SCOPE` shell environment variable. Please note that Equinix STS is an alpha feature and not available for all users.
 - `sts_endpoint` (String) The STS API base URL to point to the desired environment. This argument can also be specified with the `EQUINIX_STS_ENDPOINT` shell environment variable. (Defaults to `https://sts.eqix.equinix.com`). Please note that STS is an alpha feature and not available for all users.
-- `sts_source_token` (String) The source token to use for STS authentication. Must be an OIDC ID token issued by an OIDC provider trusted by Equinix STS. This argument can also be specified with the `EQUINIX_STS_SOURCE_TOKEN` shell environment variable. Please note that STS is an alpha feature and not available for all users.
+- `sts_source_token_env_var` (String) The name of the environment variable containing the STS source token. This argument can also be specified with the `EQUINIX_STS_SOURCE_TOKEN_ENV_VAR` shell environment variable. (Defaults to `EQUINIX_STS_SOURCE_TOKEN`). Please note that STS is an alpha feature and not available for all users.
 - `token` (String) API tokens are generated from API Consumer clients using the [OAuth2 API](https://developer.equinix.com/dev-docs/fabric/getting-started/getting-access-token#request-access-and-refresh-tokens). This argument can also be specified with the `EQUINIX_API_TOKEN` shell environment variable.
