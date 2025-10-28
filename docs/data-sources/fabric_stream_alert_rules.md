@@ -5,6 +5,7 @@ subcategory: "Fabric"
 # equinix_fabric_stream_alert_rules (Data Source)
 
 Fabric V4 API compatible data source that allows user to fetch Equinix Fabric Stream Alert Rules with pagination
+~> Note Equinix Fabric v4 Stream Alert Rules datasource is currently in Beta. The interfaces related to equinix_fabric_stream_alert_rule may change ahead of general availability. Please, do not hesitate to report any problems that you experience by opening a new issue https://github.com/equinix/terraform-provider-equinix/issues/new?template=bug.md
 
 Additional Documentation:
 * Getting Started: https://docs.equinix.com/en-us/Content/KnowledgeCenter/Fabric/GettingStarted/Integrating-with-Fabric-V4-APIs/IntegrateWithSink.htm
@@ -69,22 +70,45 @@ Read-Only:
 <a id="nestedatt--data"></a>
 ### Nested Schema for `data`
 
+Optional:
+
+- `detection_method` (Attributes) Detection method for stream alert rule (see [below for nested schema](#nestedatt--data--detection_method))
+- `metric_selector` (Attributes) Metric selector for the stream alert rule (see [below for nested schema](#nestedatt--data--metric_selector))
+
 Read-Only:
 
 - `change_log` (Attributes) Details of the last change on the stream resource (see [below for nested schema](#nestedatt--data--change_log))
-- `critical_threshold` (String) Stream alert rule metric critical threshold
 - `description` (String) Customer-provided stream alert rule description
 - `enabled` (Boolean) Stream subscription enabled status
 - `href` (String) Equinix assigned URI of the stream alert rule resource
-- `metric_name` (String) Stream alert rule metric name
 - `name` (String) Customer-provided stream alert rule name
-- `operand` (String) Stream alert rule metric operand
 - `resource_selector` (Attributes) Lists of metrics to be included/excluded on the stream alert rule (see [below for nested schema](#nestedatt--data--resource_selector))
 - `state` (String) Value representing provisioning status for the stream resource
 - `type` (String) Type of the stream alert rule
 - `uuid` (String) Equinix assigned unique identifier of the stream subscription resource
+
+<a id="nestedatt--data--detection_method"></a>
+### Nested Schema for `data.detection_method`
+
+Required:
+
+- `type` (String) Stream Alert Rule detection method type
+
+Optional:
+
+- `critical_threshold` (String) Stream alert rule metric critical threshold
+- `operand` (String) Stream alert rule metric operand
 - `warning_threshold` (String) Stream alert rule metric warning threshold
 - `window_size` (String) Stream alert rule metric window size
+
+
+<a id="nestedatt--data--metric_selector"></a>
+### Nested Schema for `data.metric_selector`
+
+Required:
+
+- `include` (List of String) List of metrics to include
+
 
 <a id="nestedatt--data--change_log"></a>
 ### Nested Schema for `data.change_log`

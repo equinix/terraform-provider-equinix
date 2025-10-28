@@ -125,21 +125,28 @@ func buildCreateRequest(ctx context.Context, plan streamAlertRuleResourceModel) 
 	request.SetType(fabricv4.AlertRulePostRequestType(plan.Type.ValueString()))
 	request.SetDescription(plan.Description.ValueString())
 	request.SetEnabled(plan.Enabled.ValueBool())
-	request.SetWarningThreshold(plan.WarningThreshold.ValueString())
-	request.SetCriticalThreshold(plan.CriticalThreshold.ValueString())
-	request.SetMetricName(plan.MetricName.ValueString())
-	request.SetWindowSize(plan.WindowSize.ValueString())
-	request.SetOperand(fabricv4.AlertRulePostRequestOperand(plan.Operand.ValueString()))
 
-	if !plan.ResourceSelector.IsNull() && !plan.ResourceSelector.IsUnknown() {
-		// Build ResourceSelector
-		var resourceSelector fabricv4.ResourceSelector
-		resourceSelector, diags = buildStreamAlertRuleSelector(ctx, plan.ResourceSelector)
-		if diags.HasError() {
-			return fabricv4.AlertRulePostRequest{}, diags
-		}
-		request.SetResourceSelector(resourceSelector)
+	resourceSelector, resourceDiags := buildStreamAlertRuleSelector(ctx, plan.ResourceSelector)
+	if resourceDiags.HasError() {
+		diags.Append(resourceDiags...)
+		return fabricv4.AlertRulePostRequest{}, diags
 	}
+	request.SetResourceSelector(resourceSelector)
+
+	metricSelector, metricDiags := buildStreamAlertRuleMetricSelector(ctx, plan.MetricSelector)
+	if metricDiags.HasError() {
+		diags.Append(metricDiags...)
+		return fabricv4.AlertRulePostRequest{}, diags
+	}
+	request.SetMetricSelector(metricSelector)
+
+	detectionMethod, detectionDiags := buildStreamAlertRuleDetectionMethod(ctx, plan.DetectionMethod)
+	if detectionDiags.HasError() {
+		diags.Append(detectionDiags...)
+		return fabricv4.AlertRulePostRequest{}, diags
+	}
+	request.SetDetectionMethod(detectionMethod)
+
 	return request, diags
 }
 
@@ -160,6 +167,51 @@ func buildStreamAlertRuleSelector(ctx context.Context, selector fwtypes.ObjectVa
 		resourceSelector.SetInclude(include)
 	}
 	return resourceSelector, diags
+}
+
+func buildStreamAlertRuleMetricSelector(ctx context.Context, selector fwtypes.ObjectValueOf[selectorModel]) (fabricv4.MetricSelector, diag.Diagnostics) {
+	var selectorValue selectorModel
+	diags := selector.As(ctx, &selectorValue, basetypes.ObjectAsOptions{})
+	if diags.HasError() {
+		return fabricv4.MetricSelector{}, diags
+	}
+
+	var metricSelector fabricv4.MetricSelector
+	if !selectorValue.Include.IsNull() && !selectorValue.Include.IsUnknown() {
+		include := []string{}
+		diags = selectorValue.Include.ElementsAs(ctx, &include, false)
+		if diags.HasError() {
+			return fabricv4.MetricSelector{}, diags
+		}
+		metricSelector.SetInclude(include)
+	}
+	return metricSelector, diags
+}
+
+func buildStreamAlertRuleDetectionMethod(ctx context.Context, detectionMethodObj fwtypes.ObjectValueOf[metricSelectorModel]) (fabricv4.DetectionMethod, diag.Diagnostics) {
+	var detectionMethodValue metricSelectorModel
+	diags := detectionMethodObj.As(ctx, &detectionMethodValue, basetypes.ObjectAsOptions{})
+	if diags.HasError() {
+		return fabricv4.DetectionMethod{}, diags
+	}
+
+	var detectionMethod fabricv4.DetectionMethod
+	if !detectionMethodValue.Type.IsNull() {
+		detectionMethod.SetType(fabricv4.DetectionMethodType(detectionMethodValue.Type.ValueString()))
+	}
+	if !detectionMethodValue.WindowSize.IsNull() {
+		detectionMethod.SetWindowSize(detectionMethodValue.WindowSize.ValueString())
+	}
+	if !detectionMethodValue.Operand.IsNull() {
+		detectionMethod.SetOperand(fabricv4.DetectionMethodOperand(detectionMethodValue.Operand.ValueString()))
+	}
+	if !detectionMethodValue.WarningThreshold.IsNull() {
+		detectionMethod.SetWarningThreshold(detectionMethodValue.WarningThreshold.ValueString())
+	}
+	if !detectionMethodValue.CriticalThreshold.IsNull() {
+		detectionMethod.SetCriticalThreshold(detectionMethodValue.CriticalThreshold.ValueString())
+	}
+	return detectionMethod, diags
 }
 
 // Read retrieves a new stream alert rule
@@ -221,13 +273,10 @@ func (r *Resource) Update(
 
 	needsUpdate := config.Name.ValueString() != state.Name.ValueString() ||
 		config.Description.ValueString() != state.Description.ValueString() ||
-		config.MetricName.ValueString() != state.MetricName.ValueString() ||
-		config.Operand.ValueString() != state.Operand.ValueString() ||
-		config.WindowSize.ValueString() != state.WindowSize.ValueString() ||
-		config.WarningThreshold.ValueString() != state.WarningThreshold.ValueString() ||
-		config.CriticalThreshold.ValueString() != state.CriticalThreshold.ValueString() ||
 		config.Enabled.ValueBool() != state.Enabled.ValueBool() ||
-		!config.ResourceSelector.Equal(state.ResourceSelector)
+		!config.ResourceSelector.Equal(state.ResourceSelector) ||
+		!config.MetricSelector.Equal(state.MetricSelector) ||
+		!config.DetectionMethod.Equal(state.DetectionMethod)
 
 	if !needsUpdate {
 		resp.Diagnostics.AddWarning("No updatable fields have changed",
@@ -280,28 +329,27 @@ func buildUpdateRequest(ctx context.Context, config streamAlertRuleResourceModel
 	request.SetType(fabricv4.AlertRulePostRequestType(config.Type.ValueString()))
 	request.SetName(config.Name.ValueString())
 	request.SetDescription(config.Description.ValueString())
-	request.SetMetricName(config.MetricName.ValueString())
-	request.SetOperand(fabricv4.AlertRulePostRequestOperand(config.Operand.ValueString()))
-	request.SetWindowSize(config.WindowSize.ValueString())
 
-	if config.CriticalThreshold.IsNull() && config.WarningThreshold.IsNull() {
+	resourceSelector, resourceDiags := buildStreamAlertRuleSelector(ctx, config.ResourceSelector)
+	if resourceDiags.HasError() {
+		diags.Append(resourceDiags...)
 		return request, diags
 	}
+	request.SetResourceSelector(resourceSelector)
 
-	if !config.CriticalThreshold.IsNull() {
-		request.SetCriticalThreshold(config.CriticalThreshold.ValueString())
+	metricSelector, metricDiags := buildStreamAlertRuleMetricSelector(ctx, config.MetricSelector)
+	if metricDiags.HasError() {
+		diags.Append(metricDiags...)
+		return request, diags
 	}
-	if !config.WarningThreshold.IsNull() {
-		request.SetWarningThreshold(config.WarningThreshold.ValueString())
-	}
+	request.SetMetricSelector(metricSelector)
 
-	if !config.ResourceSelector.IsNull() && !config.ResourceSelector.IsUnknown() {
-		resourceSelector, diags := buildStreamAlertRuleSelector(ctx, config.ResourceSelector)
-		if diags.HasError() {
-			return request, diags
-		}
-		request.SetResourceSelector(resourceSelector)
+	detectionMethod, detectionDiags := buildStreamAlertRuleDetectionMethod(ctx, config.DetectionMethod)
+	if detectionDiags.HasError() {
+		diags.Append(detectionDiags...)
+		return request, diags
 	}
+	request.SetDetectionMethod(detectionMethod)
 
 	if !config.Enabled.IsNull() {
 		request.SetEnabled(config.Enabled.ValueBool())

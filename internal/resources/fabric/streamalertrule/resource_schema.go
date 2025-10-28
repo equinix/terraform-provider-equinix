@@ -18,8 +18,7 @@ import (
 func resourceSchema(ctx context.Context) schema.Schema {
 	return schema.Schema{
 		Description: `Fabric V4 API compatible resource allows creation and management of Equinix Fabric Stream Alert Rules'
-}
-
+~> Note Equinix Fabric v4 Stream Alert Rule resource is currently in Beta. The interfaces related to equinix_fabric_stream_alert_rule may change ahead of general availability. Please, do not hesitate to report any problems that you experience by opening a new issue https://github.com/equinix/terraform-provider-equinix/issues/new?template=bug.md
 
 Additional Documentation:
 * Getting Started: https://docs.equinix.com/en-us/Content/KnowledgeCenter/Fabric/GettingStarted/Integrating-with-Fabric-V4-APIs/IntegrateWithSink.htm
@@ -54,14 +53,9 @@ Additional Documentation:
 				Default:     booldefault.StaticBool(true),
 				Computed:    true,
 			},
-			"metric_name": schema.StringAttribute{
-				Description: "Stream alert rule metric name",
-				Required:    true,
-			},
 			"resource_selector": schema.SingleNestedAttribute{
 				Description: "Resource selector for the stream alert rule",
-				Optional:    true,
-				Computed:    true,
+				Required:    true,
 				CustomType:  fwtypes.NewObjectTypeOf[selectorModel](ctx),
 				PlanModifiers: []planmodifier.Object{
 					objectplanmodifier.UseStateForUnknown(),
@@ -74,21 +68,54 @@ Additional Documentation:
 					},
 				},
 			},
-			"window_size": schema.StringAttribute{
-				Description: "Stream alert rule metric window size",
+			"metric_selector": schema.SingleNestedAttribute{
+				Description: "Metric selector for the stream alert rule",
 				Required:    true,
+				CustomType:  fwtypes.NewObjectTypeOf[selectorModel](ctx),
+				PlanModifiers: []planmodifier.Object{
+					objectplanmodifier.UseStateForUnknown(),
+				},
+				Attributes: map[string]schema.Attribute{
+					"include": schema.ListAttribute{
+						Description: "List of metrics to include",
+						ElementType: types.StringType,
+						Required:    true,
+					},
+				},
 			},
-			"operand": schema.StringAttribute{
-				Description: "Stream alert rule metric operand",
+			"detection_method": schema.SingleNestedAttribute{
+				Description: "Detection method for stream alert rule",
 				Required:    true,
-			},
-			"warning_threshold": schema.StringAttribute{
-				Description: "Stream alert rule metric warning threshold",
-				Required:    true,
-			},
-			"critical_threshold": schema.StringAttribute{
-				Description: "Stream alert rule metric critical threshold",
-				Required:    true,
+				CustomType:  fwtypes.NewObjectTypeOf[metricSelectorModel](ctx),
+				PlanModifiers: []planmodifier.Object{
+					objectplanmodifier.UseStateForUnknown(),
+				},
+				Attributes: map[string]schema.Attribute{
+					"type": schema.StringAttribute{
+						Description: "Stream Alert Rule detection method type",
+						Required:    true,
+					},
+					"window_size": schema.StringAttribute{
+						Description: "Stream alert rule metric window size",
+						Optional:    true,
+						Computed:    true,
+					},
+					"operand": schema.StringAttribute{
+						Description: "Stream alert rule metric operand",
+						Optional:    true,
+						Computed:    true,
+					},
+					"warning_threshold": schema.StringAttribute{
+						Description: "Stream alert rule metric warning threshold",
+						Optional:    true,
+						Computed:    true,
+					},
+					"critical_threshold": schema.StringAttribute{
+						Description: "Stream alert rule metric critical threshold",
+						Optional:    true,
+						Computed:    true,
+					},
+				},
 			},
 			"href": schema.StringAttribute{
 				Description: "Equinix assigned URI of the stream alert rule",

@@ -79,6 +79,7 @@ output "ept_service_ipv4" {
 - `change_log` (Attributes) Details of the last change on the route aggregation resource (see [below for nested schema](#nestedatt--change_log))
 - `href` (String) Equinix generated Portal link for the created Precision Time Service
 - `id` (String) The unique identifier of the resource
+- `operation` (Attributes) Precision Time Service Operation (see [below for nested schema](#nestedatt--operation))
 - `order` (Attributes) Precision Time Order (see [below for nested schema](#nestedatt--order))
 - `precision_time_price` (Attributes) Precision Time Service Price (see [below for nested schema](#nestedatt--precision_time_price))
 - `project` (Attributes) Equinix Project attribute object (see [below for nested schema](#nestedatt--project))
@@ -196,6 +197,14 @@ Read-Only:
 - `updated_by_email` (String) Email of last updater of the route aggregation resource
 - `updated_by_full_name` (String) Legal name of last updater of the route aggregation resource
 - `updated_date_time` (String) Last update time of the route aggregation resource
+
+
+<a id="nestedatt--operation"></a>
+### Nested Schema for `operation`
+
+Read-Only:
+
+- `operational_status` (String) Current operational status of the Precision Time Service
 
 
 <a id="nestedatt--order"></a>
