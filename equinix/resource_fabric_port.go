@@ -447,7 +447,7 @@ func resourceFabricPortGetByPortName(ctx context.Context, d *schema.ResourceData
 	}()
 
 	client := meta.(*config.Config).NewFabricClientForSDK(ctx, d)
-	filterParam := d.Get("filter").(*schema.Set).List() // reverted key
+	filterParam := d.Get("filter").(*schema.Set).List()
 	if len(filterParam) == 0 {
 		return diag.FromErr(fmt.Errorf("filter must be provided with either name or uuid"))
 	}
@@ -465,16 +465,16 @@ func resourceFabricPortGetByPortName(ctx context.Context, d *schema.ResourceData
 		}
 	}
 	if name == "" && uuid == "" {
-		return diag.FromErr(fmt.Errorf("exactly one of name or uuid must be specified in filter"))
+		return diag.FromErr(fmt.Errorf("either name or uuid must be specified in filter"))
 	}
 	if name != "" && uuid != "" {
-		return diag.FromErr(fmt.Errorf("only one of name or uuid may be specified in filter"))
+		return diag.FromErr(fmt.Errorf("only one of name or uuid must be specified in filter"))
 	}
 
 	if uuid != "" {
 		port, _, err := client.PortsApi.GetPortByUuid(ctx, uuid).Execute()
 		if err != nil {
-			log.Printf("[WARN] Port not found by uuid %s , error %s", uuid, err)
+			log.Printf("[WARN] Port not found by uuid - %s , error - %s", uuid, err)
 			if !strings.Contains(err.Error(), "500") {
 				d.SetId("")
 			}
@@ -491,7 +491,7 @@ func resourceFabricPortGetByPortName(ctx context.Context, d *schema.ResourceData
 
 	ports, _, err := client.PortsApi.GetPorts(ctx).Name(name).Execute()
 	if err != nil {
-		log.Printf("[WARN] Ports not found by name %s , error %s", name, err)
+		log.Printf("[WARN] Ports not found by name - %s , error - %s", name, err)
 		if !strings.Contains(err.Error(), "500") {
 			d.SetId("")
 		}
