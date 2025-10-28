@@ -69,11 +69,14 @@ func TestAccPreCheck(t *testing.T) {
 		// If neither token nor client ID/secret are configured, check for STS source token
 		if err != nil {
 			_, authScopeErr := env.Get(config.AuthScopeEnvVar)
-			_, stsTokenEnvVarErr := env.Get(config.StsSourceTokenEnvVarEnvVar)
 
-			if authScopeErr == nil && stsTokenEnvVarErr == nil {
-				err = nil
-			}
+            // Check if either the custom env var name is set, or the default source token is set
+            _, stsTokenEnvVarErr := env.Get(config.StsSourceTokenEnvVarEnvVar)
+            _, defaultStsTokenErr := env.Get(config.DefaultStsSourceTokenEnvVar)
+
+            if authScopeErr == nil && (stsTokenEnvVarErr == nil || defaultStsTokenErr == nil) {
+                err = nil
+            }
 		}
 	}
 
