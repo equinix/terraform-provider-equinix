@@ -230,7 +230,7 @@ func readFabricPortsResponseSchema() map[string]*schema.Schema {
 		"filter": {
 			Type:        schema.TypeSet,
 			Required:    true,
-			Description: "Exactly one of name or uuid.",
+			Description: "Filter by - either name or uuid",
 			MaxItems:    1,
 			Elem:        &schema.Resource{Schema: readGetPortsByNameOrUUIDQueryParamSch()},
 		},
@@ -499,7 +499,7 @@ func resourceFabricPortGetByPortName(ctx context.Context, d *schema.ResourceData
 	}
 
 	if len(ports.Data) < 1 {
-		return diag.FromErr(fmt.Errorf("no records found for the provided port name - %s", name))
+		return diag.FromErr(fmt.Errorf("no records are found for the port name provided - %d , please change the port name", len(ports.Data)))
 	}
 
 	d.SetId(ports.Data[0].GetUuid())
