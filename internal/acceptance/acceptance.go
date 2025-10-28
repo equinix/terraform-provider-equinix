@@ -70,13 +70,13 @@ func TestAccPreCheck(t *testing.T) {
 		if err != nil {
 			_, authScopeErr := env.Get(config.AuthScopeEnvVar)
 
-            // Check if either the custom env var name is set, or the default source token is set
-            _, stsTokenEnvVarErr := env.Get(config.StsSourceTokenEnvVarEnvVar)
-            _, defaultStsTokenErr := env.Get(config.DefaultStsSourceTokenEnvVar)
+			// Check if either the custom env var name is set, or the default source token is set
+			_, stsTokenEnvVarErr := env.Get(config.StsSourceTokenEnvVarEnvVar)
+			_, defaultStsTokenErr := env.Get(config.DefaultStsSourceTokenEnvVar)
 
-            if authScopeErr == nil && (stsTokenEnvVarErr == nil || defaultStsTokenErr == nil) {
-                err = nil
-            }
+			if authScopeErr == nil && (stsTokenEnvVarErr == nil || defaultStsTokenErr == nil) {
+				err = nil
+			}
 		}
 	}
 
