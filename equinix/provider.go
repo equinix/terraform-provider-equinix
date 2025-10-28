@@ -96,11 +96,11 @@ func Provider() *schema.Provider {
 				ValidateFunc: validation.IsURLWithHTTPorHTTPS,
 				Description:  fmt.Sprintf("The STS API base URL to point to the desired environment. This argument can also be specified with the `EQUINIX_STS_ENDPOINT` shell environment variable. (Defaults to `%s`). Please note that STS is an alpha feature and not available for all users.", config.DefaultStsBaseURL),
 			},
-			"sts_source_token": {
+			"sts_source_token_env_var": {
 				Type:        schema.TypeString,
 				Optional:    true,
-				DefaultFunc: schema.EnvDefaultFunc(config.StsSourceTokenEnvVar, ""),
-				Description: "The source token to use for STS authentication. Must be an OIDC ID token issued by an OIDC provider trusted by Equinix STS. This argument can also be specified with the `EQUINIX_STS_SOURCE_TOKEN` shell environment variable. Please note that STS is an alpha feature and not available for all users.",
+				DefaultFunc: schema.EnvDefaultFunc(config.StsSourceTokenEnvVarEnvVar, config.DefaultStsSourceTokenEnvVar),
+				Description: fmt.Sprintf("The name of the environment variable containing the STS source token. This argument can also be specified with the `EQUINIX_STS_SOURCE_TOKEN_ENV_VAR` shell environment variable. (Defaults to `%s`). Please note that STS is an alpha feature and not available for all users.", config.DefaultStsSourceTokenEnvVar),
 			},
 		},
 		DataSourcesMap: datasources,
@@ -128,18 +128,18 @@ func configureProvider(ctx context.Context, d *schema.ResourceData, p *schema.Pr
 	rt := d.Get("request_timeout").(int)
 
 	config := config.Config{
-		AuthToken:      d.Get("auth_token").(string),
-		BaseURL:        d.Get("endpoint").(string),
-		ClientID:       d.Get("client_id").(string),
-		ClientSecret:   d.Get("client_secret").(string),
-		Token:          d.Get("token").(string),
-		RequestTimeout: time.Duration(rt) * time.Second,
-		PageSize:       d.Get("response_max_page_size").(int),
-		MaxRetries:     d.Get("max_retries").(int),
-		MaxRetryWait:   time.Duration(mrws) * time.Second,
-		StsAuthScope:   d.Get("sts_auth_scope").(string),
-		StsBaseURL:     d.Get("sts_endpoint").(string),
-		StsSourceToken: d.Get("sts_source_token").(string),
+		AuthToken:            d.Get("auth_token").(string),
+		BaseURL:              d.Get("endpoint").(string),
+		ClientID:             d.Get("client_id").(string),
+		ClientSecret:         d.Get("client_secret").(string),
+		Token:                d.Get("token").(string),
+		RequestTimeout:       time.Duration(rt) * time.Second,
+		PageSize:             d.Get("response_max_page_size").(int),
+		MaxRetries:           d.Get("max_retries").(int),
+		MaxRetryWait:         time.Duration(mrws) * time.Second,
+		StsAuthScope:         d.Get("sts_auth_scope").(string),
+		StsBaseURL:           d.Get("sts_endpoint").(string),
+		StsSourceTokenEnvVar: d.Get("sts_source_token_env_var").(string),
 	}
 	meta := providerMeta{}
 

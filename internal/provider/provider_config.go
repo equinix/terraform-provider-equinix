@@ -16,35 +16,35 @@ import (
 
 // FrameworkProviderConfig holds the configuration for the Equinix provider.
 type FrameworkProviderConfig struct {
-	BaseURL             types.String `tfsdk:"endpoint"`
-	ClientID            types.String `tfsdk:"client_id"`
-	ClientSecret        types.String `tfsdk:"client_secret"`
-	Token               types.String `tfsdk:"token"`
-	AuthToken           types.String `tfsdk:"auth_token"`
-	RequestTimeout      types.Int64  `tfsdk:"request_timeout"`
-	PageSize            types.Int64  `tfsdk:"response_max_page_size"`
-	MaxRetries          types.Int64  `tfsdk:"max_retries"`
-	MaxRetryWaitSeconds types.Int64  `tfsdk:"max_retry_wait_seconds"`
-	StsAuthScope        types.String `tfsdk:"sts_auth_scope"`
-	StsBaseURL          types.String `tfsdk:"sts_endpoint"`
-	StsSourceToken      types.String `tfsdk:"sts_source_token"`
+	BaseURL              types.String `tfsdk:"endpoint"`
+	ClientID             types.String `tfsdk:"client_id"`
+	ClientSecret         types.String `tfsdk:"client_secret"`
+	Token                types.String `tfsdk:"token"`
+	AuthToken            types.String `tfsdk:"auth_token"`
+	RequestTimeout       types.Int64  `tfsdk:"request_timeout"`
+	PageSize             types.Int64  `tfsdk:"response_max_page_size"`
+	MaxRetries           types.Int64  `tfsdk:"max_retries"`
+	MaxRetryWaitSeconds  types.Int64  `tfsdk:"max_retry_wait_seconds"`
+	StsAuthScope         types.String `tfsdk:"sts_auth_scope"`
+	StsBaseURL           types.String `tfsdk:"sts_endpoint"`
+	StsSourceTokenEnvVar types.String `tfsdk:"sts_source_token_env_var"`
 }
 
 func (c *FrameworkProviderConfig) toOldStyleConfig() *config.Config {
 	// this immitates func configureProvider in proivder.go
 	return &config.Config{
-		AuthToken:      c.AuthToken.ValueString(),
-		BaseURL:        c.BaseURL.ValueString(),
-		ClientID:       c.ClientID.ValueString(),
-		ClientSecret:   c.ClientSecret.ValueString(),
-		Token:          c.Token.ValueString(),
-		RequestTimeout: time.Duration(c.RequestTimeout.ValueInt64()) * time.Second,
-		PageSize:       int(c.PageSize.ValueInt64()),
-		MaxRetries:     int(c.MaxRetries.ValueInt64()),
-		MaxRetryWait:   time.Duration(c.MaxRetryWaitSeconds.ValueInt64()) * time.Second,
-		StsAuthScope:   c.StsAuthScope.ValueString(),
-		StsBaseURL:     c.StsBaseURL.ValueString(),
-		StsSourceToken: c.StsSourceToken.ValueString(),
+		AuthToken:            c.AuthToken.ValueString(),
+		BaseURL:              c.BaseURL.ValueString(),
+		ClientID:             c.ClientID.ValueString(),
+		ClientSecret:         c.ClientSecret.ValueString(),
+		Token:                c.Token.ValueString(),
+		RequestTimeout:       time.Duration(c.RequestTimeout.ValueInt64()) * time.Second,
+		PageSize:             int(c.PageSize.ValueInt64()),
+		MaxRetries:           int(c.MaxRetries.ValueInt64()),
+		MaxRetryWait:         time.Duration(c.MaxRetryWaitSeconds.ValueInt64()) * time.Second,
+		StsAuthScope:         c.StsAuthScope.ValueString(),
+		StsBaseURL:           c.StsBaseURL.ValueString(),
+		StsSourceTokenEnvVar: c.StsSourceTokenEnvVar.ValueString(),
 	}
 }
 
@@ -99,8 +99,8 @@ func (fp *FrameworkProvider) Configure(
 	fwconfig.StsBaseURL = determineStrConfValue(
 		fwconfig.StsBaseURL, config.StsEndpointEnvVar, config.DefaultStsBaseURL)
 
-	fwconfig.StsSourceToken = determineStrConfValue(
-		fwconfig.StsSourceToken, config.StsSourceTokenEnvVar, "")
+	fwconfig.StsSourceTokenEnvVar = determineStrConfValue(
+		fwconfig.StsSourceTokenEnvVar, config.StsSourceTokenEnvVarEnvVar, config.DefaultStsSourceTokenEnvVar)
 
 	if resp.Diagnostics.HasError() {
 		return

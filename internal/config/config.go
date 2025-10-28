@@ -30,15 +30,16 @@ import (
 // These constants track environment variable names
 // that are relevant to the provider
 const (
-	EndpointEnvVar       = "EQUINIX_API_ENDPOINT"
-	ClientIDEnvVar       = "EQUINIX_API_CLIENTID"
-	ClientSecretEnvVar   = "EQUINIX_API_CLIENTSECRET"
-	ClientTokenEnvVar    = "EQUINIX_API_TOKEN"
-	ClientTimeoutEnvVar  = "EQUINIX_API_TIMEOUT"
-	MetalAuthTokenEnvVar = "METAL_AUTH_TOKEN"
-	AuthScopeEnvVar      = "EQUINIX_STS_AUTH_SCOPE"
-	StsSourceTokenEnvVar = "EQUINIX_STS_SOURCE_TOKEN"
-	StsEndpointEnvVar    = "EQUINIX_STS_ENDPOINT"
+	EndpointEnvVar              = "EQUINIX_API_ENDPOINT"
+	ClientIDEnvVar              = "EQUINIX_API_CLIENTID"
+	ClientSecretEnvVar          = "EQUINIX_API_CLIENTSECRET"
+	ClientTokenEnvVar           = "EQUINIX_API_TOKEN"
+	ClientTimeoutEnvVar         = "EQUINIX_API_TIMEOUT"
+	MetalAuthTokenEnvVar        = "METAL_AUTH_TOKEN"
+	AuthScopeEnvVar             = "EQUINIX_STS_AUTH_SCOPE"
+	StsSourceTokenEnvVarEnvVar  = "EQUINIX_STS_SOURCE_TOKEN_ENV_VAR"
+	StsEndpointEnvVar           = "EQUINIX_STS_ENDPOINT"
+	DefaultStsSourceTokenEnvVar = "EQUINIX_STS_SOURCE_TOKEN"
 )
 
 // ProviderMeta allows passing additional metadata
@@ -66,18 +67,18 @@ var (
 // Config is the configuration structure used to instantiate the Equinix
 // provider.
 type Config struct {
-	BaseURL        string
-	AuthToken      string
-	ClientID       string
-	ClientSecret   string
-	MaxRetries     int
-	MaxRetryWait   time.Duration
-	RequestTimeout time.Duration
-	PageSize       int
-	Token          string
-	StsAuthScope   string
-	StsBaseURL     string
-	StsSourceToken string
+	BaseURL              string
+	AuthToken            string
+	ClientID             string
+	ClientSecret         string
+	MaxRetries           int
+	MaxRetryWait         time.Duration
+	RequestTimeout       time.Duration
+	PageSize             int
+	Token                string
+	StsAuthScope         string
+	StsBaseURL           string
+	StsSourceTokenEnvVar string
 
 	authClient *http.Client
 
@@ -129,34 +130,49 @@ func (c *Config) Load(ctx context.Context) error {
 
 func (c *Config) newAuthClient() *http.Client {
 	var authTransport http.RoundTripper
-	if c.StsAuthScope != "" && c.StsSourceToken != "" {
-		authConfig := sts.Config{
-			StsAuthScope:   c.StsAuthScope,
-			StsSourceToken: c.StsSourceToken,
-			StsBaseURL:     c.StsBaseURL,
+	if c.StsAuthScope != "" {
+		sourceToken := c.resolveSourceToken()
+		if sourceToken != "" {
+			authConfig := sts.Config{
+				StsAuthScope:   c.StsAuthScope,
+				StsSourceToken: sourceToken,
+				StsBaseURL:     c.StsBaseURL,
+			}
+			authTransport = authConfig.New()
 		}
-		authTransport = authConfig.New()
-	} else if c.Token != "" {
-		tokenSource := oauth2.StaticTokenSource(&oauth2.Token{AccessToken: c.Token})
-		oauthTransport := &oauth2.Transport{
-			Source: tokenSource,
+	}
+
+	// If no STS auth, fall back to existing logic
+	if authTransport == nil {
+		if c.Token != "" {
+			tokenSource := oauth2.StaticTokenSource(&oauth2.Token{AccessToken: c.Token})
+			oauthTransport := &oauth2.Transport{
+				Source: tokenSource,
+			}
+			authTransport = oauthTransport
+		} else {
+			authConfig := equinixoauth2.Config{
+				ClientID:     c.ClientID,
+				ClientSecret: c.ClientSecret,
+				BaseURL:      c.BaseURL,
+			}
+			authTransport = authConfig.New()
 		}
-		authTransport = oauthTransport
-	} else {
-		authConfig := equinixoauth2.Config{
-			ClientID:     c.ClientID,
-			ClientSecret: c.ClientSecret,
-			BaseURL:      c.BaseURL,
-		}
-		authTransport = authConfig.New()
 	}
 
 	authClient := http.Client{
 		Timeout: c.requestTimeout(),
-		//nolint:staticcheck // We should move to subsystem loggers, but that is a much bigger change
+		//nolint:staticcheck
 		Transport: logging.NewTransport("Equinix", authTransport),
 	}
 	return &authClient
+}
+
+func (c *Config) resolveSourceToken() string {
+	if c.StsSourceTokenEnvVar != "" {
+		return os.Getenv(c.StsSourceTokenEnvVar)
+	}
+	return ""
 }
 
 // NewFabricClientForSDK returns a terraform sdkv2 plugin compatible

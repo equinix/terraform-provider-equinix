@@ -96,9 +96,9 @@ func (p *FrameworkProvider) Schema(
 					equinix_validation.URLWithScheme("http", "https"),
 				},
 			},
-			"sts_source_token": schema.StringAttribute{
+			"sts_source_token_env_var": schema.StringAttribute{
 				Optional:    true,
-				Description: "The source token to use for STS authentication. Must be an OIDC ID token issued by an OIDC provider trusted by Equinix STS. This argument can also be specified with the `EQUINIX_STS_SOURCE_TOKEN` shell environment variable. Please note that STS is an alpha feature and not available for all users.",
+				Description: fmt.Sprintf("The name of the environment variable containing the STS source token. This argument can also be specified with the `EQUINIX_STS_SOURCE_TOKEN_ENV_VAR` shell environment variable. (Defaults to `%s`). Please note that STS is an alpha feature and not available for all users.", config.DefaultStsSourceTokenEnvVar),
 			},
 			"max_retries": schema.Int64Attribute{
 				Optional:    true,
