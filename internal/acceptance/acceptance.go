@@ -68,13 +68,13 @@ func TestAccPreCheck(t *testing.T) {
 
 		// If neither token nor client ID/secret are configured, check for STS source token
 		if err != nil {
-			_, authScopeErr := env.Get(config.AuthScopeEnvVar)
+			_, tokenExchangeScopeErr := env.Get(config.TokenExchangeScopeEnvVar)
 
 			// Check if either the custom env var name is set, or the default source token is set
-			_, stsTokenEnvVarErr := env.Get(config.StsSourceTokenEnvVarEnvVar)
-			_, defaultStsTokenErr := env.Get(config.DefaultStsSourceTokenEnvVar)
+			_, subjectTokenEnvVarErr := env.Get(config.TokenExchangeSubjectTokenEnvVarEnvVar)
+			_, defaultSubjectTokenErr := env.Get(config.DefaultTokenExchangeSubjectTokenEnvVar)
 
-			if authScopeErr == nil && (stsTokenEnvVarErr == nil || defaultStsTokenErr == nil) {
+			if tokenExchangeScopeErr == nil && (subjectTokenEnvVarErr == nil || defaultSubjectTokenErr == nil) {
 				err = nil
 			}
 		}
@@ -85,10 +85,12 @@ func TestAccPreCheck(t *testing.T) {
 	}
 
 	if err != nil {
-		t.Fatalf("To run acceptance tests, one of '%s', pair '%s' - '%s', or pair '%s' - '%s' must be set for Equinix Fabric and Network Edge, and '%s' for Equinix Metal",
+		t.Fatalf("To run acceptance tests, one of '%s', pair '%s' - '%s', or pair '%s' - ('%s' or custom env var from '%s') must be set for Equinix Fabric and Network Edge, and '%s' for Equinix Metal",
 			config.ClientTokenEnvVar, config.ClientIDEnvVar, config.ClientSecretEnvVar,
-			config.AuthScopeEnvVar, config.StsSourceTokenEnvVarEnvVar, config.MetalAuthTokenEnvVar)
+			config.TokenExchangeScopeEnvVar, config.DefaultTokenExchangeSubjectTokenEnvVar,
+			config.TokenExchangeSubjectTokenEnvVarEnvVar, config.MetalAuthTokenEnvVar)
 	}
+
 }
 
 // TestAccPreCheckMetal specifically verifies that the Equinix Metal authentication token

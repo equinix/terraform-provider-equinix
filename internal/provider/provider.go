@@ -85,9 +85,9 @@ func (p *FrameworkProvider) Schema(
 					int64validator.AtLeast(100),
 				},
 			},
-			"sts_auth_scope": schema.StringAttribute{
+			"token_exchange_scope": schema.StringAttribute{
 				Optional:    true,
-				Description: "The scope of the authentication token. Must be an access policy ERN or a string of the form `roleassignments:<org_id>`. This argument can also be specified with the `EQUINIX_STS_AUTH_SCOPE` shell environment variable. Please note that Equinix STS is an alpha feature and not available for all users.",
+				Description: "The scope of the authentication token. Must be an access policy ERN or a string of the form `roleassignments:<org_id>`. This argument can also be specified with the `EQUINIX_TOKEN_EXCHANGE_SCOPE` shell environment variable. Please note that token exchange is an alpha feature and not available for all users.",
 			},
 			"sts_endpoint": schema.StringAttribute{
 				Optional:    true,
@@ -96,9 +96,13 @@ func (p *FrameworkProvider) Schema(
 					equinix_validation.URLWithScheme("http", "https"),
 				},
 			},
-			"sts_source_token_env_var": schema.StringAttribute{
+			"token_exchange_subject_token": schema.StringAttribute{
 				Optional:    true,
-				Description: fmt.Sprintf("The name of the environment variable containing the STS source token. This argument can also be specified with the `EQUINIX_STS_SOURCE_TOKEN_ENV_VAR` shell environment variable. (Defaults to `%s`). Please note that STS is an alpha feature and not available for all users.", config.DefaultStsSourceTokenEnvVar),
+				Description: "The subject token to use for token exchange authentication. Must be an OIDC ID token issued by an OIDC provider trusted by Equinix STS. If not set, the provider will use the environment variable specified in `token_exchange_subject_token_env_var`. Please note that token exchange is an alpha feature and not available for all users.",
+			},
+			"token_exchange_subject_token_env_var": schema.StringAttribute{
+				Optional:    true,
+				Description: fmt.Sprintf("The name of the environment variable containing the subject token for token exchange. This argument can also be specified with the `EQUINIX_TOKEN_EXCHANGE_SUBJECT_TOKEN_ENV_VAR` shell environment variable. (Defaults to `%s`). Please note that token exchange is an alpha feature and not available for all users.", config.DefaultTokenExchangeSubjectTokenEnvVar),
 			},
 			"max_retries": schema.Int64Attribute{
 				Optional:    true,

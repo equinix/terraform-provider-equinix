@@ -83,11 +83,11 @@ func Provider() *schema.Provider {
 				Default:     30,
 				Description: "Maximum number of seconds to wait before retrying a request.",
 			},
-			"sts_auth_scope": {
+			"token_exchange_scope": {
 				Type:        schema.TypeString,
 				Optional:    true,
-				DefaultFunc: schema.EnvDefaultFunc(config.AuthScopeEnvVar, ""),
-				Description: "The scope of the authentication token. Must be an access policy ERN or a string of the form `roleassignments:<org_id>`. This argument can also be specified with the `EQUINIX_STS_AUTH_SCOPE` shell environment variable. Please note that Equinix STS is an alpha feature and not available for all users.",
+				DefaultFunc: schema.EnvDefaultFunc(config.TokenExchangeScopeEnvVar, ""),
+				Description: "The scope of the authentication token. Must be an access policy ERN or a string of the form `roleassignments:<org_id>`. This argument can also be specified with the `EQUINIX_TOKEN_EXCHANGE_SCOPE` shell environment variable. Please note that token exchange is an alpha feature and not available for all users.",
 			},
 			"sts_endpoint": {
 				Type:         schema.TypeString,
@@ -96,11 +96,17 @@ func Provider() *schema.Provider {
 				ValidateFunc: validation.IsURLWithHTTPorHTTPS,
 				Description:  fmt.Sprintf("The STS API base URL to point to the desired environment. This argument can also be specified with the `EQUINIX_STS_ENDPOINT` shell environment variable. (Defaults to `%s`). Please note that STS is an alpha feature and not available for all users.", config.DefaultStsBaseURL),
 			},
-			"sts_source_token_env_var": {
+			"token_exchange_subject_token": {
 				Type:        schema.TypeString,
 				Optional:    true,
-				DefaultFunc: schema.EnvDefaultFunc(config.StsSourceTokenEnvVarEnvVar, config.DefaultStsSourceTokenEnvVar),
-				Description: fmt.Sprintf("The name of the environment variable containing the STS source token. This argument can also be specified with the `EQUINIX_STS_SOURCE_TOKEN_ENV_VAR` shell environment variable. (Defaults to `%s`). Please note that STS is an alpha feature and not available for all users.", config.DefaultStsSourceTokenEnvVar),
+				Description: "The subject token to use for token exchange authentication. Must be an OIDC ID token issued by an OIDC provider trusted by Equinix STS. If not set, the provider will use the environment variable specified in `token_exchange_subject_token_env_var`. Please note that token exchange is an alpha feature and not available for all users.",
+			},
+
+			"token_exchange_subject_token_env_var": {
+				Type:        schema.TypeString,
+				Optional:    true,
+				DefaultFunc: schema.EnvDefaultFunc(config.TokenExchangeSubjectTokenEnvVarEnvVar, config.DefaultTokenExchangeSubjectTokenEnvVar),
+				Description: fmt.Sprintf("The name of the environment variable containing the subject token for token exchange. This argument can also be specified with the `EQUINIX_TOKEN_EXCHANGE_SUBJECT_TOKEN_ENV_VAR` shell environment variable. (Defaults to `%s`). Please note that token exchange is an alpha feature and not available for all users.", config.DefaultTokenExchangeSubjectTokenEnvVar),
 			},
 		},
 		DataSourcesMap: datasources,
@@ -128,18 +134,19 @@ func configureProvider(ctx context.Context, d *schema.ResourceData, p *schema.Pr
 	rt := d.Get("request_timeout").(int)
 
 	config := config.Config{
-		AuthToken:            d.Get("auth_token").(string),
-		BaseURL:              d.Get("endpoint").(string),
-		ClientID:             d.Get("client_id").(string),
-		ClientSecret:         d.Get("client_secret").(string),
-		Token:                d.Get("token").(string),
-		RequestTimeout:       time.Duration(rt) * time.Second,
-		PageSize:             d.Get("response_max_page_size").(int),
-		MaxRetries:           d.Get("max_retries").(int),
-		MaxRetryWait:         time.Duration(mrws) * time.Second,
-		StsAuthScope:         d.Get("sts_auth_scope").(string),
-		StsBaseURL:           d.Get("sts_endpoint").(string),
-		StsSourceTokenEnvVar: d.Get("sts_source_token_env_var").(string),
+		AuthToken:                       d.Get("auth_token").(string),
+		BaseURL:                         d.Get("endpoint").(string),
+		ClientID:                        d.Get("client_id").(string),
+		ClientSecret:                    d.Get("client_secret").(string),
+		Token:                           d.Get("token").(string),
+		RequestTimeout:                  time.Duration(rt) * time.Second,
+		PageSize:                        d.Get("response_max_page_size").(int),
+		MaxRetries:                      d.Get("max_retries").(int),
+		MaxRetryWait:                    time.Duration(mrws) * time.Second,
+		TokenExchangeScope:              d.Get("token_exchange_scope").(string),
+		StsBaseURL:                      d.Get("sts_endpoint").(string),
+		TokenExchangeSubjectToken:       d.Get("token_exchange_subject_token").(string),
+		TokenExchangeSubjectTokenEnvVar: d.Get("token_exchange_subject_token_env_var").(string),
 	}
 	meta := providerMeta{}
 

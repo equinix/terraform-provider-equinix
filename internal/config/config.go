@@ -30,16 +30,16 @@ import (
 // These constants track environment variable names
 // that are relevant to the provider
 const (
-	EndpointEnvVar              = "EQUINIX_API_ENDPOINT"
-	ClientIDEnvVar              = "EQUINIX_API_CLIENTID"
-	ClientSecretEnvVar          = "EQUINIX_API_CLIENTSECRET"
-	ClientTokenEnvVar           = "EQUINIX_API_TOKEN"
-	ClientTimeoutEnvVar         = "EQUINIX_API_TIMEOUT"
-	MetalAuthTokenEnvVar        = "METAL_AUTH_TOKEN"
-	AuthScopeEnvVar             = "EQUINIX_STS_AUTH_SCOPE"
-	StsSourceTokenEnvVarEnvVar  = "EQUINIX_STS_SOURCE_TOKEN_ENV_VAR"
-	StsEndpointEnvVar           = "EQUINIX_STS_ENDPOINT"
-	DefaultStsSourceTokenEnvVar = "EQUINIX_STS_SOURCE_TOKEN"
+	EndpointEnvVar                         = "EQUINIX_API_ENDPOINT"
+	ClientIDEnvVar                         = "EQUINIX_API_CLIENTID"
+	ClientSecretEnvVar                     = "EQUINIX_API_CLIENTSECRET"
+	ClientTokenEnvVar                      = "EQUINIX_API_TOKEN"
+	ClientTimeoutEnvVar                    = "EQUINIX_API_TIMEOUT"
+	MetalAuthTokenEnvVar                   = "METAL_AUTH_TOKEN"
+	TokenExchangeScopeEnvVar               = "EQUINIX_TOKEN_EXCHANGE_SCOPE"
+	TokenExchangeSubjectTokenEnvVarEnvVar  = "EQUINIX_TOKEN_EXCHANGE_SUBJECT_TOKEN_ENV_VAR"
+	StsEndpointEnvVar                      = "EQUINIX_STS_ENDPOINT"
+	DefaultTokenExchangeSubjectTokenEnvVar = "EQUINIX_TOKEN_EXCHANGE_SUBJECT_TOKEN"
 )
 
 // ProviderMeta allows passing additional metadata
@@ -67,18 +67,19 @@ var (
 // Config is the configuration structure used to instantiate the Equinix
 // provider.
 type Config struct {
-	BaseURL              string
-	AuthToken            string
-	ClientID             string
-	ClientSecret         string
-	MaxRetries           int
-	MaxRetryWait         time.Duration
-	RequestTimeout       time.Duration
-	PageSize             int
-	Token                string
-	StsAuthScope         string
-	StsBaseURL           string
-	StsSourceTokenEnvVar string
+	BaseURL                         string
+	AuthToken                       string
+	ClientID                        string
+	ClientSecret                    string
+	MaxRetries                      int
+	MaxRetryWait                    time.Duration
+	RequestTimeout                  time.Duration
+	PageSize                        int
+	Token                           string
+	TokenExchangeScope              string
+	StsBaseURL                      string
+	TokenExchangeSubjectToken       string
+	TokenExchangeSubjectTokenEnvVar string
 
 	authClient *http.Client
 
@@ -130,11 +131,11 @@ func (c *Config) Load(ctx context.Context) error {
 
 func (c *Config) newAuthClient() *http.Client {
 	var authTransport http.RoundTripper
-	if c.StsAuthScope != "" {
+	if c.TokenExchangeScope != "" {
 		sourceToken := c.resolveSourceToken()
 		if sourceToken != "" {
 			authConfig := sts.Config{
-				StsAuthScope:   c.StsAuthScope,
+				StsAuthScope:   c.TokenExchangeScope,
 				StsSourceToken: sourceToken,
 				StsBaseURL:     c.StsBaseURL,
 			}
@@ -169,9 +170,16 @@ func (c *Config) newAuthClient() *http.Client {
 }
 
 func (c *Config) resolveSourceToken() string {
-	if c.StsSourceTokenEnvVar != "" {
-		return os.Getenv(c.StsSourceTokenEnvVar)
+	// First priority: explicitly configured token
+	if c.TokenExchangeSubjectToken != "" {
+		return c.TokenExchangeSubjectToken
 	}
+
+	// Second priority: token from environment variable
+	if c.TokenExchangeSubjectTokenEnvVar != "" {
+		return os.Getenv(c.TokenExchangeSubjectTokenEnvVar)
+	}
+
 	return ""
 }
 
