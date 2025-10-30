@@ -14,33 +14,43 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/types/basetypes"
 )
 
+// FrameworkProviderConfig holds the configuration for the Equinix provider.
 type FrameworkProviderConfig struct {
-	BaseURL             types.String `tfsdk:"endpoint"`
-	ClientID            types.String `tfsdk:"client_id"`
-	ClientSecret        types.String `tfsdk:"client_secret"`
-	Token               types.String `tfsdk:"token"`
-	AuthToken           types.String `tfsdk:"auth_token"`
-	RequestTimeout      types.Int64  `tfsdk:"request_timeout"`
-	PageSize            types.Int64  `tfsdk:"response_max_page_size"`
-	MaxRetries          types.Int64  `tfsdk:"max_retries"`
-	MaxRetryWaitSeconds types.Int64  `tfsdk:"max_retry_wait_seconds"`
+	BaseURL                         types.String `tfsdk:"endpoint"`
+	ClientID                        types.String `tfsdk:"client_id"`
+	ClientSecret                    types.String `tfsdk:"client_secret"`
+	Token                           types.String `tfsdk:"token"`
+	AuthToken                       types.String `tfsdk:"auth_token"`
+	RequestTimeout                  types.Int64  `tfsdk:"request_timeout"`
+	PageSize                        types.Int64  `tfsdk:"response_max_page_size"`
+	MaxRetries                      types.Int64  `tfsdk:"max_retries"`
+	MaxRetryWaitSeconds             types.Int64  `tfsdk:"max_retry_wait_seconds"`
+	TokenExchangeScope              types.String `tfsdk:"token_exchange_scope"`
+	StsBaseURL                      types.String `tfsdk:"sts_endpoint"`
+	TokenExchangeSubjectToken       types.String `tfsdk:"token_exchange_subject_token"`
+	TokenExchangeSubjectTokenEnvVar types.String `tfsdk:"token_exchange_subject_token_env_var"`
 }
 
 func (c *FrameworkProviderConfig) toOldStyleConfig() *config.Config {
 	// this immitates func configureProvider in proivder.go
 	return &config.Config{
-		AuthToken:      c.AuthToken.ValueString(),
-		BaseURL:        c.BaseURL.ValueString(),
-		ClientID:       c.ClientID.ValueString(),
-		ClientSecret:   c.ClientSecret.ValueString(),
-		Token:          c.Token.ValueString(),
-		RequestTimeout: time.Duration(c.RequestTimeout.ValueInt64()) * time.Second,
-		PageSize:       int(c.PageSize.ValueInt64()),
-		MaxRetries:     int(c.MaxRetries.ValueInt64()),
-		MaxRetryWait:   time.Duration(c.MaxRetryWaitSeconds.ValueInt64()) * time.Second,
+		AuthToken:                       c.AuthToken.ValueString(),
+		BaseURL:                         c.BaseURL.ValueString(),
+		ClientID:                        c.ClientID.ValueString(),
+		ClientSecret:                    c.ClientSecret.ValueString(),
+		Token:                           c.Token.ValueString(),
+		RequestTimeout:                  time.Duration(c.RequestTimeout.ValueInt64()) * time.Second,
+		PageSize:                        int(c.PageSize.ValueInt64()),
+		MaxRetries:                      int(c.MaxRetries.ValueInt64()),
+		MaxRetryWait:                    time.Duration(c.MaxRetryWaitSeconds.ValueInt64()) * time.Second,
+		TokenExchangeScope:              c.TokenExchangeScope.ValueString(),
+		StsBaseURL:                      c.StsBaseURL.ValueString(),
+		TokenExchangeSubjectToken:       c.TokenExchangeSubjectToken.ValueString(),
+		TokenExchangeSubjectTokenEnvVar: c.TokenExchangeSubjectTokenEnvVar.ValueString(),
 	}
 }
 
+// Configure initializes the provider configuration, reading values from the provider block
 func (fp *FrameworkProvider) Configure(
 	ctx context.Context,
 	req provider.ConfigureRequest,
@@ -84,6 +94,19 @@ func (fp *FrameworkProvider) Configure(
 
 	fwconfig.MaxRetryWaitSeconds = determineIntConfValue(
 		fwconfig.MaxRetryWaitSeconds, "", 30, &resp.Diagnostics)
+
+	fwconfig.TokenExchangeScope = determineStrConfValue(
+		fwconfig.TokenExchangeScope, config.TokenExchangeScopeEnvVar, "")
+
+	fwconfig.StsBaseURL = determineStrConfValue(
+		fwconfig.StsBaseURL, config.StsEndpointEnvVar, config.DefaultStsBaseURL)
+
+	fwconfig.TokenExchangeSubjectToken = determineStrConfValue(
+		fwconfig.TokenExchangeSubjectToken, "", "")
+
+	fwconfig.TokenExchangeSubjectTokenEnvVar = determineStrConfValue(
+		fwconfig.TokenExchangeSubjectTokenEnvVar, config.TokenExchangeSubjectTokenEnvVarEnvVar, config.DefaultTokenExchangeSubjectTokenEnvVar)
+
 	if resp.Diagnostics.HasError() {
 		return
 	}
@@ -103,6 +126,7 @@ func (fp *FrameworkProvider) Configure(
 	fp.Meta = oldStyleConfig
 }
 
+// GetIntFromEnv retrieves an integer value from the environment variable specified by key.
 func GetIntFromEnv(
 	key string,
 	defaultValue int64,

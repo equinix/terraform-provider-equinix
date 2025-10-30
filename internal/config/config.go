@@ -17,6 +17,7 @@ import (
 	"github.com/equinix/equinix-sdk-go/services/fabricv4"
 	"github.com/equinix/equinix-sdk-go/services/metalv1"
 	"github.com/equinix/ne-go"
+	"github.com/equinix/terraform-provider-equinix/internal/sts"
 	"github.com/equinix/terraform-provider-equinix/version"
 	"github.com/hashicorp/go-retryablehttp"
 	"github.com/hashicorp/terraform-plugin-framework/tfsdk"
@@ -29,12 +30,16 @@ import (
 // These constants track environment variable names
 // that are relevant to the provider
 const (
-	EndpointEnvVar       = "EQUINIX_API_ENDPOINT"
-	ClientIDEnvVar       = "EQUINIX_API_CLIENTID"
-	ClientSecretEnvVar   = "EQUINIX_API_CLIENTSECRET"
-	ClientTokenEnvVar    = "EQUINIX_API_TOKEN"
-	ClientTimeoutEnvVar  = "EQUINIX_API_TIMEOUT"
-	MetalAuthTokenEnvVar = "METAL_AUTH_TOKEN"
+	EndpointEnvVar                         = "EQUINIX_API_ENDPOINT"
+	ClientIDEnvVar                         = "EQUINIX_API_CLIENTID"
+	ClientSecretEnvVar                     = "EQUINIX_API_CLIENTSECRET"
+	ClientTokenEnvVar                      = "EQUINIX_API_TOKEN"
+	ClientTimeoutEnvVar                    = "EQUINIX_API_TIMEOUT"
+	MetalAuthTokenEnvVar                   = "METAL_AUTH_TOKEN"
+	TokenExchangeScopeEnvVar               = "EQUINIX_TOKEN_EXCHANGE_SCOPE"
+	TokenExchangeSubjectTokenEnvVarEnvVar  = "EQUINIX_TOKEN_EXCHANGE_SUBJECT_TOKEN_ENV_VAR"
+	StsEndpointEnvVar                      = "EQUINIX_STS_ENDPOINT"
+	DefaultTokenExchangeSubjectTokenEnvVar = "EQUINIX_TOKEN_EXCHANGE_SUBJECT_TOKEN"
 )
 
 // ProviderMeta allows passing additional metadata
@@ -53,6 +58,8 @@ const (
 var (
 	// DefaultBaseURL is the default URL to use for API requests
 	DefaultBaseURL = "https://api.equinix.com"
+	// DefaultStsBaseURL is the default Security Token Service (STS) endpoint
+	DefaultStsBaseURL = "https://sts.eqix.equinix.com"
 	// DefaultTimeout is the default request timeout to use for API requests
 	DefaultTimeout = 30
 )
@@ -60,15 +67,19 @@ var (
 // Config is the configuration structure used to instantiate the Equinix
 // provider.
 type Config struct {
-	BaseURL        string
-	AuthToken      string
-	ClientID       string
-	ClientSecret   string
-	MaxRetries     int
-	MaxRetryWait   time.Duration
-	RequestTimeout time.Duration
-	PageSize       int
-	Token          string
+	BaseURL                         string
+	AuthToken                       string
+	ClientID                        string
+	ClientSecret                    string
+	MaxRetries                      int
+	MaxRetryWait                    time.Duration
+	RequestTimeout                  time.Duration
+	PageSize                        int
+	Token                           string
+	TokenExchangeScope              string
+	StsBaseURL                      string
+	TokenExchangeSubjectToken       string
+	TokenExchangeSubjectTokenEnvVar string
 
 	authClient *http.Client
 
@@ -88,6 +99,19 @@ func (c *Config) Load(ctx context.Context) error {
 		return fmt.Errorf("'baseURL' cannot be empty")
 	}
 
+	// Validate BaseURL
+	_, err := url.Parse(c.BaseURL)
+	if err != nil {
+		return fmt.Errorf("invalid base URL: %w", err)
+	}
+
+	// If StsBaseURL is set, validate it too
+	if c.StsBaseURL != "" {
+		_, err := url.Parse(c.StsBaseURL)
+		if err != nil {
+			return fmt.Errorf("invalid STS base URL: %w", err)
+		}
+	}
 	c.authClient = c.newAuthClient()
 
 	neClient := ne.NewClient(ctx, c.BaseURL, c.authClient)
@@ -107,27 +131,56 @@ func (c *Config) Load(ctx context.Context) error {
 
 func (c *Config) newAuthClient() *http.Client {
 	var authTransport http.RoundTripper
-	if c.Token != "" {
-		tokenSource := oauth2.StaticTokenSource(&oauth2.Token{AccessToken: c.Token})
-		oauthTransport := &oauth2.Transport{
-			Source: tokenSource,
+	if c.TokenExchangeScope != "" {
+		sourceToken := c.resolveSourceToken()
+		if sourceToken != "" {
+			authConfig := sts.Config{
+				StsAuthScope:   c.TokenExchangeScope,
+				StsSourceToken: sourceToken,
+				StsBaseURL:     c.StsBaseURL,
+			}
+			authTransport = authConfig.New()
 		}
-		authTransport = oauthTransport
-	} else {
-		authConfig := equinixoauth2.Config{
-			ClientID:     c.ClientID,
-			ClientSecret: c.ClientSecret,
-			BaseURL:      c.BaseURL,
+	}
+
+	// If no STS auth, fall back to existing logic
+	if authTransport == nil {
+		if c.Token != "" {
+			tokenSource := oauth2.StaticTokenSource(&oauth2.Token{AccessToken: c.Token})
+			oauthTransport := &oauth2.Transport{
+				Source: tokenSource,
+			}
+			authTransport = oauthTransport
+		} else {
+			authConfig := equinixoauth2.Config{
+				ClientID:     c.ClientID,
+				ClientSecret: c.ClientSecret,
+				BaseURL:      c.BaseURL,
+			}
+			authTransport = authConfig.New()
 		}
-		authTransport = authConfig.New()
 	}
 
 	authClient := http.Client{
 		Timeout: c.requestTimeout(),
-		//nolint:staticcheck // We should move to subsystem loggers, but that is a much bigger change
+		//nolint:staticcheck
 		Transport: logging.NewTransport("Equinix", authTransport),
 	}
 	return &authClient
+}
+
+func (c *Config) resolveSourceToken() string {
+	// First priority: explicitly configured token
+	if c.TokenExchangeSubjectToken != "" {
+		return c.TokenExchangeSubjectToken
+	}
+
+	// Second priority: token from environment variable
+	if c.TokenExchangeSubjectTokenEnvVar != "" {
+		return os.Getenv(c.TokenExchangeSubjectTokenEnvVar)
+	}
+
+	return ""
 }
 
 // NewFabricClientForSDK returns a terraform sdkv2 plugin compatible
@@ -165,8 +218,17 @@ func (c *Config) NewFabricClientForFramework(ctx context.Context, meta tfsdk.Con
 // newFabricClient returns the base fabricv4 client that is then used for either the sdkv2 or framework
 // implementations of the Terraform Provider with exported Methods
 func (c *Config) newFabricClient() *fabricv4.APIClient {
+	authClient := c.newAuthClient()
+
+	// Configure HTTP client with retries and logging
+	httpClient := c.configureHTTPClient(authClient)
+
+	return c.createFabricClient(httpClient)
+}
+
+func (c *Config) configureHTTPClient(client *http.Client) *http.Client {
 	//nolint:staticcheck // We should move to subsystem loggers, but that is a much bigger change
-	transport := logging.NewTransport("Equinix Fabric (fabricv4)", c.authClient.Transport)
+	transport := logging.NewTransport("Equinix Fabric (fabricv4)", client.Transport)
 
 	retryClient := retryablehttp.NewClient()
 	retryClient.HTTPClient.Transport = transport
@@ -174,8 +236,11 @@ func (c *Config) newFabricClient() *fabricv4.APIClient {
 	retryClient.RetryMax = c.MaxRetries
 	retryClient.RetryWaitMin = time.Second
 	retryClient.RetryWaitMax = c.MaxRetryWait
-	standardClient := retryClient.StandardClient()
 
+	return retryClient.StandardClient()
+}
+
+func (c *Config) createFabricClient(httpClient *http.Client) *fabricv4.APIClient {
 	baseURL, _ := url.Parse(c.BaseURL)
 
 	configuration := fabricv4.NewConfiguration()
@@ -184,12 +249,11 @@ func (c *Config) newFabricClient() *fabricv4.APIClient {
 			URL: baseURL.String(),
 		},
 	}
-	configuration.HTTPClient = standardClient
+	configuration.HTTPClient = httpClient
 	configuration.AddDefaultHeader("X-SOURCE", "API")
 	configuration.AddDefaultHeader("X-CORRELATION-ID", correlationId(25))
-	client := fabricv4.NewAPIClient(configuration)
 
-	return client
+	return fabricv4.NewAPIClient(configuration)
 }
 
 // NewMetalClient returns a new packngo client for accessing Equinix Metal's API.
