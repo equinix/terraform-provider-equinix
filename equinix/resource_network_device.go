@@ -725,6 +725,7 @@ func createNetworkDeviceSchema() map[string]*schema.Schema {
 						Type:         schema.TypeString,
 						Optional:     true,
 						ForceNew:     true,
+						Computed:     true,
 						ValidateFunc: validation.StringLenBetween(1, 30),
 						Description:  neDeviceDescriptions["PurchaseOrderNumber"],
 					},
