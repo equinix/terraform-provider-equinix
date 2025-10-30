@@ -73,6 +73,7 @@ func portOperationSch() map[string]*schema.Schema {
 	}
 }
 
+// PortRedundancySch returns the schema for port redundancy information
 func PortRedundancySch() map[string]*schema.Schema {
 	return map[string]*schema.Schema{
 		"enabled": {
@@ -93,6 +94,7 @@ func PortRedundancySch() map[string]*schema.Schema {
 	}
 }
 
+// FabricPortResourceSchema returns the schema for Fabric Port resource
 func FabricPortResourceSchema() map[string]*schema.Schema {
 	return map[string]*schema.Schema{
 		"type": {
