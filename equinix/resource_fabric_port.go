@@ -454,18 +454,8 @@ func resourceFabricPortGetByPortName(ctx context.Context, d *schema.ResourceData
 		return diag.FromErr(fmt.Errorf("filter must be provided with either name or uuid"))
 	}
 	fMap := filterParam[0].(map[string]interface{})
-	name := ""
-	uuid := ""
-	if v, ok := fMap["name"]; ok && v != nil {
-		if s, ok2 := v.(string); ok2 && s != "" {
-			name = s
-		}
-	}
-	if v, ok := fMap["uuid"]; ok && v != nil {
-		if s, ok2 := v.(string); ok2 && s != "" {
-			uuid = s
-		}
-	}
+	name := getStringValue(fMap, "name")
+	uuid := getStringValue(fMap, "uuid")
 	if name == "" && uuid == "" {
 		return diag.FromErr(fmt.Errorf("either name or uuid must be specified in filter"))
 	}
@@ -482,6 +472,7 @@ func resourceFabricPortGetByPortName(ctx context.Context, d *schema.ResourceData
 			}
 			return diag.FromErr(equinix_errors.FormatFabricError(err))
 		}
+
 		d.SetId(port.GetUuid())
 		mappedPorts := []map[string]interface{}{fabricPortMap(port)}
 		err2 := equinix_schema.SetMap(d, map[string]interface{}{"data": mappedPorts})
@@ -501,9 +492,18 @@ func resourceFabricPortGetByPortName(ctx context.Context, d *schema.ResourceData
 	}
 
 	if len(ports.Data) < 1 {
-		return diag.FromErr(fmt.Errorf("no records are found for the port name provided - %d , please change the port name", len(ports.Data)))
+		return diag.FromErr(fmt.Errorf("no records are found for the port name provided - %s", name))
 	}
 
 	d.SetId(ports.Data[0].GetUuid())
 	return setPortsListMap(d, ports)
+}
+
+func getStringValue(m map[string]interface{}, key string) string {
+	if v, ok := m[key]; ok {
+		if s, ok := v.(string); ok && s != "" {
+			return s
+		}
+	}
+	return ""
 }
