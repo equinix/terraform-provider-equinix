@@ -113,7 +113,7 @@ func TestAccDataSourceFabricPorts_PNFV(t *testing.T) {
 func testDataSourceFabricPorts(portName string) string {
 	return fmt.Sprintf(`
 		data "equinix_fabric_ports" "test" {
-		  filters {
+		  filter {
 			name = "%s"
 		  }
 		}`,

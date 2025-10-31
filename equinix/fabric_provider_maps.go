@@ -25,7 +25,7 @@ func fabricDatasources() map[string]*schema.Resource {
 		"equinix_fabric_network":                   fabric_network.DataSource(),
 		"equinix_fabric_networks":                  fabric_network.DataSourceSearch(),
 		"equinix_fabric_port":                      dataSourceFabricPort(),
-		"equinix_fabric_ports":                     dataSourceFabricGetPortsByName(),
+		"equinix_fabric_ports":                     dataSourceFabricGetPortsByNameOrUUID(),
 		"equinix_fabric_route_filter":              fabric_route_filter.DataSource(),
 		"equinix_fabric_route_filters":             fabric_route_filter.DataSourceSearch(),
 		"equinix_fabric_route_filter_rule":         fabric_route_filter_rule.DataSource(),
