@@ -5,6 +5,7 @@ import (
 	"testing"
 
 	"github.com/equinix/terraform-provider-equinix/internal/acceptance"
+	testinghelpers "github.com/equinix/terraform-provider-equinix/internal/fabric/testing_helpers"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 )
 
@@ -64,7 +65,9 @@ func TestAccFabricGetPortsByName(t *testing.T) {
 
 // Get Ports By UUID
 func testAccFabricReadGetPortsByUUIDConfig(name string) string {
-	return fmt.Sprintf(`data "equinix_fabric_ports" "test" {
+	return fmt.Sprintf(`
+
+data "equinix_fabric_ports" "test" {
 	filter {
 		uuid = "%s"
 		}
@@ -72,20 +75,25 @@ func testAccFabricReadGetPortsByUUIDConfig(name string) string {
 `, name)
 }
 
-func TestAccFabricGetPortsByUUID(t *testing.T) {
+func TestAccFabricGetPortsByUUID_PFCR(t *testing.T) {
+	ports := testinghelpers.GetFabricEnvPorts(t)
+	var aSidePortUUID string
+	if len(ports) > 0 {
+		aSidePortUUID = ports["pfcr"]["dot1q"][0].GetUuid()
+	}
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:  func() { acceptance.TestAccPreCheck(t) },
 		Providers: acceptance.TestAccProviders,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccFabricReadGetPortsByUUIDConfig("c4d9350e-78c6-8c6d-1ce0-306a5c00a600"),
+				Config: testAccFabricReadGetPortsByUUIDConfig(aSidePortUUID),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(
 						"data.equinix_fabric_ports.test", "data.#", fmt.Sprint(1)),
 					resource.TestCheckResourceAttr(
 						"data.equinix_fabric_ports.test", "data.0.name", "panthers-CX-DC5-NL-Dot1q-STD-100G-PRI-NK-506"),
 					resource.TestCheckResourceAttr(
-						"data.equinix_fabric_ports.test", "data.0.uuid", "c4d9350e-78c6-8c6d-1ce0-306a5c00a600"),
+						"data.equinix_fabric_ports.test", "data.0.state", "ACTIVE"),
 					resource.TestCheckNoResourceAttr(
 						"data.equinix_fabric_ports.test", "pagination"),
 				),
