@@ -26,8 +26,10 @@ on:
   workflow_dispatch:
 
 permissions:
+  #actions: write required to update OIDC subject claim template
   pull-requests: read
   contents: read
+  id-token: write
 
 jobs:
 
@@ -43,6 +45,8 @@ jobs:
       cancel-in-progress: true
     steps:
       - run: true
+
+  # The GitHub OIDC subject claim template has been customized at the repository level to include only the workflow name. Long-term, we should consider using the default template for tests.
 
   build:
     name: Build
@@ -85,7 +89,6 @@ jobs:
         terraform:
           - '1.5'
     steps:
-
       - name: Check out code into the Go module directory
         uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5
         with:
@@ -161,7 +164,6 @@ jobs:
         terraform:
           - '1.5'
     steps:
-
       - name: Check out code into the Go module directory
         uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5
         with:
@@ -222,6 +224,81 @@ jobs:
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
           files: ./coverage_pfcr.txt
+
+  test-STS-creds:
+    name: Matrix Test
+    needs: build
+    runs-on: ubuntu-latest
+    env:
+      EQUINIX_API_ENDPOINT: "https://uatapi.equinix.com"
+      EQUINIX_STS_ENDPOINT: "https://sts.uat.equinix.com"
+    timeout-minutes: 240
+    strategy:
+      fail-fast: false
+      matrix:
+        version:
+          - stable
+        terraform:
+          - '1.5'
+        sts_config:
+          - name: "default"
+            env_var_name: "EQUINIX_TOKEN_EXCHANGE_SUBJECT_TOKEN"
+            set_custom_env_var: false
+            token_exchange_subject_token_env_var: null
+          - name: "custom"
+            env_var_name: "CUSTOM_STS_TOKEN"
+            set_custom_env_var: true
+            token_exchange_subject_token_env_var: "CUSTOM_STS_TOKEN"
+    steps:
+      - id: get_id_token
+        name: Get GitHub OIDC Token for PFCR
+        uses: actions/github-script@v6
+        with:
+          script: |
+            try {
+              const idToken = await core.getIDToken('gha-fcr-client');
+              console.log('Token generated with audience: gha-fcr-client');
+              core.setOutput('id_token', idToken);
+            } catch (error) {
+              console.error('Error getting OIDC token:', error.message);
+              core.setFailed(`Error getting OIDC token: ${error.message}`);
+            }
+          result-encoding: string
+
+      - name: Check out code into the Go module directory
+        uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.ref }}
+
+      - name: Set up Go
+        uses: actions/setup-go@d35c59abb061a4a6fb18e82ac0862c26744d6ab5 # v5
+        with:
+          go-version-file: './go.mod'
+        id: go
+
+      - name: Get dependencies
+        run: |
+          go mod download
+
+      - uses: hashicorp/setup-terraform@b9cd54a3c349d3f38e8881555d616ced269862dd # v3
+        with:
+          terraform_version: ${{ matrix.terraform }}
+          terraform_wrapper: false
+
+      - name: TF Fabric PFCR acceptance tests STS creds
+        timeout-minutes: 180
+        env:
+          TF_ACC: "1"
+          TF_ACC_FABRIC_CONNECTIONS_TEST_DATA: ${{ secrets.TF_ACC_FABRIC_CONNECTIONS_TEST_DATA }}
+          TF_ACC_FABRIC_DEDICATED_PORTS: ${{ secrets.TF_ACC_FABRIC_DEDICATED_PORTS }}
+          TF_ACC_FABRIC_MARKET_PLACE_SUBSCRIPTION_ID: ${{ secrets.TF_ACC_FABRIC_MARKET_PLACE_SUBSCRIPTION_ID }}
+          TF_ACC_FABRIC_STREAM_TEST_DATA: ${{ secrets.TF_ACC_FABRIC_STREAM_TEST_DATA }}
+          EQUINIX_TOKEN_EXCHANGE_SCOPE: ${{ secrets.EQUINIX_STS_AUTH_SCOPE_PFCR }}
+          METAL_AUTH_TOKEN: ${{ secrets.METAL_AUTH_TOKEN }}
+          ${{ matrix.sts_config.env_var_name }}: ${{ steps.get_id_token.outputs.id_token }}
+          ${{ matrix.sts_config.set_custom_env_var && 'EQUINIX_TOKEN_EXCHANGE_SUBJECT_TOKEN_ENV_VAR' || 'SKIP' }}: ${{ matrix.sts_config.token_exchange_subject_token_env_var || '' }}
+        run: |
+          go test ./... --run "(TestAccFabricCreatePort2SPConnection_PFCR|TestAccCloudRouterCreateOnlyRequiredParameters_PFCR)" -v -coverprofile coverage_pfcr.txt -covermode=atomic -count 1
 
   upload-test-report:
     name: Upload Testing Report

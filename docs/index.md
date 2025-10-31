@@ -8,6 +8,8 @@ The Equinix provider is used to interact with the resources provided by Equinix 
 
 For information about obtaining API key and secret required for Equinix Fabric and Network Edge refer to [Generating Client ID and Client Secret key](https://developer.equinix.com/dev-docs/fabric/getting-started/getting-access-token#generating-client-id-and-client-secret) from [Equinix Developer Platform portal](https://developer.equinix.com).
 
+Equinix Fabric also supports authentication using a [Workload Identity Token](https://developer.hashicorp.com/terraform/cloud-docs/workspaces/dynamic-provider-credentials/workload-identity-tokens), which can be used in place of the `client_id` and `client_secret` arguments. Requires an authorization scope and OIDC token from an IdP trusted by Equinix STS. Please note that this is an alpha feature not available for all users. Using workload identity tokens will override client ID/secret, you must use [provider aliases](https://developer.hashicorp.com/terraform/language/providers/configuration#alias-multiple-provider-configurations) to manage both workload identity tokens and client ID/secret in a single Terraform configuration.
+
 Interacting with Equinix Metal requires an API auth token that can be generated at [Project-level](https://metal.equinix.com/developers/docs/accounts/projects/#api-keys) or [User-level](https://metal.equinix.com/developers/docs/accounts/users/#api-keys) tokens can be used.
 
 If you are only using Equinix Metal resources, you may omit the Client ID and Client Secret provider configuration parameters needed to access other Equinix resource types (Network Edge, Fabric, etc).
@@ -41,6 +43,20 @@ Client ID and Client Secret can be omitted when the only Equinix resources consu
 # Credentials for only Equinix Metal resources
 provider "equinix" {
   auth_token    = "someEquinixMetalToken"
+}
+```
+
+Workload Identity Tokens can be used in service authorization scenarios, like HCP Terraform. Other credential variables are optional for `equinix_fabric_*` resources and datasources when using this method.
+
+```terraform
+# Configuration for using Workload Identity Federation
+provider "equinix" {
+  # Desired scope of the requested security token. Must be an Access Policy ERN or a string of the form `roleassignments:<organization_id>`
+  token_exchange_scope = "roleassignments:<organization_id>"
+
+  # The name of the environment variable containing the token exchange subject token
+  # For example, HCP Terraform automatically sets TFC_WORKLOAD_IDENTITY_TOKEN
+  token_exchange_subject_token_env_var = "TFC_WORKLOAD_IDENTITY_TOKEN"
 }
 ```
 
@@ -85,4 +101,8 @@ These parameters can be provided in [Terraform variable files](https://www.terra
 - `max_retry_wait_seconds` (Number) Maximum number of seconds to wait before retrying a request.
 - `request_timeout` (Number) The duration of time, in seconds, that the Equinix Platform API Client should wait before canceling an API request. Canceled requests may still result in provisioned resources. (Defaults to `30`)
 - `response_max_page_size` (Number) The maximum number of records in a single response for REST queries that produce paginated responses. (Default is client specific)
+- `sts_endpoint` (String) The STS API base URL to point to the desired environment. This argument can also be specified with the `EQUINIX_STS_ENDPOINT` shell environment variable. (Defaults to `https://sts.eqix.equinix.com`). Please note that STS is an alpha feature and not available for all users.
 - `token` (String) API tokens are generated from API Consumer clients using the [OAuth2 API](https://developer.equinix.com/dev-docs/fabric/getting-started/getting-access-token#request-access-and-refresh-tokens). This argument can also be specified with the `EQUINIX_API_TOKEN` shell environment variable.
+- `token_exchange_scope` (String) The scope of the authentication token. Must be an access policy ERN or a string of the form `roleassignments:<org_id>`. This argument can also be specified with the `EQUINIX_TOKEN_EXCHANGE_SCOPE` shell environment variable. Please note that token exchange is an alpha feature and not available for all users.
+- `token_exchange_subject_token` (String) The subject token to use for token exchange authentication. Must be an OIDC ID token issued by an OIDC provider trusted by Equinix STS. If not set, the provider will use the environment variable specified in `token_exchange_subject_token_env_var`. Please note that token exchange is an alpha feature and not available for all users.
+- `token_exchange_subject_token_env_var` (String) The name of the environment variable containing the subject token for token exchange. This argument can also be specified with the `EQUINIX_TOKEN_EXCHANGE_SUBJECT_TOKEN_ENV_VAR` shell environment variable. (Defaults to `EQUINIX_TOKEN_EXCHANGE_SUBJECT_TOKEN`). Please note that token exchange is an alpha feature and not available for all users.

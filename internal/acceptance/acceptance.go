@@ -1,3 +1,7 @@
+// Package acceptance provides Utilities and test framework setup for running
+// acceptance tests for the Equinix Terraform provider. It handles provider
+// configuration, authentication verification, and prerequisite checks for
+// testing against Equinix Fabric, Network Edge, and Metal services.
 package acceptance
 
 import (
@@ -20,9 +24,13 @@ const (
 )
 
 var (
-	TestAccProvider          *schema.Provider
-	TestAccProviders         map[string]*schema.Provider
-	TestExternalProviders    map[string]resource.ExternalProvider
+	// TestAccProvider is the Equinix provider instance used for acceptance testing
+	TestAccProvider *schema.Provider
+	// TestAccProviders is a map of provider names to their schema.Provider instances used in acceptance tests.
+	TestAccProviders map[string]*schema.Provider
+	// TestExternalProviders defines external providers (by name and source) required for acceptance tests.
+	TestExternalProviders map[string]resource.ExternalProvider
+	// TestAccFrameworkProvider is the FrameworkProvider instance used for advanced acceptance test scenarios.
 	TestAccFrameworkProvider *provider.FrameworkProvider
 	// testAccProviderConfigure ensures Provider is only configured once
 	//
@@ -46,6 +54,9 @@ func init() {
 	TestAccFrameworkProvider = provider.CreateFrameworkProvider(version.ProviderVersion).(*provider.FrameworkProvider)
 }
 
+// TestAccPreCheck verifies that the required environment variables are set
+// for running acceptance tests. It checks for authentication credentials for
+// Equinix Fabric, Network Edge, and Metal services.
 func TestAccPreCheck(t *testing.T) {
 	var err error
 
@@ -54,6 +65,19 @@ func TestAccPreCheck(t *testing.T) {
 		if err == nil {
 			_, err = env.Get(config.ClientSecretEnvVar)
 		}
+
+		// If neither token nor client ID/secret are configured, check for STS source token
+		if err != nil {
+			_, tokenExchangeScopeErr := env.Get(config.TokenExchangeScopeEnvVar)
+
+			// Check if either the custom env var name is set, or the default source token is set
+			_, subjectTokenEnvVarErr := env.Get(config.TokenExchangeSubjectTokenEnvVarEnvVar)
+			_, defaultSubjectTokenErr := env.Get(config.DefaultTokenExchangeSubjectTokenEnvVar)
+
+			if tokenExchangeScopeErr == nil && (subjectTokenEnvVarErr == nil || defaultSubjectTokenErr == nil) {
+				err = nil
+			}
+		}
 	}
 
 	if err == nil {
@@ -61,17 +85,25 @@ func TestAccPreCheck(t *testing.T) {
 	}
 
 	if err != nil {
-		t.Fatalf("To run acceptance tests, one of '%s' or pair '%s' - '%s' must be set for Equinix Fabric and Network Edge, and '%s' for Equinix Metal",
-			config.ClientTokenEnvVar, config.ClientIDEnvVar, config.ClientSecretEnvVar, config.MetalAuthTokenEnvVar)
+		t.Fatalf("To run acceptance tests, one of '%s', pair '%s' - '%s', or pair '%s' - ('%s' or custom env var from '%s') must be set for Equinix Fabric and Network Edge, and '%s' for Equinix Metal",
+			config.ClientTokenEnvVar, config.ClientIDEnvVar, config.ClientSecretEnvVar,
+			config.TokenExchangeScopeEnvVar, config.DefaultTokenExchangeSubjectTokenEnvVar,
+			config.TokenExchangeSubjectTokenEnvVarEnvVar, config.MetalAuthTokenEnvVar)
 	}
+
 }
 
+// TestAccPreCheckMetal specifically verifies that the Equinix Metal authentication token
+// environment variable is set for running Metal-specific acceptance tests.
 func TestAccPreCheckMetal(t *testing.T) {
 	if os.Getenv(config.MetalAuthTokenEnvVar) == "" {
 		t.Fatalf(missingMetalToken, config.MetalAuthTokenEnvVar)
 	}
 }
 
+// TestAccPreCheckProviderConfigured ensures the provider is properly configured
+// before running tests. It uses sync.Once to guarantee the provider is
+// configured exactly once across all test executions.
 func TestAccPreCheckProviderConfigured(t *testing.T) {
 	// Since we are outside the scope of the Terraform configuration we must
 	// call Configure() to properly initialize the provider configuration.
