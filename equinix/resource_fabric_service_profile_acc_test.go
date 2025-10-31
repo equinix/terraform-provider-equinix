@@ -97,6 +97,7 @@ func TestAccFabricCreateServiceProfile_PFCR(t *testing.T) {
 					resource.TestCheckResourceAttrSet("equinix_fabric_service_profile.test", "access_point_type_configs.0.allow_custom_bandwidth"),
 					resource.TestCheckResourceAttrSet("equinix_fabric_service_profile.test", "access_point_type_configs.0.enable_auto_generate_service_key"),
 					resource.TestCheckResourceAttrSet("equinix_fabric_service_profile.test", "access_point_type_configs.0.connection_redundancy_required"),
+					resource.TestCheckResourceAttrSet("equinix_fabric_service_profile.test", "access_point_type_configs.0.selective_redundancy"),
 					resource.TestCheckResourceAttrSet("equinix_fabric_service_profile.test", "self_profile"),
 				),
 				ExpectNonEmptyPlan: true,
