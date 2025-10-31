@@ -57,7 +57,7 @@ func TestAccFabricGetPortsByName_PFCR(t *testing.T) {
 					resource.TestCheckResourceAttr(
 						"data.equinix_fabric_ports.test", "data.#", fmt.Sprint(1)),
 					resource.TestCheckResourceAttr(
-						"data.equinix_fabric_ports.test", "data.0.name", "panthers-CX-DC5-NL-Dot1q-STD-100G-PRI-NK-506"),
+						"data.equinix_fabric_ports.test", "data.0.uuid", "c4d9350e-78c6-8c6d-1ce0-306a5c00a600"),
 					resource.TestCheckResourceAttr(
 						"data.equinix_fabric_ports.test", "data.0.state", "ACTIVE"),
 					resource.TestCheckNoResourceAttr(
