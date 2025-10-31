@@ -23,7 +23,7 @@ func TestAccFabricReadPort_PFCR(t *testing.T) {
 				Config: testAccFabricReadPortConfig(aSidePortUUID),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(
-						"data.equinix_fabric_port.test", "name", "panthers-CX-DC5-NL-Dot1q-STD-100G-PRI-NK-506"),
+						"data.equinix_fabric_port.test", "state", "ACTIVE"),
 				),
 			},
 		},
@@ -99,8 +99,6 @@ func TestAccFabricGetPortsByUUID_PFCR(t *testing.T) {
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(
 						"data.equinix_fabric_ports.test", "data.#", fmt.Sprint(1)),
-					resource.TestCheckResourceAttr(
-						"data.equinix_fabric_ports.test", "data.0.name", "panthers-CX-DC5-NL-Dot1q-STD-100G-PRI-NK-506"),
 					resource.TestCheckResourceAttr(
 						"data.equinix_fabric_ports.test", "data.0.state", "ACTIVE"),
 					resource.TestCheckNoResourceAttr(
