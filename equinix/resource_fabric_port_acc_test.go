@@ -41,20 +41,25 @@ func testAccFabricReadGetPortsByNameConfig(name string) string {
 `, name)
 }
 
-func TestAccFabricGetPortsByName(t *testing.T) {
+func TestAccFabricGetPortsByName_PFCR(t *testing.T) {
+	ports := testinghelpers.GetFabricEnvPorts(t)
+	var aSidePortName string
+	if len(ports) > 0 {
+		aSidePortName = ports["pfcr"]["dot1q"][0].GetName()
+	}
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:  func() { acceptance.TestAccPreCheck(t) },
 		Providers: acceptance.TestAccProviders,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccFabricReadGetPortsByNameConfig("ops-user100-CX-DC11-NL-Dot1q-BO-10G-SEC-JP-113"),
+				Config: testAccFabricReadGetPortsByNameConfig(aSidePortName),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(
 						"data.equinix_fabric_ports.test", "data.#", fmt.Sprint(1)),
 					resource.TestCheckResourceAttr(
-						"data.equinix_fabric_ports.test", "data.0.name", "ops-user100-CX-DC11-NL-Dot1q-BO-10G-SEC-JP-113"),
+						"data.equinix_fabric_ports.test", "data.0.name", "panthers-CX-DC5-NL-Dot1q-STD-100G-PRI-NK-506"),
 					resource.TestCheckResourceAttr(
-						"data.equinix_fabric_ports.test", "data.0.uuid", "c4d9350e-7791-791d-1ce0-306a5c00a600"),
+						"data.equinix_fabric_ports.test", "data.0.state", "ACTIVE"),
 					resource.TestCheckNoResourceAttr(
 						"data.equinix_fabric_ports.test", "pagination"),
 				),
