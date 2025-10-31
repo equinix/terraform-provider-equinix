@@ -9,13 +9,18 @@ import (
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 )
 
-func TestAccFabricReadPort(t *testing.T) {
+func TestAccFabricReadPort_PFCR(t *testing.T) {
+	ports := testinghelpers.GetFabricEnvPorts(t)
+	var aSidePortUUID string
+	if len(ports) > 0 {
+		aSidePortUUID = ports["pfcr"]["dot1q"][0].GetUuid()
+	}
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:  func() { acceptance.TestAccPreCheck(t) },
 		Providers: acceptance.TestAccProviders,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccFabricReadPortConfig(),
+				Config: testAccFabricReadPortConfig(aSidePortUUID),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(
 						"data.equinix_fabric_port.test", "name", "ops-user100-CX-SV1-NL-Qinq-STD-1G-PRI-NK-349"),
@@ -25,10 +30,11 @@ func TestAccFabricReadPort(t *testing.T) {
 	})
 }
 
-func testAccFabricReadPortConfig() string {
-	return `data "equinix_fabric_port" "test" {
-	uuid = "c4d9350e-783c-83cd-1ce0-306a5c00a600"
-	}`
+func testAccFabricReadPortConfig(portUUID string) string {
+	return fmt.Sprintf(`data "equinix_fabric_port" "test" {
+	uuid = "%s"
+	}
+`, portUUID)
 }
 
 // Get Ports By Name
