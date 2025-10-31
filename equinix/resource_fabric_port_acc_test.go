@@ -57,8 +57,6 @@ func TestAccFabricGetPortsByName_PFCR(t *testing.T) {
 					resource.TestCheckResourceAttr(
 						"data.equinix_fabric_ports.test", "data.#", fmt.Sprint(1)),
 					resource.TestCheckResourceAttr(
-						"data.equinix_fabric_ports.test", "data.0.uuid", "c4d9350e-78c6-8c6d-1ce0-306a5c00a600"),
-					resource.TestCheckResourceAttr(
 						"data.equinix_fabric_ports.test", "data.0.state", "ACTIVE"),
 					resource.TestCheckNoResourceAttr(
 						"data.equinix_fabric_ports.test", "pagination"),

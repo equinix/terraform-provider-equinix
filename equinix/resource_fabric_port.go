@@ -432,7 +432,7 @@ func setPortsListMap(d *schema.ResourceData, portResponse *fabricv4.AllPortsResp
 	return diags
 }
 
-func resourceFabricPortGetByPortName(ctx context.Context, d *schema.ResourceData, meta interface{}) (diags diag.Diagnostics) {
+func resourceFabricPortGetByPortNameOrUUID(ctx context.Context, d *schema.ResourceData, meta interface{}) (diags diag.Diagnostics) {
 	defer func() {
 		if r := recover(); r != nil {
 			log.Printf("[ERROR] Panic occurred during GET /fabric/v4/ports: %+v", r)
