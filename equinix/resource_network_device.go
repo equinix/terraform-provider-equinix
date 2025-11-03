@@ -1549,7 +1549,6 @@ func flattenNetworkDeviceSecondary(device *ne.Device) interface{} {
 	transformed[neDeviceSchemaNames["SSHIPAddress"]] = device.SSHIPAddress
 	transformed[neDeviceSchemaNames["SSHIPFqdn"]] = device.SSHIPFqdn
 	transformed[neDeviceSchemaNames["AccountNumber"]] = device.AccountNumber
-	transformed[neDeviceSchemaNames["PurchaseOrderNumber"]] = device.PurchaseOrderNumber
 	transformed[neDeviceSchemaNames["Notifications"]] = device.Notifications
 	transformed[neDeviceSchemaNames["RedundancyType"]] = device.RedundancyType
 	transformed[neDeviceSchemaNames["ProjectID"]] = device.ProjectID
