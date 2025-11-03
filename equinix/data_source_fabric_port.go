@@ -25,7 +25,7 @@ func dataSourceFabricPortRead(ctx context.Context, d *schema.ResourceData, meta 
 	return resourceFabricPortRead(ctx, d, meta)
 }
 
-func dataSourceFabricGetPortsByNameOrUUID() *schema.Resource {
+func dataSourceFabricGetPortsByName() *schema.Resource {
 	return &schema.Resource{
 		ReadContext: dataSourceFabricGetPortsByNameResponseRead,
 		Schema:      readFabricPortsResponseSchema(),
@@ -38,5 +38,5 @@ Additional documentation:
 }
 
 func dataSourceFabricGetPortsByNameResponseRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	return resourceFabricPortGetByPortNameOrUUID(ctx, d, meta)
+	return resourceFabricPortGetByPortName(ctx, d, meta)
 }
