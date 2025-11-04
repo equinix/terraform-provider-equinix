@@ -476,7 +476,6 @@ func getPortFilterParam(d *schema.ResourceData) []map[string]string {
 			}
 		}
 	}
-	// Fallback to legacy 'filters' block (only supports name)
 	if len(filters) == 0 {
 		if v, ok := d.GetOk("filters"); ok {
 			filtersList := v.(*schema.Set).List()
