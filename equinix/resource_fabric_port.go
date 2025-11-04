@@ -513,7 +513,8 @@ func resourceFabricPortGetByPortName(ctx context.Context, d *schema.ResourceData
 	if len(filters) == 1 {
 		f := filters[0]
 		if f["operator"] == "=" {
-			if f["property"] == "/uuid" {
+			switch f["property"] {
+			case "/uuid":
 				port, _, err := client.PortsApi.GetPortByUuid(ctx, f["value"]).Execute()
 				if err != nil {
 					log.Printf("[WARN] Port uuid %s not found , error %s", f["value"], err)
@@ -525,7 +526,7 @@ func resourceFabricPortGetByPortName(ctx context.Context, d *schema.ResourceData
 				ports := &fabricv4.AllPortsResponse{Data: []fabricv4.Port{*port}}
 				d.SetId(port.GetUuid())
 				return setPortsListMap(d, ports)
-			} else if f["property"] == "/name" {
+			case "/name":
 				ports, _, err := client.PortsApi.GetPorts(ctx).Name(f["value"]).Execute()
 				if err != nil {
 					log.Printf("[WARN] Ports not found , error %s", err)
@@ -543,5 +544,5 @@ func resourceFabricPortGetByPortName(ctx context.Context, d *schema.ResourceData
 		}
 	}
 
-	return diag.FromErr(fmt.Errorf("advanced filtering is not yet supported by the Equinix Terraform provider. Only a single filter for /name or /uuid with '=' is currently supported."))
+	return diag.FromErr(fmt.Errorf("advanced filtering is not yet supported by the Equinix Terraform provider. Only a single filter for /name or /uuid with '=' is currently supported"))
 }
