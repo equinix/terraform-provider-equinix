@@ -100,6 +100,7 @@ Optional:
 - `connection_redundancy_required` (Boolean) Mandate redundant connections
 - `enable_auto_generate_service_key` (Boolean) Enable auto generate service key
 - `link_protocol_config` (Block Set, Max: 1) Link protocol configuration details (see [below for nested schema](#nestedblock--access_point_type_configs--link_protocol_config))
+- `selective_redundancy` (Boolean) Optional redundant connections
 - `supported_bandwidths` (List of Number) Supported bandwidths
 
 Read-Only:
