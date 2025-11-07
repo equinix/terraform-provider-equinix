@@ -378,6 +378,11 @@ func createSPAccessPointTypeConfigSch() map[string]*schema.Schema {
 			Optional:    true,
 			Description: "Mandate redundant connections",
 		},
+		"selective_redundancy": {
+			Type:        schema.TypeBool,
+			Optional:    true,
+			Description: "Optional redundant connections",
+		},
 		"allow_bandwidth_auto_approval": {
 			Type:        schema.TypeBool,
 			Optional:    true,
@@ -1021,6 +1026,9 @@ func accessPointTypeConfigsTerraformToGo(schemaAccessPointTypeConfigs []interfac
 		spConnectionRedundancyRequired := apMap["connection_redundancy_required"].(bool)
 		accessPointTypeCOLO.SetConnectionRedundancyRequired(spConnectionRedundancyRequired)
 
+		spSelectiveRedundancy := apMap["selective_redundancy"].(bool)
+		accessPointTypeCOLO.SetSelectiveRedundancy(spSelectiveRedundancy)
+
 		spAllowBandwidthAutoApproval := apMap["allow_bandwidth_auto_approval"].(bool)
 		accessPointTypeCOLO.SetAllowBandwidthAutoApproval(spAllowBandwidthAutoApproval)
 
@@ -1076,6 +1084,7 @@ func accessPointTypeConfigGoToTerraform(spAccessPointTypes []fabricv4.ServicePro
 			"allow_bandwidth_auto_approval":    spAccessPointType.GetAllowBandwidthAutoApproval(),
 			"enable_auto_generate_service_key": spAccessPointType.GetEnableAutoGenerateServiceKey(),
 			"connection_redundancy_required":   spAccessPointType.GetConnectionRedundancyRequired(),
+			"selective_redundancy":             spAccessPointType.GetSelectiveRedundancy(),
 			"connection_label":                 spAccessPointType.GetConnectionLabel(),
 			"api_config":                       apiConfigGoToTerraform(&apiConfig),
 			"authentication_key":               authenticationKeyGoToTerraform(&authKey),
