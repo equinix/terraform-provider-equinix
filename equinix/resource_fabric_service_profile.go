@@ -660,7 +660,7 @@ func resourceFabricServiceProfileUpdate(ctx context.Context, d *schema.ResourceD
 	updateTimeout := d.Timeout(schema.TimeoutUpdate) - 30*time.Second - time.Since(start)
 	var err error
 	var eTag int64
-	_, err, eTag = waitForActiveServiceProfileAndPopulateETag(ctx, meta, d, uuid, updateTimeout)
+	_, eTag, err = waitForActiveServiceProfileAndPopulateETag(ctx, meta, d, uuid, updateTimeout)
 	if err != nil {
 		if !strings.Contains(err.Error(), "500") {
 			d.SetId("")
@@ -712,7 +712,7 @@ func waitForServiceProfileUpdateCompletion(ctx context.Context, meta interface{}
 	return dbSp, err
 }
 
-func waitForActiveServiceProfileAndPopulateETag(ctx context.Context, meta interface{}, d *schema.ResourceData, uuid string, timeout time.Duration) (*fabricv4.ServiceProfile, error, int64) {
+func waitForActiveServiceProfileAndPopulateETag(ctx context.Context, meta interface{}, d *schema.ResourceData, uuid string, timeout time.Duration) (*fabricv4.ServiceProfile, int64, error) {
 	log.Printf("Waiting for service profile to be in active state, uuid %s", uuid)
 	var eTag int64
 	stateConf := &retry.StateChangeConf{
@@ -745,7 +745,7 @@ func waitForActiveServiceProfileAndPopulateETag(ctx context.Context, meta interf
 	if err == nil {
 		dbServiceProfile = inter.(*fabricv4.ServiceProfile)
 	}
-	return dbServiceProfile, err, eTag
+	return dbServiceProfile, eTag, err
 }
 
 func resourceFabricServiceProfileDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
@@ -771,6 +771,7 @@ func resourceFabricServiceProfileDelete(ctx context.Context, d *schema.ResourceD
 	return diags
 }
 
+// WaitAndCheckServiceProfileDeleted Function to wait until service profile is deleted
 func WaitAndCheckServiceProfileDeleted(ctx context.Context, meta interface{}, uuid string, d *schema.ResourceData, timeout time.Duration) error {
 	log.Printf("Waiting for service profile to be in deleted, uuid %s", uuid)
 	stateConf := &retry.StateChangeConf{
