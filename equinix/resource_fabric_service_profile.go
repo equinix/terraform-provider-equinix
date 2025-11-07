@@ -424,7 +424,7 @@ func createSPAccessPointTypeConfigSch() map[string]*schema.Schema {
 			Description: "Api configuration details",
 			MaxItems:    1,
 			Elem: &schema.Resource{
-				Schema: createApiConfigSch(),
+				Schema: createAPIConfigSch(),
 			},
 		},
 		"authentication_key": {
@@ -454,7 +454,7 @@ func createSPAccessPointTypeConfigSch() map[string]*schema.Schema {
 	}
 }
 
-func createApiConfigSch() map[string]*schema.Schema {
+func createAPIConfigSch() map[string]*schema.Schema {
 	return map[string]*schema.Schema{
 		"api_available": {
 			Type:        schema.TypeBool,
@@ -1049,8 +1049,8 @@ func accessPointTypeConfigsTerraformToGo(schemaAccessPointTypeConfigs []interfac
 
 		if apMap["api_config"] != nil {
 			apiConfig := apMap["api_config"].(*schema.Set).List()
-			spApiConfig := apiConfigTerraformToGo(apiConfig)
-			accessPointTypeCOLO.SetApiConfig(spApiConfig)
+			spAPIConfig := apiConfigTerraformToGo(apiConfig)
+			accessPointTypeCOLO.SetApiConfig(spAPIConfig)
 		}
 
 		if apMap["authentication_key"] != nil {
@@ -1097,16 +1097,16 @@ func accessPointTypeConfigGoToTerraform(spAccessPointTypes []fabricv4.ServicePro
 
 func apiConfigGoToTerraform(apiConfig *fabricv4.ApiConfig) *schema.Set {
 
-	mappedApiConfig := make(map[string]interface{})
-	mappedApiConfig["api_available"] = apiConfig.GetApiAvailable()
-	mappedApiConfig["equinix_managed_vlan"] = apiConfig.GetEquinixManagedVlan()
-	mappedApiConfig["bandwidth_from_api"] = apiConfig.GetBandwidthFromApi()
-	mappedApiConfig["integration_id"] = apiConfig.GetIntegrationId()
-	mappedApiConfig["equinix_managed_port"] = apiConfig.GetEquinixManagedPort()
+	mappedAPIConfig := make(map[string]interface{})
+	mappedAPIConfig["api_available"] = apiConfig.GetApiAvailable()
+	mappedAPIConfig["equinix_managed_vlan"] = apiConfig.GetEquinixManagedVlan()
+	mappedAPIConfig["bandwidth_from_api"] = apiConfig.GetBandwidthFromApi()
+	mappedAPIConfig["integration_id"] = apiConfig.GetIntegrationId()
+	mappedAPIConfig["equinix_managed_port"] = apiConfig.GetEquinixManagedPort()
 
 	apiConfigSet := schema.NewSet(
-		schema.HashResource(&schema.Resource{Schema: createApiConfigSch()}),
-		[]interface{}{mappedApiConfig})
+		schema.HashResource(&schema.Resource{Schema: createAPIConfigSch()}),
+		[]interface{}{mappedAPIConfig})
 	return apiConfigSet
 }
 
@@ -1141,13 +1141,13 @@ func apiConfigTerraformToGo(apiConfigs []interface{}) fabricv4.ApiConfig {
 	apiConfigMap := apiConfigs[0].(map[string]interface{})
 	apiAvailable := apiConfigMap["api_available"].(bool)
 	equinixManagedVlan := apiConfigMap["equinix_managed_vlan"].(bool)
-	bandwidthFromApi := apiConfigMap["bandwidth_from_api"].(bool)
-	integrationId := apiConfigMap["integration_id"].(string)
+	bandwidthFromAPI := apiConfigMap["bandwidth_from_api"].(bool)
+	integrationID := apiConfigMap["integration_id"].(string)
 	equinixManagedPort := apiConfigMap["equinix_managed_port"].(bool)
 	apiConfig.SetApiAvailable(apiAvailable)
 	apiConfig.SetEquinixManagedVlan(equinixManagedVlan)
-	apiConfig.SetBandwidthFromApi(bandwidthFromApi)
-	apiConfig.SetIntegrationId(integrationId)
+	apiConfig.SetBandwidthFromApi(bandwidthFromAPI)
+	apiConfig.SetIntegrationId(integrationID)
 	apiConfig.SetEquinixManagedPort(equinixManagedPort)
 
 	return apiConfig
@@ -1249,15 +1249,15 @@ func portsTerraformToGo(schemaPorts []interface{}) []fabricv4.ServiceProfileAcce
 		portMap := schemaPort.(map[string]interface{})
 		coloPort := fabricv4.ServiceProfileAccessPointCOLO{}
 
-		type_ := portMap["type"].(string)
-		if type_ != "" {
-			pType := fabricv4.ServiceProfileAccessPointCOLOType(type_)
+		typeString := portMap["type"].(string)
+		if typeString != "" {
+			pType := fabricv4.ServiceProfileAccessPointCOLOType(typeString)
 			coloPort.SetType(pType)
 		}
 
-		pUuid := portMap["uuid"].(string)
-		if pUuid != "" {
-			coloPort.SetUuid(pUuid)
+		pUUID := portMap["uuid"].(string)
+		if pUUID != "" {
+			coloPort.SetUuid(pUUID)
 		}
 
 		locationList := portMap["location"].(*schema.Set).List()
@@ -1294,18 +1294,18 @@ func virtualDevicesTerraformToGo(schemaVirtualDevices []interface{}) []fabricv4.
 	for index, virtualDevice := range schemaVirtualDevices {
 		vdMap := virtualDevice.(map[string]interface{})
 		vType := fabricv4.ServiceProfileAccessPointVDType(vdMap["type"].(string))
-		vUuid := vdMap["uuid"].(string)
+		vUUID := vdMap["uuid"].(string)
 		locationList := vdMap["location"].(*schema.Set).List()
 		var vLocation fabricv4.SimplifiedLocation
 		if len(locationList) != 0 {
 			vLocation = equinix_fabric_schema.LocationTerraformToGo(locationList)
 		}
-		vInterfaceUuid := vdMap["interface_uuid"].(string)
+		vInterfaceUUID := vdMap["interface_uuid"].(string)
 		accessPointVD := fabricv4.ServiceProfileAccessPointVD{}
 		accessPointVD.SetType(vType)
-		accessPointVD.SetUuid(vUuid)
+		accessPointVD.SetUuid(vUUID)
 		accessPointVD.SetLocation(vLocation)
-		accessPointVD.SetInterfaceUuid(vInterfaceUuid)
+		accessPointVD.SetInterfaceUuid(vInterfaceUUID)
 		virtualDevices[index] = accessPointVD
 	}
 	return virtualDevices
