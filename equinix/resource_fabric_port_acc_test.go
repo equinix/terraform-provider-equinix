@@ -39,11 +39,14 @@ func testAccFabricReadPortConfig(portUUID string) string {
 
 // Get Ports By Name
 func testAccFabricReadGetPortsByNameConfig(name string) string {
-	return fmt.Sprintf(`data "equinix_fabric_ports" "test" {
-	filter {
-		name = "%s"
+	return fmt.Sprintf(`
+    data "equinix_fabric_ports" "test" {
+		  filter {
+			property = "/name"
+			operator = "="
+			value    = "%s"
+		  }
 		}
-	}
 `, name)
 }
 
@@ -75,13 +78,13 @@ func TestAccFabricGetPortsByName_PFCR(t *testing.T) {
 // Get Ports By UUID
 func testAccFabricReadGetPortsByUUIDConfig(uuid string) string {
 	return fmt.Sprintf(`
-
-data "equinix_fabric_ports" "test" {
-	filter {
-		uuid = "%s"
-		}
-	}
-`, uuid)
+	data "equinix_fabric_ports" "test" {
+    	filter {
+				property = "/uuid"
+				operator = "="
+				value    = "%s"
+			  }
+			}`, uuid)
 }
 
 func TestAccFabricGetPortsByUUID_PFCR(t *testing.T) {
