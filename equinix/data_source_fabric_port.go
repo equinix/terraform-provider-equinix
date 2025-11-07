@@ -11,7 +11,7 @@ func dataSourceFabricPort() *schema.Resource {
 	return &schema.Resource{
 		ReadContext: dataSourceFabricPortRead,
 		Schema:      FabricPortResourceSchema(),
-		Description: `Fabric V4 API compatible data resource that allow user to fetch port
+		Description: `Fabric V4 API compatible data resource that allow user to fetch port by uuid
 
 Additional documentation:
 * Getting Started: https://docs.equinix.com/en-us/Content/Interconnection/Fabric/IMPLEMENTATION/fabric-ports-implement.htm

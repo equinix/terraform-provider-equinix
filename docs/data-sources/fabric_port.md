@@ -4,7 +4,7 @@ subcategory: "Fabric"
 
 # equinix_fabric_port (Data Source)
 
-Fabric V4 API compatible data resource that allow user to fetch port
+Fabric V4 API compatible data resource that allow user to fetch port by uuid
 
 Additional documentation:
 * Getting Started: https://docs.equinix.com/en-us/Content/Interconnection/Fabric/IMPLEMENTATION/fabric-ports-implement.htm
