@@ -162,7 +162,7 @@ func checkServiceProfileDelete(s *terraform.State) error {
 		if rs.Type != "equinix_fabric_service_profile" {
 			continue
 		}
-		err := equinix.WaitAndCheckServiceProfileDeleted(rs.Primary.ID, acceptance.TestAccProvider.Meta(), &schema.ResourceData{}, ctx, 10*time.Minute)
+		err := equinix.WaitAndCheckServiceProfileDeleted(ctx, acceptance.TestAccProvider.Meta(), rs.Primary.ID, &schema.ResourceData{}, 10*time.Minute)
 		if err != nil {
 			return fmt.Errorf("API call failed while waiting for resource deletion: %v", err)
 		}

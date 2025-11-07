@@ -660,7 +660,7 @@ func resourceFabricServiceProfileUpdate(ctx context.Context, d *schema.ResourceD
 	updateTimeout := d.Timeout(schema.TimeoutUpdate) - 30*time.Second - time.Since(start)
 	var err error
 	var eTag int64
-	_, err, eTag = waitForActiveServiceProfileAndPopulateETag(uuid, meta, d, ctx, updateTimeout)
+	_, err, eTag = waitForActiveServiceProfileAndPopulateETag(ctx, meta, d, uuid, updateTimeout)
 	if err != nil {
 		if !strings.Contains(err.Error(), "500") {
 			d.SetId("")
@@ -674,7 +674,7 @@ func resourceFabricServiceProfileUpdate(ctx context.Context, d *schema.ResourceD
 
 	updateTimeout = d.Timeout(schema.TimeoutUpdate) - 30*time.Second - time.Since(start)
 	var updatedServiceProfile *fabricv4.ServiceProfile
-	updatedServiceProfile, err = waitForServiceProfileUpdateCompletion(uuid, meta, d, ctx, updateTimeout)
+	updatedServiceProfile, err = waitForServiceProfileUpdateCompletion(ctx, meta, d, uuid, updateTimeout)
 	if err != nil {
 		if !strings.Contains(err.Error(), "500") {
 			d.SetId("")
@@ -685,7 +685,7 @@ func resourceFabricServiceProfileUpdate(ctx context.Context, d *schema.ResourceD
 	return setFabricServiceProfileMap(d, updatedServiceProfile)
 }
 
-func waitForServiceProfileUpdateCompletion(uuid string, meta interface{}, d *schema.ResourceData, ctx context.Context, timeout time.Duration) (*fabricv4.ServiceProfile, error) {
+func waitForServiceProfileUpdateCompletion(ctx context.Context, meta interface{}, d *schema.ResourceData, uuid string, timeout time.Duration) (*fabricv4.ServiceProfile, error) {
 	log.Printf("Waiting for service profile update to complete, uuid %s", uuid)
 	stateConf := &retry.StateChangeConf{
 		Target: []string{"COMPLETED"},
@@ -712,9 +712,9 @@ func waitForServiceProfileUpdateCompletion(uuid string, meta interface{}, d *sch
 	return dbSp, err
 }
 
-func waitForActiveServiceProfileAndPopulateETag(uuid string, meta interface{}, d *schema.ResourceData, ctx context.Context, timeout time.Duration) (*fabricv4.ServiceProfile, error, int64) {
+func waitForActiveServiceProfileAndPopulateETag(ctx context.Context, meta interface{}, d *schema.ResourceData, uuid string, timeout time.Duration) (*fabricv4.ServiceProfile, error, int64) {
 	log.Printf("Waiting for service profile to be in active state, uuid %s", uuid)
-	var eTag int64 = 0
+	var eTag int64
 	stateConf := &retry.StateChangeConf{
 		Target: []string{string(fabricv4.SERVICEPROFILESTATEENUM_ACTIVE)},
 		Refresh: func() (interface{}, string, error) {
@@ -763,7 +763,7 @@ func resourceFabricServiceProfileDelete(ctx context.Context, d *schema.ResourceD
 	}
 
 	deleteTimeout := d.Timeout(schema.TimeoutDelete) - 30*time.Second - time.Since(start)
-	waitErr := WaitAndCheckServiceProfileDeleted(uuid, meta, d, ctx, deleteTimeout)
+	waitErr := WaitAndCheckServiceProfileDeleted(ctx, meta, uuid, d, deleteTimeout)
 	if waitErr != nil {
 		return diag.Errorf("Error while waiting for Service Profile deletion: %v", waitErr)
 	}
@@ -771,7 +771,7 @@ func resourceFabricServiceProfileDelete(ctx context.Context, d *schema.ResourceD
 	return diags
 }
 
-func WaitAndCheckServiceProfileDeleted(uuid string, meta interface{}, d *schema.ResourceData, ctx context.Context, timeout time.Duration) error {
+func WaitAndCheckServiceProfileDeleted(ctx context.Context, meta interface{}, uuid string, d *schema.ResourceData, timeout time.Duration) error {
 	log.Printf("Waiting for service profile to be in deleted, uuid %s", uuid)
 	stateConf := &retry.StateChangeConf{
 		Target: []string{string(fabricv4.SERVICEPROFILESTATEENUM_DELETED)},
@@ -1276,9 +1276,9 @@ func portsTerraformToGo(schemaPorts []interface{}) []fabricv4.ServiceProfileAcce
 			coloPort.SetSellerRegionDescription(pSellerRegionDescription)
 		}
 
-		pCrossConnectId := portMap["cross_connect_id"].(string)
-		if pCrossConnectId != "" {
-			coloPort.SetCrossConnectId(pCrossConnectId)
+		pCrossConnectID := portMap["cross_connect_id"].(string)
+		if pCrossConnectID != "" {
+			coloPort.SetCrossConnectId(pCrossConnectID)
 		}
 
 		serviceProfileAccessPointColos[index] = coloPort
