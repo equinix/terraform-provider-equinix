@@ -5,55 +5,105 @@ import (
 	"testing"
 
 	"github.com/equinix/terraform-provider-equinix/internal/acceptance"
+	testinghelpers "github.com/equinix/terraform-provider-equinix/internal/fabric/testing_helpers"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 )
 
-func TestAccFabricReadPort(t *testing.T) {
+func TestAccFabricReadPort_PFCR(t *testing.T) {
+	ports := testinghelpers.GetFabricEnvPorts(t)
+	var aSidePortUUID string
+	if len(ports) > 0 {
+		aSidePortUUID = ports["pfcr"]["dot1q"][0].GetUuid()
+	}
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:  func() { acceptance.TestAccPreCheck(t) },
 		Providers: acceptance.TestAccProviders,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccFabricReadPortConfig(),
+				Config: testAccFabricReadPortConfig(aSidePortUUID),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(
-						"data.equinix_fabric_port.test", "name", fmt.Sprint("ops-user100-CX-SV1-NL-Qinq-STD-1G-PRI-NK-349")),
+						"data.equinix_fabric_port.test", "state", "ACTIVE"),
 				),
 			},
 		},
 	})
 }
 
-func testAccFabricReadPortConfig() string {
-	return fmt.Sprint(`data "equinix_fabric_port" "test" {
-	uuid = "c4d9350e-783c-83cd-1ce0-306a5c00a600"
-	}`)
+func testAccFabricReadPortConfig(portUUID string) string {
+	return fmt.Sprintf(`data "equinix_fabric_port" "test" {
+	uuid = "%s"
+	}
+`, portUUID)
 }
 
 // Get Ports By Name
 func testAccFabricReadGetPortsByNameConfig(name string) string {
-	return fmt.Sprintf(`data "equinix_fabric_ports" "test" {
-	filters {
-		name = "%s"
+	return fmt.Sprintf(`
+    data "equinix_fabric_ports" "test" {
+		  filter {
+			property = "/name"
+			operator = "="
+			value    = "%s"
+		  }
 		}
-	}
 `, name)
 }
 
-func TestAccFabricGetPortsByName(t *testing.T) {
+func TestAccFabricGetPortsByName_PFCR(t *testing.T) {
+	ports := testinghelpers.GetFabricEnvPorts(t)
+	var aSidePortName string
+	if len(ports) > 0 {
+		aSidePortName = ports["pfcr"]["dot1q"][0].GetName()
+	}
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:  func() { acceptance.TestAccPreCheck(t) },
 		Providers: acceptance.TestAccProviders,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccFabricReadGetPortsByNameConfig("ops-user100-CX-DC11-NL-Dot1q-BO-10G-SEC-JP-113"),
+				Config: testAccFabricReadGetPortsByNameConfig(aSidePortName),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(
 						"data.equinix_fabric_ports.test", "data.#", fmt.Sprint(1)),
 					resource.TestCheckResourceAttr(
-						"data.equinix_fabric_ports.test", "data.0.name", fmt.Sprint("ops-user100-CX-DC11-NL-Dot1q-BO-10G-SEC-JP-113")),
+						"data.equinix_fabric_ports.test", "data.0.state", "ACTIVE"),
+					resource.TestCheckNoResourceAttr(
+						"data.equinix_fabric_ports.test", "pagination"),
+				),
+			},
+		},
+	})
+}
+
+// Get Ports By UUID
+func testAccFabricReadGetPortsByUUIDConfig(uuid string) string {
+	return fmt.Sprintf(`
+	data "equinix_fabric_ports" "test" {
+    	filter {
+				property = "/uuid"
+				operator = "="
+				value    = "%s"
+			  }
+			}`, uuid)
+}
+
+func TestAccFabricGetPortsByUUID_PFCR(t *testing.T) {
+	ports := testinghelpers.GetFabricEnvPorts(t)
+	var aSidePortUUID string
+	if len(ports) > 0 {
+		aSidePortUUID = ports["pfcr"]["dot1q"][0].GetUuid()
+	}
+	resource.ParallelTest(t, resource.TestCase{
+		PreCheck:  func() { acceptance.TestAccPreCheck(t) },
+		Providers: acceptance.TestAccProviders,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccFabricReadGetPortsByUUIDConfig(aSidePortUUID),
+				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(
-						"data.equinix_fabric_ports.test", "data.0.uuid", fmt.Sprint("c4d9350e-7791-791d-1ce0-306a5c00a600")),
+						"data.equinix_fabric_ports.test", "data.#", fmt.Sprint(1)),
+					resource.TestCheckResourceAttr(
+						"data.equinix_fabric_ports.test", "data.0.state", "ACTIVE"),
 					resource.TestCheckNoResourceAttr(
 						"data.equinix_fabric_ports.test", "pagination"),
 				),

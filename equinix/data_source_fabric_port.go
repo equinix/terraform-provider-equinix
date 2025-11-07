@@ -29,7 +29,7 @@ func dataSourceFabricGetPortsByName() *schema.Resource {
 	return &schema.Resource{
 		ReadContext: dataSourceFabricGetPortsByNameResponseRead,
 		Schema:      readFabricPortsResponseSchema(),
-		Description: `Fabric V4 API compatible data resource that allow user to fetch port by name
+		Description: `Fabric V4 API compatible data resource that allow user to fetch ports by name or uuid
 
 Additional documentation:
 * Getting Started: https://docs.equinix.com/en-us/Content/Interconnection/Fabric/IMPLEMENTATION/fabric-ports-implement.htm

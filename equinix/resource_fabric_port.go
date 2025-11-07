@@ -73,6 +73,7 @@ func portOperationSch() map[string]*schema.Schema {
 	}
 }
 
+// PortRedundancySch returns the schema for port redundancy information
 func PortRedundancySch() map[string]*schema.Schema {
 	return map[string]*schema.Schema{
 		"enabled": {
@@ -93,6 +94,7 @@ func PortRedundancySch() map[string]*schema.Schema {
 	}
 }
 
+// FabricPortResourceSchema returns the schema for Fabric Port resource
 func FabricPortResourceSchema() map[string]*schema.Schema {
 	return map[string]*schema.Schema{
 		"type": {
@@ -227,10 +229,35 @@ func readFabricPortsResponseSchema() map[string]*schema.Schema {
 				Schema: readFabricPortResourceSchemaUpdated(),
 			},
 		},
+		"filter": {
+			Type:        schema.TypeList,
+			Optional:    true,
+			Description: "List of filter objects for SearchPorts API. Each filter must have property, operator, and value.",
+			Elem: &schema.Resource{
+				Schema: map[string]*schema.Schema{
+					"property": {
+						Type:        schema.TypeString,
+						Required:    true,
+						Description: "Property path (e.g. /name, /uuid, /metroCode, etc.)",
+					},
+					"operator": {
+						Type:        schema.TypeString,
+						Required:    true,
+						Description: "Operator (e.g. =, !=, in, etc.)",
+					},
+					"value": {
+						Type:        schema.TypeString,
+						Required:    true,
+						Description: "Value to filter by.",
+					},
+				},
+			},
+		},
 		"filters": {
 			Type:        schema.TypeSet,
-			Required:    true,
-			Description: "name",
+			Optional:    true,
+			Deprecated:  "Use 'filter' instead.",
+			Description: "(Deprecated) Use 'filter' instead.",
 			MaxItems:    1,
 			Elem: &schema.Resource{
 				Schema: readGetPortsByNameQueryParamSch(),
@@ -427,6 +454,42 @@ func setPortsListMap(d *schema.ResourceData, portResponse *fabricv4.AllPortsResp
 	return diags
 }
 
+// Returns a slice of filter objects (property, operator, value) from the new filter block, or falls back to legacy filters block
+func getPortFilterParam(d *schema.ResourceData) []map[string]string {
+	var filters []map[string]string
+	if v, ok := d.GetOk("filter"); ok {
+		filterList := v.([]interface{})
+		for _, f := range filterList {
+			fMap := f.(map[string]interface{})
+			filterObj := map[string]string{}
+			if prop, ok := fMap["property"]; ok && prop != nil {
+				filterObj["property"] = prop.(string)
+			}
+			if op, ok := fMap["operator"]; ok && op != nil {
+				filterObj["operator"] = op.(string)
+			}
+			if val, ok := fMap["value"]; ok && val != nil {
+				filterObj["value"] = val.(string)
+			}
+			if filterObj["property"] != "" && filterObj["operator"] != "" && filterObj["value"] != "" {
+				filters = append(filters, filterObj)
+			}
+		}
+	}
+	if len(filters) == 0 {
+		if v, ok := d.GetOk("filters"); ok {
+			filtersList := v.(*schema.Set).List()
+			if len(filtersList) > 0 {
+				filtersMap := filtersList[0].(map[string]interface{})
+				if n, ok := filtersMap["name"]; ok && n != nil && n != "" {
+					filters = append(filters, map[string]string{"property": "/name", "operator": "=", "value": n.(string)})
+				}
+			}
+		}
+	}
+	return filters
+}
+
 func resourceFabricPortGetByPortName(ctx context.Context, d *schema.ResourceData, meta interface{}) (diags diag.Diagnostics) {
 	defer func() {
 		if r := recover(); r != nil {
@@ -444,31 +507,41 @@ func resourceFabricPortGetByPortName(ctx context.Context, d *schema.ResourceData
 	}()
 
 	client := meta.(*config.Config).NewFabricClientForSDK(ctx, d)
-	portNameParam := d.Get("filters").(*schema.Set).List()
-	portName := portName(portNameParam)
-	ports, _, err := client.PortsApi.GetPorts(ctx).Name(portName).Execute()
-	if err != nil {
-		log.Printf("[WARN] Ports not found , error %s", err)
-		if !strings.Contains(err.Error(), "500") {
-			d.SetId("")
+	filters := getPortFilterParam(d)
+
+	if len(filters) == 1 {
+		f := filters[0]
+		if f["operator"] == "=" {
+			switch f["property"] {
+			case "/uuid":
+				port, _, err := client.PortsApi.GetPortByUuid(ctx, f["value"]).Execute()
+				if err != nil {
+					log.Printf("[WARN] Port uuid %s not found , error %s", f["value"], err)
+					if !strings.Contains(err.Error(), "500") {
+						d.SetId("")
+					}
+					return diag.FromErr(equinix_errors.FormatFabricError(err))
+				}
+				ports := &fabricv4.AllPortsResponse{Data: []fabricv4.Port{*port}}
+				d.SetId(port.GetUuid())
+				return setPortsListMap(d, ports)
+			case "/name":
+				ports, _, err := client.PortsApi.GetPorts(ctx).Name(f["value"]).Execute()
+				if err != nil {
+					log.Printf("[WARN] Ports not found , error %s", err)
+					if !strings.Contains(err.Error(), "500") {
+						d.SetId("")
+					}
+					return diag.FromErr(equinix_errors.FormatFabricError(err))
+				}
+				if len(ports.Data) < 1 {
+					return diag.FromErr(fmt.Errorf("no records are found for the port filter provided, please change the filter"))
+				}
+				d.SetId(ports.Data[0].GetUuid())
+				return setPortsListMap(d, ports)
+			}
 		}
-		return diag.FromErr(equinix_errors.FormatFabricError(err))
 	}
 
-	if len(ports.Data) < 1 {
-		return diag.FromErr(fmt.Errorf("no records are found for the port name provided - %d , please change the port name", len(ports.Data)))
-	}
-
-	d.SetId(ports.Data[0].GetUuid())
-	return setPortsListMap(d, ports)
-}
-
-func portName(portNameParam []interface{}) string {
-	if len(portNameParam) == 0 {
-		return ""
-	}
-
-	pnMap := portNameParam[0].(map[string]interface{})
-	portName := pnMap["name"].(string)
-	return portName
+	return diag.FromErr(fmt.Errorf("advanced filtering is not yet supported by the Equinix Terraform provider. Only a single filter for /name or /uuid with '=' is currently supported"))
 }
