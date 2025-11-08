@@ -378,6 +378,11 @@ func createSPAccessPointTypeConfigSch() map[string]*schema.Schema {
 			Optional:    true,
 			Description: "Mandate redundant connections",
 		},
+		"selective_redundancy": {
+			Type:        schema.TypeBool,
+			Optional:    true,
+			Description: "Optional redundant connections",
+		},
 		"allow_bandwidth_auto_approval": {
 			Type:        schema.TypeBool,
 			Optional:    true,
@@ -419,7 +424,7 @@ func createSPAccessPointTypeConfigSch() map[string]*schema.Schema {
 			Description: "Api configuration details",
 			MaxItems:    1,
 			Elem: &schema.Resource{
-				Schema: createApiConfigSch(),
+				Schema: createAPIConfigSch(),
 			},
 		},
 		"authentication_key": {
@@ -449,7 +454,7 @@ func createSPAccessPointTypeConfigSch() map[string]*schema.Schema {
 	}
 }
 
-func createApiConfigSch() map[string]*schema.Schema {
+func createAPIConfigSch() map[string]*schema.Schema {
 	return map[string]*schema.Schema{
 		"api_available": {
 			Type:        schema.TypeBool,
@@ -655,7 +660,7 @@ func resourceFabricServiceProfileUpdate(ctx context.Context, d *schema.ResourceD
 	updateTimeout := d.Timeout(schema.TimeoutUpdate) - 30*time.Second - time.Since(start)
 	var err error
 	var eTag int64
-	_, err, eTag = waitForActiveServiceProfileAndPopulateETag(uuid, meta, d, ctx, updateTimeout)
+	_, eTag, err = waitForActiveServiceProfileAndPopulateETag(ctx, meta, d, uuid, updateTimeout)
 	if err != nil {
 		if !strings.Contains(err.Error(), "500") {
 			d.SetId("")
@@ -669,7 +674,7 @@ func resourceFabricServiceProfileUpdate(ctx context.Context, d *schema.ResourceD
 
 	updateTimeout = d.Timeout(schema.TimeoutUpdate) - 30*time.Second - time.Since(start)
 	var updatedServiceProfile *fabricv4.ServiceProfile
-	updatedServiceProfile, err = waitForServiceProfileUpdateCompletion(uuid, meta, d, ctx, updateTimeout)
+	updatedServiceProfile, err = waitForServiceProfileUpdateCompletion(ctx, meta, d, uuid, updateTimeout)
 	if err != nil {
 		if !strings.Contains(err.Error(), "500") {
 			d.SetId("")
@@ -680,7 +685,7 @@ func resourceFabricServiceProfileUpdate(ctx context.Context, d *schema.ResourceD
 	return setFabricServiceProfileMap(d, updatedServiceProfile)
 }
 
-func waitForServiceProfileUpdateCompletion(uuid string, meta interface{}, d *schema.ResourceData, ctx context.Context, timeout time.Duration) (*fabricv4.ServiceProfile, error) {
+func waitForServiceProfileUpdateCompletion(ctx context.Context, meta interface{}, d *schema.ResourceData, uuid string, timeout time.Duration) (*fabricv4.ServiceProfile, error) {
 	log.Printf("Waiting for service profile update to complete, uuid %s", uuid)
 	stateConf := &retry.StateChangeConf{
 		Target: []string{"COMPLETED"},
@@ -707,9 +712,9 @@ func waitForServiceProfileUpdateCompletion(uuid string, meta interface{}, d *sch
 	return dbSp, err
 }
 
-func waitForActiveServiceProfileAndPopulateETag(uuid string, meta interface{}, d *schema.ResourceData, ctx context.Context, timeout time.Duration) (*fabricv4.ServiceProfile, error, int64) {
+func waitForActiveServiceProfileAndPopulateETag(ctx context.Context, meta interface{}, d *schema.ResourceData, uuid string, timeout time.Duration) (*fabricv4.ServiceProfile, int64, error) {
 	log.Printf("Waiting for service profile to be in active state, uuid %s", uuid)
-	var eTag int64 = 0
+	var eTag int64
 	stateConf := &retry.StateChangeConf{
 		Target: []string{string(fabricv4.SERVICEPROFILESTATEENUM_ACTIVE)},
 		Refresh: func() (interface{}, string, error) {
@@ -740,7 +745,7 @@ func waitForActiveServiceProfileAndPopulateETag(uuid string, meta interface{}, d
 	if err == nil {
 		dbServiceProfile = inter.(*fabricv4.ServiceProfile)
 	}
-	return dbServiceProfile, err, eTag
+	return dbServiceProfile, eTag, err
 }
 
 func resourceFabricServiceProfileDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
@@ -758,7 +763,7 @@ func resourceFabricServiceProfileDelete(ctx context.Context, d *schema.ResourceD
 	}
 
 	deleteTimeout := d.Timeout(schema.TimeoutDelete) - 30*time.Second - time.Since(start)
-	waitErr := WaitAndCheckServiceProfileDeleted(uuid, meta, d, ctx, deleteTimeout)
+	waitErr := WaitAndCheckServiceProfileDeleted(ctx, meta, uuid, d, deleteTimeout)
 	if waitErr != nil {
 		return diag.Errorf("Error while waiting for Service Profile deletion: %v", waitErr)
 	}
@@ -766,7 +771,8 @@ func resourceFabricServiceProfileDelete(ctx context.Context, d *schema.ResourceD
 	return diags
 }
 
-func WaitAndCheckServiceProfileDeleted(uuid string, meta interface{}, d *schema.ResourceData, ctx context.Context, timeout time.Duration) error {
+// WaitAndCheckServiceProfileDeleted Function to wait until service profile is deleted
+func WaitAndCheckServiceProfileDeleted(ctx context.Context, meta interface{}, uuid string, d *schema.ResourceData, timeout time.Duration) error {
 	log.Printf("Waiting for service profile to be in deleted, uuid %s", uuid)
 	stateConf := &retry.StateChangeConf{
 		Target: []string{string(fabricv4.SERVICEPROFILESTATEENUM_DELETED)},
@@ -1021,6 +1027,9 @@ func accessPointTypeConfigsTerraformToGo(schemaAccessPointTypeConfigs []interfac
 		spConnectionRedundancyRequired := apMap["connection_redundancy_required"].(bool)
 		accessPointTypeCOLO.SetConnectionRedundancyRequired(spConnectionRedundancyRequired)
 
+		spSelectiveRedundancyRequired := apMap["selective_redundancy"].(bool)
+		accessPointTypeCOLO.SetSelectiveRedundancy(spSelectiveRedundancyRequired)
+
 		spAllowBandwidthAutoApproval := apMap["allow_bandwidth_auto_approval"].(bool)
 		accessPointTypeCOLO.SetAllowBandwidthAutoApproval(spAllowBandwidthAutoApproval)
 
@@ -1041,8 +1050,8 @@ func accessPointTypeConfigsTerraformToGo(schemaAccessPointTypeConfigs []interfac
 
 		if apMap["api_config"] != nil {
 			apiConfig := apMap["api_config"].(*schema.Set).List()
-			spApiConfig := apiConfigTerraformToGo(apiConfig)
-			accessPointTypeCOLO.SetApiConfig(spApiConfig)
+			spAPIConfig := apiConfigTerraformToGo(apiConfig)
+			accessPointTypeCOLO.SetApiConfig(spAPIConfig)
 		}
 
 		if apMap["authentication_key"] != nil {
@@ -1076,6 +1085,7 @@ func accessPointTypeConfigGoToTerraform(spAccessPointTypes []fabricv4.ServicePro
 			"allow_bandwidth_auto_approval":    spAccessPointType.GetAllowBandwidthAutoApproval(),
 			"enable_auto_generate_service_key": spAccessPointType.GetEnableAutoGenerateServiceKey(),
 			"connection_redundancy_required":   spAccessPointType.GetConnectionRedundancyRequired(),
+			"selective_redundancy":             spAccessPointType.GetSelectiveRedundancy(),
 			"connection_label":                 spAccessPointType.GetConnectionLabel(),
 			"api_config":                       apiConfigGoToTerraform(&apiConfig),
 			"authentication_key":               authenticationKeyGoToTerraform(&authKey),
@@ -1088,16 +1098,16 @@ func accessPointTypeConfigGoToTerraform(spAccessPointTypes []fabricv4.ServicePro
 
 func apiConfigGoToTerraform(apiConfig *fabricv4.ApiConfig) *schema.Set {
 
-	mappedApiConfig := make(map[string]interface{})
-	mappedApiConfig["api_available"] = apiConfig.GetApiAvailable()
-	mappedApiConfig["equinix_managed_vlan"] = apiConfig.GetEquinixManagedVlan()
-	mappedApiConfig["bandwidth_from_api"] = apiConfig.GetBandwidthFromApi()
-	mappedApiConfig["integration_id"] = apiConfig.GetIntegrationId()
-	mappedApiConfig["equinix_managed_port"] = apiConfig.GetEquinixManagedPort()
+	mappedAPIConfig := make(map[string]interface{})
+	mappedAPIConfig["api_available"] = apiConfig.GetApiAvailable()
+	mappedAPIConfig["equinix_managed_vlan"] = apiConfig.GetEquinixManagedVlan()
+	mappedAPIConfig["bandwidth_from_api"] = apiConfig.GetBandwidthFromApi()
+	mappedAPIConfig["integration_id"] = apiConfig.GetIntegrationId()
+	mappedAPIConfig["equinix_managed_port"] = apiConfig.GetEquinixManagedPort()
 
 	apiConfigSet := schema.NewSet(
-		schema.HashResource(&schema.Resource{Schema: createApiConfigSch()}),
-		[]interface{}{mappedApiConfig})
+		schema.HashResource(&schema.Resource{Schema: createAPIConfigSch()}),
+		[]interface{}{mappedAPIConfig})
 	return apiConfigSet
 }
 
@@ -1132,13 +1142,13 @@ func apiConfigTerraformToGo(apiConfigs []interface{}) fabricv4.ApiConfig {
 	apiConfigMap := apiConfigs[0].(map[string]interface{})
 	apiAvailable := apiConfigMap["api_available"].(bool)
 	equinixManagedVlan := apiConfigMap["equinix_managed_vlan"].(bool)
-	bandwidthFromApi := apiConfigMap["bandwidth_from_api"].(bool)
-	integrationId := apiConfigMap["integration_id"].(string)
+	bandwidthFromAPI := apiConfigMap["bandwidth_from_api"].(bool)
+	integrationID := apiConfigMap["integration_id"].(string)
 	equinixManagedPort := apiConfigMap["equinix_managed_port"].(bool)
 	apiConfig.SetApiAvailable(apiAvailable)
 	apiConfig.SetEquinixManagedVlan(equinixManagedVlan)
-	apiConfig.SetBandwidthFromApi(bandwidthFromApi)
-	apiConfig.SetIntegrationId(integrationId)
+	apiConfig.SetBandwidthFromApi(bandwidthFromAPI)
+	apiConfig.SetIntegrationId(integrationID)
 	apiConfig.SetEquinixManagedPort(equinixManagedPort)
 
 	return apiConfig
@@ -1240,15 +1250,15 @@ func portsTerraformToGo(schemaPorts []interface{}) []fabricv4.ServiceProfileAcce
 		portMap := schemaPort.(map[string]interface{})
 		coloPort := fabricv4.ServiceProfileAccessPointCOLO{}
 
-		type_ := portMap["type"].(string)
-		if type_ != "" {
-			pType := fabricv4.ServiceProfileAccessPointCOLOType(type_)
+		typeString := portMap["type"].(string)
+		if typeString != "" {
+			pType := fabricv4.ServiceProfileAccessPointCOLOType(typeString)
 			coloPort.SetType(pType)
 		}
 
-		pUuid := portMap["uuid"].(string)
-		if pUuid != "" {
-			coloPort.SetUuid(pUuid)
+		pUUID := portMap["uuid"].(string)
+		if pUUID != "" {
+			coloPort.SetUuid(pUUID)
 		}
 
 		locationList := portMap["location"].(*schema.Set).List()
@@ -1267,9 +1277,9 @@ func portsTerraformToGo(schemaPorts []interface{}) []fabricv4.ServiceProfileAcce
 			coloPort.SetSellerRegionDescription(pSellerRegionDescription)
 		}
 
-		pCrossConnectId := portMap["cross_connect_id"].(string)
-		if pCrossConnectId != "" {
-			coloPort.SetCrossConnectId(pCrossConnectId)
+		pCrossConnectID := portMap["cross_connect_id"].(string)
+		if pCrossConnectID != "" {
+			coloPort.SetCrossConnectId(pCrossConnectID)
 		}
 
 		serviceProfileAccessPointColos[index] = coloPort
@@ -1285,18 +1295,18 @@ func virtualDevicesTerraformToGo(schemaVirtualDevices []interface{}) []fabricv4.
 	for index, virtualDevice := range schemaVirtualDevices {
 		vdMap := virtualDevice.(map[string]interface{})
 		vType := fabricv4.ServiceProfileAccessPointVDType(vdMap["type"].(string))
-		vUuid := vdMap["uuid"].(string)
+		vUUID := vdMap["uuid"].(string)
 		locationList := vdMap["location"].(*schema.Set).List()
 		var vLocation fabricv4.SimplifiedLocation
 		if len(locationList) != 0 {
 			vLocation = equinix_fabric_schema.LocationTerraformToGo(locationList)
 		}
-		vInterfaceUuid := vdMap["interface_uuid"].(string)
+		vInterfaceUUID := vdMap["interface_uuid"].(string)
 		accessPointVD := fabricv4.ServiceProfileAccessPointVD{}
 		accessPointVD.SetType(vType)
-		accessPointVD.SetUuid(vUuid)
+		accessPointVD.SetUuid(vUUID)
 		accessPointVD.SetLocation(vLocation)
-		accessPointVD.SetInterfaceUuid(vInterfaceUuid)
+		accessPointVD.SetInterfaceUuid(vInterfaceUUID)
 		virtualDevices[index] = accessPointVD
 	}
 	return virtualDevices

@@ -109,6 +109,7 @@ Read-Only:
 - `connection_redundancy_required` (Boolean)
 - `enable_auto_generate_service_key` (Boolean)
 - `link_protocol_config` (Set of Object) (see [below for nested schema](#nestedobjatt--access_point_type_configs--link_protocol_config))
+- `selective_redundancy` (Boolean)
 - `supported_bandwidths` (List of Number)
 - `type` (String)
 - `uuid` (String)
