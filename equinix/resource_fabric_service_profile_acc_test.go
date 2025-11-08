@@ -66,6 +66,7 @@ func TestAccFabricCreateServiceProfile_PFCR(t *testing.T) {
 					resource.TestCheckResourceAttrSet("equinix_fabric_service_profile.test", "access_point_type_configs.0.allow_custom_bandwidth"),
 					resource.TestCheckResourceAttrSet("equinix_fabric_service_profile.test", "access_point_type_configs.0.enable_auto_generate_service_key"),
 					resource.TestCheckResourceAttrSet("equinix_fabric_service_profile.test", "access_point_type_configs.0.connection_redundancy_required"),
+					resource.TestCheckResourceAttrSet("equinix_fabric_service_profile.test", "access_point_type_configs.0.selective_redundancy"),
 					resource.TestCheckResourceAttrSet("equinix_fabric_service_profile.test", "self_profile"),
 				),
 				ExpectNonEmptyPlan: true,
@@ -97,6 +98,7 @@ func TestAccFabricCreateServiceProfile_PFCR(t *testing.T) {
 					resource.TestCheckResourceAttrSet("equinix_fabric_service_profile.test", "access_point_type_configs.0.allow_custom_bandwidth"),
 					resource.TestCheckResourceAttrSet("equinix_fabric_service_profile.test", "access_point_type_configs.0.enable_auto_generate_service_key"),
 					resource.TestCheckResourceAttrSet("equinix_fabric_service_profile.test", "access_point_type_configs.0.connection_redundancy_required"),
+					resource.TestCheckResourceAttrSet("equinix_fabric_service_profile.test", "access_point_type_configs.0.selective_redundancy"),
 					resource.TestCheckResourceAttrSet("equinix_fabric_service_profile.test", "self_profile"),
 				),
 				ExpectNonEmptyPlan: true,
@@ -130,6 +132,7 @@ func testAccFabricCreateServiceProfileConfig(portUUID string, portType string, p
   access_point_type_configs {
       type = "COLO"
       connection_redundancy_required = false
+      selective_redundancy = true
       allow_bandwidth_auto_approval = false
       allow_remote_connections = false
       connection_label = "test"
