@@ -39,6 +39,8 @@ const (
 	TokenExchangeScopeEnvVar               = "EQUINIX_TOKEN_EXCHANGE_SCOPE"
 	TokenExchangeSubjectTokenEnvVarEnvVar  = "EQUINIX_TOKEN_EXCHANGE_SUBJECT_TOKEN_ENV_VAR"
 	StsEndpointEnvVar                      = "EQUINIX_STS_ENDPOINT"
+	StsSourceTokenEnvVar                   = "EQUINIX_STS_SOURCE_TOKEN"
+	StsAuthScopeEnvVar                     = "EQUINIX_STS_AUTH_SCOPE"
 	DefaultTokenExchangeSubjectTokenEnvVar = "EQUINIX_TOKEN_EXCHANGE_SUBJECT_TOKEN"
 )
 

@@ -27,12 +27,27 @@ type FrameworkProviderConfig struct {
 	MaxRetryWaitSeconds             types.Int64  `tfsdk:"max_retry_wait_seconds"`
 	TokenExchangeScope              types.String `tfsdk:"token_exchange_scope"`
 	StsBaseURL                      types.String `tfsdk:"sts_endpoint"`
+	StsSourceToken                  types.String `tfsdk:"sts_source_token"`
+	StsAuthScope                    types.String `tfsdk:"sts_auth_scope"`
 	TokenExchangeSubjectToken       types.String `tfsdk:"token_exchange_subject_token"`
 	TokenExchangeSubjectTokenEnvVar types.String `tfsdk:"token_exchange_subject_token_env_var"`
 }
 
 func (c *FrameworkProviderConfig) toOldStyleConfig() *config.Config {
 	// this immitates func configureProvider in proivder.go
+	
+	// Determine which scope to use: sts_auth_scope takes precedence over token_exchange_scope
+	scope := c.TokenExchangeScope.ValueString()
+	if !c.StsAuthScope.IsNull() && c.StsAuthScope.ValueString() != "" {
+		scope = c.StsAuthScope.ValueString()
+	}
+	
+	// Determine which source token to use: sts_source_token takes precedence over token_exchange_subject_token
+	sourceToken := c.TokenExchangeSubjectToken.ValueString()
+	if !c.StsSourceToken.IsNull() && c.StsSourceToken.ValueString() != "" {
+		sourceToken = c.StsSourceToken.ValueString()
+	}
+	
 	return &config.Config{
 		AuthToken:                       c.AuthToken.ValueString(),
 		BaseURL:                         c.BaseURL.ValueString(),
@@ -43,9 +58,9 @@ func (c *FrameworkProviderConfig) toOldStyleConfig() *config.Config {
 		PageSize:                        int(c.PageSize.ValueInt64()),
 		MaxRetries:                      int(c.MaxRetries.ValueInt64()),
 		MaxRetryWait:                    time.Duration(c.MaxRetryWaitSeconds.ValueInt64()) * time.Second,
-		TokenExchangeScope:              c.TokenExchangeScope.ValueString(),
+		TokenExchangeScope:              scope,
 		StsBaseURL:                      c.StsBaseURL.ValueString(),
-		TokenExchangeSubjectToken:       c.TokenExchangeSubjectToken.ValueString(),
+		TokenExchangeSubjectToken:       sourceToken,
 		TokenExchangeSubjectTokenEnvVar: c.TokenExchangeSubjectTokenEnvVar.ValueString(),
 	}
 }
@@ -100,6 +115,12 @@ func (fp *FrameworkProvider) Configure(
 
 	fwconfig.StsBaseURL = determineStrConfValue(
 		fwconfig.StsBaseURL, config.StsEndpointEnvVar, config.DefaultStsBaseURL)
+
+	fwconfig.StsSourceToken = determineStrConfValue(
+		fwconfig.StsSourceToken, config.StsSourceTokenEnvVar, "")
+
+	fwconfig.StsAuthScope = determineStrConfValue(
+		fwconfig.StsAuthScope, config.StsAuthScopeEnvVar, "")
 
 	fwconfig.TokenExchangeSubjectToken = determineStrConfValue(
 		fwconfig.TokenExchangeSubjectToken, "", "")

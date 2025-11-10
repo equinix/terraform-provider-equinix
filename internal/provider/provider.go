@@ -96,6 +96,14 @@ func (p *FrameworkProvider) Schema(
 					equinix_validation.URLWithScheme("http", "https"),
 				},
 			},
+			"sts_source_token": schema.StringAttribute{
+				Optional:    true,
+				Description: "The source token to use for STS authentication. Must be an OIDC ID token issued by an OIDC provider trusted by Equinix STS. This argument can also be specified with the `EQUINIX_STS_SOURCE_TOKEN` shell environment variable. Please note that STS is an alpha feature and not available for all users.",
+			},
+			"sts_auth_scope": schema.StringAttribute{
+				Optional:    true,
+				Description: "The scope of the STS authentication token. Must be an access policy ERN or a string of the form `roleassignments:<org_id>`. This argument can also be specified with the `EQUINIX_STS_AUTH_SCOPE` shell environment variable. Please note that STS is an alpha feature and not available for all users.",
+			},
 			"token_exchange_subject_token": schema.StringAttribute{
 				Optional:    true,
 				Description: "The subject token to use for token exchange authentication. Must be an OIDC ID token issued by an OIDC provider trusted by Equinix STS. If not set, the provider will use the environment variable specified in `token_exchange_subject_token_env_var`. Please note that token exchange is an alpha feature and not available for all users.",
