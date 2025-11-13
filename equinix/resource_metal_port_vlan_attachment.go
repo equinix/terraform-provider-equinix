@@ -1,24 +1,27 @@
 package equinix
 
 import (
+	"context"
 	"fmt"
 	"log"
 
+	"github.com/equinix/equinix-sdk-go/services/metalv1"
 	equinix_errors "github.com/equinix/terraform-provider-equinix/internal/errors"
 
 	"github.com/equinix/terraform-provider-equinix/internal/config"
 	"github.com/equinix/terraform-provider-equinix/internal/mutexkv"
 
+	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/packethost/packngo"
 )
 
 func resourceMetalPortVlanAttachment() *schema.Resource {
 	return &schema.Resource{
-		Create: resourceMetalPortVlanAttachmentCreate,
-		Read:   resourceMetalPortVlanAttachmentRead,
-		Delete: resourceMetalPortVlanAttachmentDelete,
-		Update: resourceMetalPortVlanAttachmentUpdate,
+		CreateContext: resourceMetalPortVlanAttachmentCreate,
+		ReadContext:   resourceMetalPortVlanAttachmentRead,
+		DeleteContext: resourceMetalPortVlanAttachmentDelete,
+		UpdateContext: resourceMetalPortVlanAttachmentUpdate,
 		Importer: &schema.ResourceImporter{
 			StateContext: schema.ImportStatePassthroughContext,
 		},
@@ -69,32 +72,32 @@ func resourceMetalPortVlanAttachment() *schema.Resource {
 	}
 }
 
-func resourceMetalPortVlanAttachmentCreate(d *schema.ResourceData, meta interface{}) error {
+func resourceMetalPortVlanAttachmentCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	meta.(*config.Config).AddModuleToMetalUserAgent(d)
-	client := meta.(*config.Config).Metal
+	client := meta.(*config.Config).NewMetalClientForSDK(d)
 	deviceID := d.Get("device_id").(string)
 	pName := d.Get("port_name").(string)
 	vlanVNID := d.Get("vlan_vnid").(int)
 
-	dev, _, err := client.Devices.Get(deviceID, &packngo.GetOptions{
-		Includes: []string{"virtual_networks,project,native_virtual_network"},
-	})
+	dev, _, err := client.DevicesApi.FindDeviceById(ctx, deviceID).Include([]string{"virtual_networks,project,native_virtual_network"}).Execute()
 	if err != nil {
-		return err
+		return diag.FromErr(err)
 	}
 
 	portFound := false
 	vlanFound := false
 	vlanID := ""
-	var port packngo.Port
+	var port metalv1.Port
+
 	for _, p := range dev.NetworkPorts {
-		if p.Name == pName {
+		if p.GetName() == pName {
 			portFound = true
 			port = p
-			for _, n := range p.AttachedVirtualNetworks {
-				if vlanVNID == n.VXLAN {
+
+			for _, n := range p.VirtualNetworks {
+				if vlanVNID == int(n.GetVxlan()) {
 					vlanFound = true
-					vlanID = n.ID
+					vlanID = n.GetId()
 					break
 				}
 			}
@@ -102,67 +105,65 @@ func resourceMetalPortVlanAttachmentCreate(d *schema.ResourceData, meta interfac
 		}
 	}
 	if !portFound {
-		return fmt.Errorf("device %s doesn't have port %s", deviceID, pName)
+		return diag.FromErr(fmt.Errorf("device %s doesn't have port %s", deviceID, pName))
 	}
 
-	par := &packngo.PortAssignRequest{PortID: port.ID}
 	if vlanFound {
 		log.Printf("Port %s already has VLAN %d assigned", pName, vlanVNID)
-		par.VirtualNetworkID = vlanID
 	} else {
-		projectID := dev.Project.ID
-		deviceMetro := dev.Metro.Code
-		deviceFacility := dev.Facility.Code
-		vlans, _, err := client.ProjectVirtualNetworks.List(projectID, nil)
+		projectID := dev.Project.GetId()
+		deviceMetro := dev.GetMetro()
+		deviceMetroCode := (&deviceMetro).GetCode()
+
+		vlans, _, err := client.VLANsApi.FindVirtualNetworks(ctx, projectID).Execute()
 		if err != nil {
-			return err
+			return diag.FromErr(err)
 		}
 		for _, n := range vlans.VirtualNetworks {
 			// looking up vlan with given vxlan, in the same location as
 			// the device - either in the same faclility or metro or both
-			vlanMetro := n.MetroCode
-			vlanFacility := n.FacilityCode
-			if n.VXLAN == vlanVNID {
-				facilitiesMatch := deviceFacility == vlanFacility
-				metrosMatch := deviceMetro == vlanMetro
-				if metrosMatch || facilitiesMatch {
-					vlanID = n.ID
+			vlanMetro := n.GetMetroCode()
+			if int(n.GetVxlan()) == vlanVNID {
+				if deviceMetroCode == vlanMetro {
+					vlanID = n.GetId()
 					break
 				}
 			}
 		}
 		if len(vlanID) == 0 {
-			return fmt.Errorf("VLAN with VNID %d doesn't exist in project %s", vlanVNID, projectID)
+			return diag.FromErr(fmt.Errorf("VLAN with VNID %d doesn't exist in project %s", vlanVNID, projectID))
 		}
-
-		par.VirtualNetworkID = vlanID
 
 		// Equinix Metal doesn't allow multiple VLANs to be assigned
 		// to the same port at the same time
-		lockID := "vlan-attachment-" + port.ID
+		lockID := "vlan-attachment-" + port.GetId()
 		mutexkv.Metal.Lock(lockID)
 		defer mutexkv.Metal.Unlock(lockID)
 
-		_, _, err = client.Ports.Assign(port.ID, vlanID)
+		assignment := &metalv1.PortAssignInput{}
+		assignment.SetVnid(vlanID)
+
+		_, _, err = client.PortsApi.AssignPort(ctx, port.GetId()).PortAssignInput(*assignment).Execute()
 		if err != nil {
-			return err
+			return diag.FromErr(err)
 		}
 	}
 
-	d.SetId(port.ID + ":" + vlanID)
+	d.SetId(port.GetId() + ":" + vlanID)
 
 	native := d.Get("native").(bool)
 	if native {
-		_, _, err = client.Ports.AssignNative(port.ID, vlanID)
+		req := metalv1.ApiAssignNativeVlanRequest{}.Vnid(vlanID)
+		_, _, err = client.PortsApi.AssignNativeVlanExecute(req)
 		if err != nil {
-			return err
+			return diag.FromErr(err)
 		}
 	}
 
-	return resourceMetalPortVlanAttachmentRead(d, meta)
+	return resourceMetalPortVlanAttachmentRead(ctx, d, meta)
 }
 
-func resourceMetalPortVlanAttachmentRead(d *schema.ResourceData, meta interface{}) error {
+func resourceMetalPortVlanAttachmentRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	meta.(*config.Config).AddModuleToMetalUserAgent(d)
 	client := meta.(*config.Config).Metal
 	deviceID := d.Get("device_id").(string)
@@ -178,7 +179,7 @@ func resourceMetalPortVlanAttachmentRead(d *schema.ResourceData, meta interface{
 			d.SetId("")
 			return nil
 		}
-		return err
+		return diag.FromErr(err)
 	}
 	portFound := false
 	vlanFound := false
@@ -205,28 +206,28 @@ func resourceMetalPortVlanAttachmentRead(d *schema.ResourceData, meta interface{
 	if !portFound {
 		// TODO(displague) should we clear state if the port is unexpectedly
 		// gone? Can we treat this like a deletion?
-		return fmt.Errorf("device %s doesn't have port %s", deviceID, pName)
+		return diag.FromErr(fmt.Errorf("device %s doesn't have port %s", deviceID, pName))
 	}
 	if !vlanFound {
 		d.SetId("")
 	}
 
 	if err := d.Set("port_id", portID); err != nil {
-		return fmt.Errorf("failed to update resource state with new port_id: %w", err)
+		return diag.FromErr(fmt.Errorf("failed to update resource state with new port_id: %w", err))
 	}
 
 	if err := d.Set("vlan_id", vlanID); err != nil {
-		return fmt.Errorf("failed to update resource state with new vlan_id: %w", err)
+		return diag.FromErr(fmt.Errorf("failed to update resource state with new vlan_id: %w", err))
 	}
 
 	if err := d.Set("native", vlanNative); err != nil {
-		return fmt.Errorf("failed to update resource state with native status: %w", err)
+		return diag.FromErr(fmt.Errorf("failed to update resource state with native status: %w", err))
 	}
 
 	return nil
 }
 
-func resourceMetalPortVlanAttachmentUpdate(d *schema.ResourceData, meta any) error {
+func resourceMetalPortVlanAttachmentUpdate(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	meta.(*config.Config).AddModuleToMetalUserAgent(d)
 	client := meta.(*config.Config).Metal
 	if d.HasChange("native") {
@@ -236,19 +237,19 @@ func resourceMetalPortVlanAttachmentUpdate(d *schema.ResourceData, meta any) err
 			vlanID := d.Get("vlan_id").(string)
 			_, _, err := client.Ports.AssignNative(portID, vlanID)
 			if err != nil {
-				return err
+				return diag.FromErr(err)
 			}
 		} else {
 			_, _, err := client.Ports.UnassignNative(portID)
 			if err != nil {
-				return err
+				return diag.FromErr(err)
 			}
 		}
 	}
-	return resourceMetalPortVlanAttachmentRead(d, meta)
+	return resourceMetalPortVlanAttachmentRead(ctx, d, meta)
 }
 
-func resourceMetalPortVlanAttachmentDelete(d *schema.ResourceData, meta any) error {
+func resourceMetalPortVlanAttachmentDelete(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	meta.(*config.Config).AddModuleToMetalUserAgent(d)
 	client := meta.(*config.Config).Metal
 	pID := d.Get("port_id").(string)
@@ -257,7 +258,7 @@ func resourceMetalPortVlanAttachmentDelete(d *schema.ResourceData, meta any) err
 	if native {
 		_, resp, err := client.Ports.UnassignNative(pID)
 		if equinix_errors.IgnoreResponseErrors(equinix_errors.HttpForbidden, equinix_errors.HttpNotFound)(resp, err) != nil {
-			return err
+			return diag.FromErr(err)
 		}
 	}
 
@@ -266,7 +267,7 @@ func resourceMetalPortVlanAttachmentDelete(d *schema.ResourceData, meta any) err
 	defer mutexkv.Metal.Unlock(lockID)
 	portPtr, resp, err := client.Ports.Unassign(pID, vlanID)
 	if equinix_errors.IgnoreResponseErrors(equinix_errors.HttpForbidden, equinix_errors.HttpNotFound, equinix_errors.IsNotAssigned)(resp, err) != nil {
-		return err
+		return diag.FromErr(err)
 	}
 	forceBond := d.Get("force_bond").(bool)
 	if forceBond && (len(portPtr.AttachedVirtualNetworks) == 0) {
@@ -274,7 +275,7 @@ func resourceMetalPortVlanAttachmentDelete(d *schema.ResourceData, meta any) err
 		portName := d.Get("port_name").(string)
 		device, _, err := client.Devices.Get(deviceID, &packngo.GetOptions{})
 		if err != nil {
-			return equinix_errors.FriendlyError(err)
+			return diag.FromErr(equinix_errors.FriendlyError(err))
 		}
 		var port packngo.Port
 		portFound := false
@@ -286,12 +287,12 @@ func resourceMetalPortVlanAttachmentDelete(d *schema.ResourceData, meta any) err
 		}
 
 		if !portFound {
-			return fmt.Errorf("device %s doesn't have port %s", deviceID, portName)
+			return diag.FromErr(fmt.Errorf("device %s doesn't have port %s", deviceID, portName))
 		}
 
 		_, _, err = client.Ports.Bond(port.ID, false)
 		if err != nil {
-			return equinix_errors.FriendlyError(err)
+			return diag.FromErr(equinix_errors.FriendlyError(err))
 		}
 	}
 	return nil
