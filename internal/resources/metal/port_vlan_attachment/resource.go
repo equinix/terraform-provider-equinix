@@ -1,4 +1,5 @@
-package equinix
+// Package PortVlanAttachment provides managment of VLANs on Device Ports.
+package port_vlan_attachment
 
 import (
 	"context"
@@ -7,16 +8,15 @@ import (
 	"net/http"
 
 	"github.com/equinix/equinix-sdk-go/services/metalv1"
-	equinix_errors "github.com/equinix/terraform-provider-equinix/internal/errors"
-
 	"github.com/equinix/terraform-provider-equinix/internal/config"
+	equinix_errors "github.com/equinix/terraform-provider-equinix/internal/errors"
 	"github.com/equinix/terraform-provider-equinix/internal/mutexkv"
-
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
-func resourceMetalPortVlanAttachment() *schema.Resource {
+// Resource provides the Terraform resource for PortVlanAttachements.
+func Resource() *schema.Resource {
 	return &schema.Resource{
 		CreateContext: resourceMetalPortVlanAttachmentCreate,
 		ReadContext:   resourceMetalPortVlanAttachmentRead,
@@ -71,7 +71,6 @@ func resourceMetalPortVlanAttachment() *schema.Resource {
 		},
 	}
 }
-
 func resourceMetalPortVlanAttachmentCreate(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	client := meta.(*config.Config).NewMetalClientForSDK(d)
 	deviceID := d.Get("device_id").(string)

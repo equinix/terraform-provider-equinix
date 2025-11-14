@@ -1,11 +1,13 @@
-package equinix
+package port_vlan_attachment_test
 
 import (
+	"context"
 	"fmt"
 	"path"
 	"strings"
 	"testing"
 
+	"github.com/equinix/terraform-provider-equinix/internal/acceptance"
 	"github.com/equinix/terraform-provider-equinix/internal/config"
 
 	"github.com/hashicorp/terraform-plugin-testing/helper/acctest"
@@ -30,7 +32,7 @@ resource "equinix_metal_device" "test" {
   project_id       = equinix_metal_project.test.id
   termination_time = "%s"
 }
-`, confAccMetalDevice_base(preferable_plans, preferable_metros, preferable_os), name, testDeviceTerminationTime())
+`, acceptance.ConfAccMetalDeviceBase(acceptance.PreferablePlans, acceptance.PreferableMetros, acceptance.PreferableOs), name, acceptance.DeviceTerminationTime())
 }
 
 func testAccMetalPortVlanAttachmentConfig_L2Bonded_2(name string) string {
@@ -73,9 +75,9 @@ func TestAccMetalPortVlanAttachment_L2Bonded(t *testing.T) {
 	rs := acctest.RandString(10)
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:                 func() { testAccPreCheck(t) },
-		ExternalProviders:        testExternalProviders,
-		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
+		PreCheck:                 func() { acceptance.TestAccPreCheck(t) },
+		ExternalProviders:        acceptance.TestExternalProviders,
+		ProtoV6ProviderFactories: acceptance.ProtoV6ProviderFactories,
 		CheckDestroy:             testAccMetalPortVlanAttachmentCheckDestroyed,
 		Steps: []resource.TestStep{
 			{
@@ -118,7 +120,7 @@ resource "equinix_metal_device" "test" {
   project_id       = equinix_metal_project.test.id
   termination_time = "%s"
 }
-`, confAccMetalDevice_base(preferable_plans, preferable_metros, preferable_os), name, testDeviceTerminationTime())
+`, acceptance.ConfAccMetalDeviceBase(acceptance.PreferablePlans, acceptance.PreferableMetros, acceptance.PreferableOs), name, acceptance.DeviceTerminationTime())
 }
 
 func testAccMetalPortVlanAttachmentConfig_L2Individual_2(name string) string {
@@ -161,9 +163,9 @@ func TestAccMetalPortVlanAttachment_L2Individual(t *testing.T) {
 	rs := acctest.RandString(10)
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:                 func() { testAccPreCheck(t) },
-		ExternalProviders:        testExternalProviders,
-		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
+		PreCheck:                 func() { acceptance.TestAccPreCheck(t) },
+		ExternalProviders:        acceptance.TestExternalProviders,
+		ProtoV6ProviderFactories: acceptance.ProtoV6ProviderFactories,
 		CheckDestroy:             testAccMetalPortVlanAttachmentCheckDestroyed,
 		Steps: []resource.TestStep{
 			{
@@ -207,7 +209,7 @@ resource "equinix_metal_device" "test" {
   billing_cycle    = "hourly"
   project_id       = equinix_metal_project.test.id
   termination_time = "%s"
-}`, confAccMetalDevice_base(preferable_plans, preferable_metros, preferable_os), name, testDeviceTerminationTime())
+}`, acceptance.ConfAccMetalDeviceBase(acceptance.PreferablePlans, acceptance.PreferableMetros, acceptance.PreferableOs), name, acceptance.DeviceTerminationTime())
 }
 
 func testAccMetalPortVlanAttachmentConfig_Hybrid_2(name string) string {
@@ -237,9 +239,9 @@ func TestAccMetalPortVlanAttachment_hybridBasic(t *testing.T) {
 	rs := acctest.RandString(10)
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:                 func() { testAccPreCheck(t) },
-		ExternalProviders:        testExternalProviders,
-		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
+		PreCheck:                 func() { acceptance.TestAccPreCheck(t) },
+		ExternalProviders:        acceptance.TestExternalProviders,
+		ProtoV6ProviderFactories: acceptance.ProtoV6ProviderFactories,
 		CheckDestroy:             testAccMetalPortVlanAttachmentCheckDestroyed,
 		Steps: []resource.TestStep{
 			{
@@ -281,7 +283,7 @@ resource "equinix_metal_device" "test" {
   billing_cycle    = "hourly"
   project_id       = equinix_metal_project.test.id
   termination_time = "%s"
-}`, confAccMetalDevice_base(preferable_plans, preferable_metros, preferable_os), name, testDeviceTerminationTime())
+}`, acceptance.ConfAccMetalDeviceBase(acceptance.PreferablePlans, acceptance.PreferableMetros, acceptance.PreferableOs), name, acceptance.DeviceTerminationTime())
 }
 
 func testAccMetalPortVlanAttachmentConfig_HybridMultipleVlans_2(name string) string {
@@ -312,9 +314,9 @@ func TestAccMetalPortVlanAttachment_hybridMultipleVlans(t *testing.T) {
 	rs := acctest.RandString(10)
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:                 func() { testAccPreCheck(t) },
-		ExternalProviders:        testExternalProviders,
-		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
+		PreCheck:                 func() { acceptance.TestAccPreCheck(t) },
+		ExternalProviders:        acceptance.TestExternalProviders,
+		ProtoV6ProviderFactories: acceptance.ProtoV6ProviderFactories,
 		CheckDestroy:             testAccMetalPortVlanAttachmentCheckDestroyed,
 		Steps: []resource.TestStep{
 			{
@@ -348,7 +350,7 @@ func TestAccMetalPortVlanAttachment_hybridMultipleVlans(t *testing.T) {
 }
 
 func testAccMetalPortVlanAttachmentCheckDestroyed(s *terraform.State) error {
-	client := testAccProvider.Meta().(*config.Config).Metal
+	client := acceptance.TestAccProvider.Meta().(*config.Config).NewMetalClientForTesting()
 
 	device_id := ""
 	vlan_id := ""
@@ -364,15 +366,15 @@ func testAccMetalPortVlanAttachmentCheckDestroyed(s *terraform.State) error {
 			port_id = port_vlan[1]
 		}
 	}
-	d, _, err := client.Devices.Get(device_id, nil)
+	d, _, err := client.DevicesApi.FindDeviceById(context.Background(), device_id).Execute()
 	if err != nil {
 		// if device doesn't exists, its port can't be attached
 		return nil
 	}
 	for _, p := range d.NetworkPorts {
-		if p.ID == port_id {
-			if len(p.AttachedVirtualNetworks) == 1 {
-				if path.Base(p.AttachedVirtualNetworks[0].Href) == vlan_id {
+		if p.GetId() == port_id {
+			if len(p.VirtualNetworks) == 1 {
+				if path.Base(p.VirtualNetworks[0].GetHref()) == vlan_id {
 					return fmt.Errorf("Vlan is still attached to the device")
 				}
 			}
@@ -398,7 +400,7 @@ resource "equinix_metal_device" "test" {
   billing_cycle    = "hourly"
   project_id       = equinix_metal_project.test.id
   termination_time = "%s"
-}`, confAccMetalDevice_base(preferable_plans, preferable_metros, preferable_os), name, testDeviceTerminationTime())
+}`, acceptance.ConfAccMetalDeviceBase(acceptance.PreferablePlans, acceptance.PreferableMetros, acceptance.PreferableOs), name, acceptance.DeviceTerminationTime())
 }
 
 func testAccMetalPortVlanAttachmentConfig_L2Native_2(name string) string {
@@ -443,9 +445,9 @@ func TestAccMetalPortVlanAttachment_L2Native(t *testing.T) {
 	rs := acctest.RandString(10)
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:                 func() { testAccPreCheck(t) },
-		ExternalProviders:        testExternalProviders,
-		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
+		PreCheck:                 func() { acceptance.TestAccPreCheck(t) },
+		ExternalProviders:        acceptance.TestExternalProviders,
+		ProtoV6ProviderFactories: acceptance.ProtoV6ProviderFactories,
 		CheckDestroy:             testAccMetalPortVlanAttachmentCheckDestroyed,
 		Steps: []resource.TestStep{
 			{
