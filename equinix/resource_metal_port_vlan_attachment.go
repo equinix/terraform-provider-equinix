@@ -225,18 +225,18 @@ func resourceMetalPortVlanAttachmentRead(ctx context.Context, d *schema.Resource
 }
 
 func resourceMetalPortVlanAttachmentUpdate(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
-	client := meta.(*config.Config).Metal
+	client := meta.(*config.Config).NewMetalClientForSDK(d)
 	if d.HasChange("native") {
 		native := d.Get("native").(bool)
 		portID := d.Get("port_id").(string)
 		if native {
 			vlanID := d.Get("vlan_id").(string)
-			_, _, err := client.Ports.AssignNative(portID, vlanID)
+			_, _, err := client.PortsApi.AssignNativeVlan(ctx, portID).Vnid(vlanID).Execute()
 			if err != nil {
 				return diag.FromErr(err)
 			}
 		} else {
-			_, _, err := client.Ports.UnassignNative(portID)
+			_, _, err := client.PortsApi.UnassignPort(ctx, portID).Execute()
 			if err != nil {
 				return diag.FromErr(err)
 			}
