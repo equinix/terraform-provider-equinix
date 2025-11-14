@@ -111,8 +111,7 @@ func resourceMetalPortVlanAttachmentCreate(ctx context.Context, d *schema.Resour
 		log.Printf("Port %s already has VLAN %d assigned", pName, vlanVNID)
 	} else {
 		projectID := dev.Project.GetId()
-		deviceMetro := dev.GetMetro()
-		deviceMetroCode := (&deviceMetro).GetCode()
+		deviceMetroCode := dev.Metro.GetCode()
 
 		vlans, _, err := client.VLANsApi.FindVirtualNetworks(ctx, projectID).Execute()
 		if err != nil {
