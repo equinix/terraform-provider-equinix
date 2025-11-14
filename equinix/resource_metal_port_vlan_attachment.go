@@ -152,8 +152,7 @@ func resourceMetalPortVlanAttachmentCreate(ctx context.Context, d *schema.Resour
 
 	native := d.Get("native").(bool)
 	if native {
-		req := metalv1.ApiAssignNativeVlanRequest{}.Vnid(vlanID)
-		_, _, err = client.PortsApi.AssignNativeVlanExecute(req)
+		_, _, err = client.PortsApi.AssignNativeVlan(ctx, port.GetId()).Vnid(vlanID).Execute()
 		if err != nil {
 			return diag.FromErr(err)
 		}
