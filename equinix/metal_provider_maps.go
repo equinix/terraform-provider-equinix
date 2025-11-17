@@ -3,7 +3,7 @@ package equinix
 import (
 	metal_device "github.com/equinix/terraform-provider-equinix/internal/resources/metal/device"
 	metal_port "github.com/equinix/terraform-provider-equinix/internal/resources/metal/port"
-	metal_port_vlan_attachment "github.com/equinix/terraform-provider-equinix/internal/resources/metal/port_vlan_attachment"
+	metal_port_vlan_attachment "github.com/equinix/terraform-provider-equinix/internal/resources/metal/portvlanattachment"
 	"github.com/equinix/terraform-provider-equinix/internal/resources/metal/virtualcircuit"
 	"github.com/equinix/terraform-provider-equinix/internal/resources/metal/vrf"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"

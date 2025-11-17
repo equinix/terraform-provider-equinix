@@ -1,4 +1,4 @@
-package port_vlan_attachment_test
+package portvlanattachment_test
 
 import (
 	"context"

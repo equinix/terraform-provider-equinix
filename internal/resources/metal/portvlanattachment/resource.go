@@ -1,11 +1,12 @@
-// Package PortVlanAttachment provides managment of VLANs on Device Ports.
-package port_vlan_attachment
+// Package portvlanattachment provides managment of VLANs on Device Ports.
+package portvlanattachment
 
 import (
 	"context"
 	"fmt"
 	"log"
 	"net/http"
+	"time"
 
 	"github.com/equinix/equinix-sdk-go/services/metalv1"
 	"github.com/equinix/terraform-provider-equinix/internal/config"
@@ -137,13 +138,13 @@ func resourceMetalPortVlanAttachmentCreate(ctx context.Context, d *schema.Resour
 		mutexkv.Metal.Lock(lockID)
 		defer mutexkv.Metal.Unlock(lockID)
 
-		assignment := &metalv1.PortAssignInput{}
-		assignment.SetVnid(vlanID)
+		batch := newVlanBatch(port.GetId())
+		batch.assign(vlanID)
 
-		_, _, err = client.PortsApi.AssignPort(ctx, port.GetId()).PortAssignInput(*assignment).Execute()
-		if err != nil {
+		if err := batch.createAndWaitForBatch(ctx, time.Now(), client); err != nil {
 			return diag.FromErr(err)
 		}
+
 	}
 
 	d.SetId(port.GetId() + ":" + vlanID)
@@ -234,7 +235,7 @@ func resourceMetalPortVlanAttachmentUpdate(ctx context.Context, d *schema.Resour
 				return diag.FromErr(err)
 			}
 		} else {
-			_, _, err := client.PortsApi.UnassignPort(ctx, portID).Execute()
+			_, _, err := client.PortsApi.DeleteNativeVlan(ctx, portID).Execute()
 			if err != nil {
 				return diag.FromErr(err)
 			}
@@ -262,15 +263,28 @@ func resourceMetalPortVlanAttachmentDelete(ctx context.Context, d *schema.Resour
 	mutexkv.Metal.Lock(lockID)
 	defer mutexkv.Metal.Unlock(lockID)
 
-	input := metalv1.NewPortAssignInput()
-	input.SetVnid(vlanID)
+	batch := newVlanBatch(pID)
+	batch.unassign(vlanID)
 
-	portPtr, resp, err := client.PortsApi.UnassignPort(ctx, pID).PortAssignInput(*input).Execute()
-	switch resp.StatusCode {
-	case http.StatusForbidden, http.StatusNotFound:
+	err := batch.createAndWaitForBatch(ctx, time.Now(), client)
+	if err != nil {
+		resp := batch.httpResponse()
+		switch resp.StatusCode {
+		case http.StatusForbidden, http.StatusNotFound:
 		// the port or device can't be located, give up
-	default:
-		return diag.FromErr(err)
+		default:
+			return diag.FromErr(err)
+		}
+	}
+
+	portPtr, resp, err := client.PortsApi.FindPortById(ctx, pID).Execute()
+	if err != nil {
+		switch resp.StatusCode {
+		case http.StatusForbidden, http.StatusNotFound:
+		// the port or device can't be located, give up
+		default:
+			return diag.FromErr(err)
+		}
 	}
 
 	forceBond := d.Get("force_bond").(bool)
