@@ -13,11 +13,15 @@ import (
 
 type vlanAssignmentBatchEntry = metalv1.PortVlanAssignmentBatchCreateInputVlanAssignmentsInner
 
+// VlanBatch provides the interface for defining which VLANs should be
+// assigned or unassigned from a particular port.
 type VlanBatch struct {
 	portID      string
 	assignments []assignment
 }
 
+// NewVlanBatch creates a VlanBatch that can be used to add and remove
+// VLAN assignments for a given port in a single operation.
 func NewVlanBatch(portID string) *VlanBatch {
 	return &VlanBatch{
 		portID:      portID,
@@ -25,6 +29,8 @@ func NewVlanBatch(portID string) *VlanBatch {
 	}
 }
 
+// AddAssignment registers a VLAN that should be added to the port during
+// this batches execution.
 func (vb *VlanBatch) AddAssignment(vlanID string) {
 	state := metalv1.PORTVLANASSIGNMENTBATCHVLANASSIGNMENTSINNERSTATE_ASSIGNED.Ptr()
 	assignments := append(vb.assignments, vlanAssignment{vlanID: vlanID, state: state})
@@ -32,6 +38,8 @@ func (vb *VlanBatch) AddAssignment(vlanID string) {
 
 }
 
+// AddNativeAssignment registers a Native VLAN that should be added to
+// the port during this batches execution.
 func (vb *VlanBatch) AddNativeAssignment(vlanID string) {
 	state := metalv1.PORTVLANASSIGNMENTBATCHVLANASSIGNMENTSINNERSTATE_ASSIGNED.Ptr()
 	native := true
@@ -39,6 +47,8 @@ func (vb *VlanBatch) AddNativeAssignment(vlanID string) {
 	vb.assignments = assignments
 }
 
+// RemoveAssignment adds a VLAN to the batch that should be removed on
+// execution.
 func (vb *VlanBatch) RemoveAssignment(vlanID string) {
 	state := metalv1.PORTVLANASSIGNMENTBATCHVLANASSIGNMENTSINNERSTATE_UNASSIGNED.Ptr()
 	assignments := append(vb.assignments, vlanAssignment{vlanID: vlanID, state: state})
@@ -58,6 +68,9 @@ func (vb *VlanBatch) toBatchCreateInput() metalv1.PortVlanAssignmentBatchCreateI
 	return *createInput
 }
 
+// Execute takes the batch with all the assignments and sends the
+// request to the API. This will also wait until the batch reaches a
+// terminal state.
 func (vb *VlanBatch) Execute(ctx context.Context, client *metalv1.APIClient) (*metalv1.PortVlanAssignmentBatch, *http.Response, error) {
 	start := time.Now()
 	batchReq := client.PortsApi.CreatePortVlanAssignmentBatch(ctx, vb.portID)

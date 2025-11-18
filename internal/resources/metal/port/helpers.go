@@ -5,8 +5,6 @@ import (
 	"fmt"
 	"net/http"
 	"slices"
-	"strings"
-	"time"
 
 	"github.com/equinix/equinix-sdk-go/services/metalv1"
 	"github.com/equinix/terraform-provider-equinix/internal/converters"
@@ -14,9 +12,7 @@ import (
 
 	"github.com/equinix/terraform-provider-equinix/internal/config"
 
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/retry"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
-	"github.com/pkg/errors"
 )
 
 var (
@@ -25,27 +21,27 @@ var (
 	dummy = metalv1.PortAssignInput{}
 )
 
-type ClientPortResource struct {
+type clientPortResource struct {
 	Client   *metalv1.APIClient
 	Port     *metalv1.Port
 	Resource *schema.ResourceData
 }
 
-func getClientPortResource(ctx context.Context, d *schema.ResourceData, meta interface{}) (*ClientPortResource, *http.Response, error) {
+func getClientPortResource(ctx context.Context, d *schema.ResourceData, meta interface{}) (*clientPortResource, *http.Response, error) {
 	client := meta.(*config.Config).NewMetalClientForSDK(d)
 
-	port_id := d.Get("port_id").(string)
+	portID := d.Get("port_id").(string)
 
 	getOpts := []string{
 		"native_virtual_network",
 		"virtual_networks",
 	}
-	port, resp, err := client.PortsApi.FindPortById(ctx, port_id).Include(getOpts).Execute()
+	port, resp, err := client.PortsApi.FindPortById(ctx, portID).Include(getOpts).Execute()
 	if err != nil {
 		return nil, resp, err
 	}
 
-	cpr := &ClientPortResource{
+	cpr := &clientPortResource{
 		Client:   client,
 		Port:     port,
 		Resource: d,
@@ -54,22 +50,22 @@ func getClientPortResource(ctx context.Context, d *schema.ResourceData, meta int
 }
 
 func getPortByResourceData(ctx context.Context, d *schema.ResourceData, client *metalv1.APIClient) (*metalv1.Port, *http.Response, error) {
-	portId, portIdOk := d.GetOk("port_id")
-	resourceId := d.Id()
+	portID, portIDOk := d.GetOk("port_id")
+	resourceID := d.Id()
 
 	// rely on d.Id in imported resources
-	if !portIdOk {
-		if resourceId != "" {
-			portId = resourceId
-			portIdOk = true
+	if !portIDOk {
+		if resourceID != "" {
+			portID = resourceID
+			portIDOk = true
 		}
 	}
-	deviceId, deviceIdOk := d.GetOk("device_id")
+	deviceID, deviceIDOk := d.GetOk("device_id")
 	portName, portNameOk := d.GetOk("name")
 
 	// check parameter sanity only for a new (not-yet-created) resource
-	if resourceId == "" {
-		if portIdOk && (deviceIdOk || portNameOk) {
+	if resourceID == "" {
+		if portIDOk && (deviceIDOk || portNameOk) {
 			return nil, nil, fmt.Errorf("you must specify either id or (device_id and name)")
 		}
 	}
@@ -82,21 +78,21 @@ func getPortByResourceData(ctx context.Context, d *schema.ResourceData, client *
 		"native_virtual_network",
 		"virtual_networks",
 	}
-	if portIdOk {
-		port, resp, err = client.PortsApi.FindPortById(ctx, portId.(string)).Include(getOpts).Execute()
+	if portIDOk {
+		port, resp, err = client.PortsApi.FindPortById(ctx, portID.(string)).Include(getOpts).Execute()
 		if err != nil {
 			return nil, resp, err
 		}
 	} else {
-		if !(deviceIdOk && portNameOk) {
-			return nil, nil, fmt.Errorf("If you don't use port_id, you must supply both device_id and name")
+		if !deviceIDOk || !portNameOk {
+			return nil, nil, fmt.Errorf("if you don't use port_id, you must supply both device_id and name")
 		}
 		var device *metalv1.Device
-		device, resp, err = client.DevicesApi.FindDeviceById(ctx, deviceId.(string)).Include(getOpts).Execute()
+		device, resp, err = client.DevicesApi.FindDeviceById(ctx, deviceID.(string)).Include(getOpts).Execute()
 		if err != nil {
 			return nil, resp, err
 		}
-		port, err = GetPortByName(device, portName.(string))
+		port, err = getPortByName(device, portName.(string))
 		return port, nil, err
 	}
 
@@ -120,7 +116,7 @@ func getCurrentNative(p *metalv1.Port) string {
 	return currentNative
 }
 
-func attachedVlanIds(p *metalv1.Port) []string {
+func attachedVlanIDs(p *metalv1.Port) []string {
 	attached := []string{}
 	for _, v := range p.VirtualNetworks {
 		attached = append(attached, v.GetId())
@@ -128,34 +124,34 @@ func attachedVlanIds(p *metalv1.Port) []string {
 	return attached
 }
 
-func specifiedVlanIds(d *schema.ResourceData) []string {
+func specifiedVlanIDs(d *schema.ResourceData) []string {
 	// either vlan_ids or vxlan_ids should be set, TF should ensure that
-	vlanIdsRaw, vlanIdsOk := d.GetOk("vlan_ids")
-	if vlanIdsOk {
-		return converters.IfArrToStringArr(vlanIdsRaw.(*schema.Set).List())
+	vlanIDsRaw, vlanIDsOk := d.GetOk("vlan_ids")
+	if vlanIDsOk {
+		return converters.IfArrToStringArr(vlanIDsRaw.(*schema.Set).List())
 	}
 
-	vxlanIdsRaw, vxlanIdsOk := d.GetOk("vxlan_ids")
-	if vxlanIdsOk {
-		return converters.IfArrToIntStringArr(vxlanIdsRaw.(*schema.Set).List())
+	vxlanIDsRaw, vxlanIDsOk := d.GetOk("vxlan_ids")
+	if vxlanIDsOk {
+		return converters.IfArrToIntStringArr(vxlanIDsRaw.(*schema.Set).List())
 	}
 	return []string{}
 }
 
-func batchVlans(removeOnly bool) func(context.Context, *ClientPortResource) error {
-	return func(ctx context.Context, cpr *ClientPortResource) error {
+func batchVlans(removeOnly bool) func(context.Context, *clientPortResource) error {
+	return func(ctx context.Context, cpr *clientPortResource) error {
 		var vlansToAssign []string
 		var currentNative string
 		vlansToRemove := converters.Difference(
-			attachedVlanIds(cpr.Port),
-			specifiedVlanIds(cpr.Resource),
+			attachedVlanIDs(cpr.Port),
+			specifiedVlanIDs(cpr.Resource),
 		)
 		if !removeOnly {
 			currentNative = getCurrentNative(cpr.Port)
 
 			vlansToAssign = converters.Difference(
-				specifiedVlanIds(cpr.Resource),
-				attachedVlanIds(cpr.Port),
+				specifiedVlanIDs(cpr.Resource),
+				attachedVlanIDs(cpr.Port),
 			)
 		}
 
@@ -178,52 +174,7 @@ func batchVlans(removeOnly bool) func(context.Context, *ClientPortResource) erro
 	}
 }
 
-func createAndWaitForBatch(ctx context.Context, start time.Time, cpr *ClientPortResource, vacr metalv1.PortVlanAssignmentBatchCreateInput) error {
-	if len(vacr.VlanAssignments) == 0 {
-		return nil
-	}
-
-	portID := cpr.Port.GetId()
-	c := cpr.Client
-
-	b, _, err := c.PortsApi.CreatePortVlanAssignmentBatch(ctx, portID).PortVlanAssignmentBatchCreateInput(vacr).Execute()
-	if err != nil {
-		return fmt.Errorf("vlan assignment batch could not be created: %w", err)
-	}
-
-	deadline, _ := ctx.Deadline()
-	// originally set timeout in ctx by TF
-	ctxTimeout := deadline.Sub(start)
-
-	stateChangeConf := &retry.StateChangeConf{
-		Delay:      5 * time.Second,
-		Pending:    []string{string(metalv1.PORTVLANASSIGNMENTBATCHSTATE_QUEUED), string(metalv1.PORTVLANASSIGNMENTBATCHSTATE_IN_PROGRESS)},
-		Target:     []string{string(metalv1.PORTVLANASSIGNMENTBATCHSTATE_COMPLETED)},
-		MinTimeout: 5 * time.Second,
-		Timeout:    ctxTimeout - time.Since(start) - 30*time.Second,
-		Refresh: func() (result interface{}, state string, err error) {
-			b, _, err := c.PortsApi.FindPortVlanAssignmentBatchByPortIdAndBatchId(ctx, portID, b.GetId()).Execute()
-			switch b.GetState() {
-			case metalv1.PORTVLANASSIGNMENTBATCHSTATE_FAILED:
-				return b, string(metalv1.PORTVLANASSIGNMENTBATCHSTATE_FAILED),
-					fmt.Errorf("vlan assignment batch %s provisioning failed: %s", b.GetId(), strings.Join(b.ErrorMessages, "; "))
-			case metalv1.PORTVLANASSIGNMENTBATCHSTATE_COMPLETED:
-				return b, string(metalv1.PORTVLANASSIGNMENTBATCHSTATE_COMPLETED), nil
-			default:
-				if err != nil {
-					return b, "", fmt.Errorf("vlan assignment batch %s could not be polled: %w", b.GetId(), err)
-				}
-				return b, string(b.GetState()), err
-			}
-		},
-	}
-	if _, err = stateChangeConf.WaitForStateContext(ctx); err != nil {
-		return errors.Wrapf(err, "vlan assignment batch %s is not complete after timeout", b.GetId())
-	}
-	return nil
-}
-
-func updateNativeVlan(ctx context.Context, cpr *ClientPortResource) error {
+func updateNativeVlan(ctx context.Context, cpr *clientPortResource) error {
 	currentNative := getCurrentNative(cpr.Port)
 	specifiedNative := getSpecifiedNative(cpr.Resource)
 
@@ -243,7 +194,7 @@ func updateNativeVlan(ctx context.Context, cpr *ClientPortResource) error {
 	return nil
 }
 
-func processBondAction(ctx context.Context, cpr *ClientPortResource, actionIsBond bool) error {
+func processBondAction(ctx context.Context, cpr *clientPortResource, actionIsBond bool) error {
 	// There's no good alternative to GetOkExists until metal_port
 	// is converted to terraform-plugin-framework
 	// nolint:staticcheck
@@ -280,15 +231,15 @@ func processBondAction(ctx context.Context, cpr *ClientPortResource, actionIsBon
 	return nil
 }
 
-func makeBond(ctx context.Context, cpr *ClientPortResource) error {
+func makeBond(ctx context.Context, cpr *clientPortResource) error {
 	return processBondAction(ctx, cpr, true)
 }
 
-func makeDisbond(ctx context.Context, cpr *ClientPortResource) error {
+func makeDisbond(ctx context.Context, cpr *clientPortResource) error {
 	return processBondAction(ctx, cpr, false)
 }
 
-func convertToL2(ctx context.Context, cpr *ClientPortResource) error {
+func convertToL2(ctx context.Context, cpr *clientPortResource) error {
 	// There's no good alternative to GetOkExists until metal_port
 	// is converted to terraform-plugin-framework
 	// nolint:staticcheck
@@ -305,7 +256,7 @@ func convertToL2(ctx context.Context, cpr *ClientPortResource) error {
 	return nil
 }
 
-func convertToL3(ctx context.Context, cpr *ClientPortResource) error {
+func convertToL3(ctx context.Context, cpr *clientPortResource) error {
 	// There's no good alternative to GetOkExists until metal_port
 	// is converted to terraform-plugin-framework
 	// nolint:staticcheck
@@ -330,7 +281,7 @@ func convertToL3(ctx context.Context, cpr *ClientPortResource) error {
 	return nil
 }
 
-func portSanityChecks(_ context.Context, cpr *ClientPortResource) error {
+func portSanityChecks(_ context.Context, cpr *clientPortResource) error {
 	isBondPort := cpr.Port.GetType() == "NetworkBondPort"
 
 	// Constraint: Only bond ports have layer2 mode
@@ -357,7 +308,7 @@ func portSanityChecks(_ context.Context, cpr *ClientPortResource) error {
 	nativeVlanRaw, nativeVlanOk := cpr.Resource.GetOk("native_vlan_id")
 	if nativeVlanOk {
 		nativeVlan := nativeVlanRaw.(string)
-		vlans := specifiedVlanIds(cpr.Resource)
+		vlans := specifiedVlanIDs(cpr.Resource)
 		if !slices.Contains(vlans, nativeVlan) {
 			return fmt.Errorf("the native VLAN to be set is not (being) assigned to the port")
 		}
@@ -369,11 +320,11 @@ func portSanityChecks(_ context.Context, cpr *ClientPortResource) error {
 	return nil
 }
 
-func GetPortByName(d *metalv1.Device, name string) (*metalv1.Port, error) {
+func getPortByName(d *metalv1.Device, name string) (*metalv1.Port, error) {
 	for _, port := range d.NetworkPorts {
 		if port.GetName() == name {
 			return &port, nil
 		}
 	}
-	return nil, fmt.Errorf("Port %s not found in device %s", name, d.GetId())
+	return nil, fmt.Errorf("port %s not found in device %s", name, d.GetId())
 }
