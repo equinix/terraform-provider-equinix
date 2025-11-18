@@ -10,12 +10,15 @@ import (
 	"slices"
 
 	"github.com/equinix/equinix-sdk-go/services/metalv1"
+	"github.com/equinix/terraform-provider-equinix/internal/framework"
 	equinix_schema "github.com/equinix/terraform-provider-equinix/internal/schema"
 
 	"github.com/equinix/terraform-provider-equinix/internal/config"
 
+	"github.com/hashicorp/terraform-plugin-framework/resource"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
+	"github.com/hashicorp/terraform-plugin-framework/resource/timeouts"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
 /*
@@ -29,105 +32,46 @@ var (
 	l3Types = []metalv1.PortNetworkType{"layer3", "hybrid", "hybrid-bonded"}
 )
 
-func Resource() *schema.Resource {
-	return &schema.Resource{
-		Timeouts: &schema.ResourceTimeout{
-			Create: schema.DefaultTimeout(30 * time.Minute),
-			Update: schema.DefaultTimeout(30 * time.Minute),
-			Delete: schema.DefaultTimeout(30 * time.Minute),
-		},
-		ReadWithoutTimeout: resourceMetalPortRead,
-		// Create and Update are the same func
-		CreateContext: resourceMetalPortUpdate,
-		UpdateContext: resourceMetalPortUpdate,
-		DeleteContext: resourceMetalPortDelete,
-		Importer: &schema.ResourceImporter{
-			StateContext: schema.ImportStatePassthroughContext,
-		},
-
-		Schema: map[string]*schema.Schema{
-			"port_id": {
-				Type:        schema.TypeString,
-				Required:    true,
-				Description: "UUID of the port to lookup",
-				ForceNew:    true,
+func NewResource() resource.Resource {
+	r := &Resource{
+		BaseResource: framework.NewBaseResource(
+			framework.BaseResourceConfig{
+				Name: "equinix_metal_port",
 			},
-			"bonded": {
-				Type:        schema.TypeBool,
-				Required:    true,
-				Description: "Flag indicating whether the port should be bonded",
-			},
-			"layer2": {
-				Type:        schema.TypeBool,
-				Optional:    true,
-				Description: "Flag indicating whether the port is in layer2 (or layer3) mode. The `layer2` flag can be set only for bond ports.",
-			},
-			"native_vlan_id": {
-				Type:        schema.TypeString,
-				Optional:    true,
-				Description: "UUID of native VLAN of the port",
-			},
-			"vxlan_ids": {
-				Type:          schema.TypeSet,
-				Optional:      true,
-				Computed:      true,
-				Description:   "VLAN VXLAN ids to attach (example: [1000])",
-				Elem:          &schema.Schema{Type: schema.TypeInt},
-				ConflictsWith: []string{"vlan_ids"},
-			},
-			"vlan_ids": {
-				Type:          schema.TypeSet,
-				Optional:      true,
-				Computed:      true,
-				Description:   "UUIDs VLANs to attach. To avoid jitter, use the UUID and not the VXLAN",
-				Elem:          &schema.Schema{Type: schema.TypeString},
-				ConflictsWith: []string{"vxlan_ids"},
-			},
-			"reset_on_delete": {
-				Type:        schema.TypeBool,
-				Optional:    true,
-				Description: "Behavioral setting to reset the port to default settings (layer3 bonded mode without any vlan attached) before delete/destroy",
-			},
-			"name": {
-				Type:        schema.TypeString,
-				Computed:    true,
-				Description: "Name of the port to look up, e.g. bond0, eth1",
-			},
-			"network_type": {
-				Type:        schema.TypeString,
-				Computed:    true,
-				Description: "One of layer2-bonded, layer2-individual, layer3, hybrid and hybrid-bonded. This attribute is only set on bond ports.",
-			},
-			"disbond_supported": {
-				Type:        schema.TypeBool,
-				Computed:    true,
-				Description: "Flag indicating whether the port can be removed from a bond",
-			},
-			"bond_name": {
-				Type:        schema.TypeString,
-				Computed:    true,
-				Description: "Name of the bond port",
-			},
-			"bond_id": {
-				Type:        schema.TypeString,
-				Computed:    true,
-				Description: "UUID of the bond port",
-			},
-			"type": {
-				Type:        schema.TypeString,
-				Computed:    true,
-				Description: "Port type",
-			},
-			"mac": {
-				Type:        schema.TypeString,
-				Computed:    true,
-				Description: "MAC address of the port",
-			},
-		},
+		),
 	}
+
+	r.SetDefaultUpdateTimeout(30 * time.Minute)
+	r.SetDefaultDeleteTimeout(30 * time.Minute)
+
+	return r
 }
 
-func resourceMetalPortUpdate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+type Resource struct {
+	framework.BaseResource
+	framework.WithTimeouts
+}
+
+func (r *Resource) Schema(ctx context.Context, req resource.SchemaRequest, resp *resource.SchemaResponse) {
+	s := resourceSchema(ctx)
+	if s.Blocks == nil {
+		s.Blocks = make(map[string]schema.Block)
+	}
+
+	s.Blocks["timeouts"] = timeouts.Block(ctx, timeouts.opts{
+		Create: true,
+		Update: true,
+		Delete: true,
+	})
+	resp.Schema = s
+}
+
+
+
+func (r *Resource) Create(ctx context.Context, req resource.CreateRequest, resp *resource.CreateResponse) {
+}
+
+func (r *Resource) Update(ctx context.Context, req resource.UpdateRequest, resp *resource.UpdateResponse) {
 	start := time.Now()
 	cpr, _, err := getClientPortResource(ctx, d, meta)
 	if err != nil {
@@ -149,10 +93,11 @@ func resourceMetalPortUpdate(ctx context.Context, d *schema.ResourceData, meta i
 		}
 	}
 
-	return resourceMetalPortRead(ctx, d, meta)
+	return r.Read(ctx, d, meta)
+
 }
 
-func resourceMetalPortRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func (r *Resource) Read(ctx context.Context, req resource.ReadRequest, resp *resource.ReadResponse) {
 	client := meta.(*config.Config).NewMetalClientForSDK(d)
 
 	port, resp, err := getPortByResourceData(ctx, d, client)
@@ -206,8 +151,13 @@ func resourceMetalPortRead(ctx context.Context, d *schema.ResourceData, meta int
 	return diag.FromErr(equinix_schema.SetMap(d, m))
 }
 
-func resourceMetalPortDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	resetRaw, resetOk := d.GetOk("reset_on_delete")
+func (r *Resource) Delete(ctx context.Context, req resource.DeleteRequest, resp *resource.DeleteResponse) {
+
+	var state resourceModel
+	diags := req.State.Get(ctx, &state)
+	resp.Diagnostics.Append(diags...)
+
+	
 	if resetOk && resetRaw.(bool) {
 		start := time.Now()
 		cpr, resp, err := getClientPortResource(ctx, d, meta)
@@ -248,6 +198,7 @@ func resourceMetalPortDelete(ctx context.Context, d *schema.ResourceData, meta i
 	}
 	return nil
 }
+
 
 func ProperlyDestroyed(port *metalv1.Port) error {
 	var errs []string
