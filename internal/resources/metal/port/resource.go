@@ -128,7 +128,6 @@ func Resource() *schema.Resource {
 }
 
 func resourceMetalPortUpdate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	start := time.Now()
 	cpr, _, err := getClientPortResource(ctx, d, meta)
 	if err != nil {
 		return diag.FromErr(err)
@@ -136,12 +135,12 @@ func resourceMetalPortUpdate(ctx context.Context, d *schema.ResourceData, meta i
 
 	for _, f := range [](func(context.Context, *ClientPortResource) error){
 		portSanityChecks,
-		batchVlans(start, true),
+		batchVlans(true),
 		makeDisbond,
 		convertToL2,
 		makeBond,
 		convertToL3,
-		batchVlans(start, false),
+		batchVlans(false),
 		updateNativeVlan,
 	} {
 		if err := f(ctx, cpr); err != nil {
@@ -209,7 +208,6 @@ func resourceMetalPortRead(ctx context.Context, d *schema.ResourceData, meta int
 func resourceMetalPortDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	resetRaw, resetOk := d.GetOk("reset_on_delete")
 	if resetOk && resetRaw.(bool) {
-		start := time.Now()
 		cpr, resp, err := getClientPortResource(ctx, d, meta)
 		if err != nil {
 			if resp != nil && !slices.Contains([]int{http.StatusForbidden, http.StatusNotFound}, resp.StatusCode) {
@@ -233,7 +231,7 @@ func resourceMetalPortDelete(ctx context.Context, d *schema.ResourceData, meta i
 			return diag.FromErr(err)
 		}
 		for _, f := range [](func(context.Context, *ClientPortResource) error){
-			batchVlans(start, true),
+			batchVlans(true),
 			makeBond,
 			convertToL3,
 		} {

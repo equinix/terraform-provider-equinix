@@ -10,6 +10,7 @@ import (
 
 	"github.com/equinix/equinix-sdk-go/services/metalv1"
 	"github.com/equinix/terraform-provider-equinix/internal/converters"
+	"github.com/equinix/terraform-provider-equinix/internal/resources/metal/batch"
 
 	"github.com/equinix/terraform-provider-equinix/internal/config"
 
@@ -141,7 +142,7 @@ func specifiedVlanIds(d *schema.ResourceData) []string {
 	return []string{}
 }
 
-func batchVlans(start time.Time, removeOnly bool) func(context.Context, *ClientPortResource) error {
+func batchVlans(removeOnly bool) func(context.Context, *ClientPortResource) error {
 	return func(ctx context.Context, cpr *ClientPortResource) error {
 		var vlansToAssign []string
 		var currentNative string
@@ -157,22 +158,23 @@ func batchVlans(start time.Time, removeOnly bool) func(context.Context, *ClientP
 				attachedVlanIds(cpr.Port),
 			)
 		}
-		vacr := metalv1.PortVlanAssignmentBatchCreateInput{}
+
+		vlanBatch := batch.NewVlanBatch(cpr.Port.GetId())
+
 		for _, v := range vlansToRemove {
-			vacr.VlanAssignments = append(vacr.VlanAssignments, metalv1.PortVlanAssignmentBatchCreateInputVlanAssignmentsInner{
-				Vlan:  &v,
-				State: metalv1.PORTVLANASSIGNMENTBATCHVLANASSIGNMENTSINNERSTATE_UNASSIGNED.Ptr(),
-			})
+			vlanBatch.RemoveAssignment(v)
 		}
+
 		for _, v := range vlansToAssign {
-			native := currentNative == v
-			vacr.VlanAssignments = append(vacr.VlanAssignments, metalv1.PortVlanAssignmentBatchCreateInputVlanAssignmentsInner{
-				Vlan:   &v,
-				State:  metalv1.PORTVLANASSIGNMENTBATCHVLANASSIGNMENTSINNERSTATE_ASSIGNED.Ptr(),
-				Native: &native,
-			})
+			if currentNative == v {
+				vlanBatch.AddNativeAssignment(v)
+			} else {
+				vlanBatch.AddAssignment(v)
+			}
 		}
-		return createAndWaitForBatch(ctx, start, cpr, vacr)
+
+		_, _, err := vlanBatch.Execute(ctx, cpr.Client)
+		return err
 	}
 }
 

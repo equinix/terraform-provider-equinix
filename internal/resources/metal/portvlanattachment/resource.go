@@ -6,12 +6,12 @@ import (
 	"fmt"
 	"log"
 	"net/http"
-	"time"
 
 	"github.com/equinix/equinix-sdk-go/services/metalv1"
 	"github.com/equinix/terraform-provider-equinix/internal/config"
 	equinix_errors "github.com/equinix/terraform-provider-equinix/internal/errors"
 	"github.com/equinix/terraform-provider-equinix/internal/mutexkv"
+	"github.com/equinix/terraform-provider-equinix/internal/resources/metal/batch"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
@@ -138,10 +138,10 @@ func resourceMetalPortVlanAttachmentCreate(ctx context.Context, d *schema.Resour
 		mutexkv.Metal.Lock(lockID)
 		defer mutexkv.Metal.Unlock(lockID)
 
-		batch := newVlanBatch(port.GetId())
-		batch.assign(vlanID)
+		vlanBatch := batch.NewVlanBatch(port.GetId())
+		vlanBatch.AddAssignment(vlanID)
 
-		if err := batch.createAndWaitForBatch(ctx, time.Now(), client); err != nil {
+		if _, _, err := vlanBatch.Execute(ctx, client); err != nil {
 			return diag.FromErr(err)
 		}
 
@@ -263,12 +263,11 @@ func resourceMetalPortVlanAttachmentDelete(ctx context.Context, d *schema.Resour
 	mutexkv.Metal.Lock(lockID)
 	defer mutexkv.Metal.Unlock(lockID)
 
-	batch := newVlanBatch(pID)
-	batch.unassign(vlanID)
+	vlanBatch := batch.NewVlanBatch(pID)
+	vlanBatch.RemoveAssignment(vlanID)
 
-	err := batch.createAndWaitForBatch(ctx, time.Now(), client)
+	_, resp, err := vlanBatch.Execute(ctx, client)
 	if err != nil {
-		resp := batch.httpResponse()
 		switch resp.StatusCode {
 		case http.StatusForbidden, http.StatusNotFound:
 		// the port or device can't be located, give up
