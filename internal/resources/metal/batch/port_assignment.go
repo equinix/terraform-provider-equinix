@@ -16,16 +16,20 @@ type vlanAssignmentBatchEntry = metalv1.PortVlanAssignmentBatchCreateInputVlanAs
 // VlanBatch provides the interface for defining which VLANs should be
 // assigned or unassigned from a particular port.
 type VlanBatch struct {
-	portID      string
-	assignments []assignment
+	portID              string
+	assignments         []assignment
+	refreshDelay        time.Duration
+	refreshInitialDelay time.Duration
 }
 
 // NewVlanBatch creates a VlanBatch that can be used to add and remove
 // VLAN assignments for a given port in a single operation.
 func NewVlanBatch(portID string) *VlanBatch {
 	return &VlanBatch{
-		portID:      portID,
-		assignments: []assignment{},
+		portID:              portID,
+		assignments:         []assignment{},
+		refreshDelay:        5 * time.Second,
+		refreshInitialDelay: 5 * time.Second,
 	}
 }
 
@@ -84,10 +88,10 @@ func (vb *VlanBatch) Execute(ctx context.Context, client *metalv1.APIClient) (*m
 	ctxTimeout := deadline.Sub(start)
 
 	poller := retry.StateChangeConf{
-		Delay:      5 * time.Second,
+		Delay:      vb.refreshDelay,
 		Pending:    []string{string(metalv1.PORTVLANASSIGNMENTBATCHSTATE_QUEUED), string(metalv1.PORTVLANASSIGNMENTBATCHSTATE_IN_PROGRESS)},
 		Target:     []string{string(metalv1.PORTVLANASSIGNMENTBATCHSTATE_FAILED), string(metalv1.PORTVLANASSIGNMENTBATCHSTATE_COMPLETED)},
-		MinTimeout: 5 * time.Second,
+		MinTimeout: vb.refreshInitialDelay,
 		Timeout:    ctxTimeout - time.Since(start) - 30*time.Second,
 		Refresh: func() (result any, state string, err error) {
 			batchResp, resp, err := client.PortsApi.FindPortVlanAssignmentBatchByPortIdAndBatchId(ctx, vb.portID, batch.GetId()).Execute()
@@ -120,6 +124,13 @@ func (vb *VlanBatch) Execute(ctx context.Context, client *metalv1.APIClient) (*m
 	}
 
 	return res.(*metalv1.PortVlanAssignmentBatch), nil, err
+}
+
+// SetRetryTimeouts is used to set polling interval to refresh Batch
+// status.
+func (vb *VlanBatch) SetRetryTimeouts(refreshDelay time.Duration, initialDelay time.Duration) {
+	vb.refreshDelay = refreshDelay
+	vb.refreshInitialDelay = initialDelay
 }
 
 type assignment interface {
