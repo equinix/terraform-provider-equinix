@@ -1,0 +1,150 @@
+package batch
+
+import (
+	"context"
+	"fmt"
+	"net/http"
+	"strings"
+	"time"
+
+	"github.com/equinix/equinix-sdk-go/services/metalv1"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/retry"
+)
+
+type vlanAssignmentBatchEntry = metalv1.PortVlanAssignmentBatchCreateInputVlanAssignmentsInner
+
+// VlanBatch provides the interface for defining which VLANs should be
+// assigned or unassigned from a particular port.
+type VlanBatch struct {
+	portID              string
+	assignments         []vlanAssignment
+	refreshDelay        time.Duration
+	refreshInitialDelay time.Duration
+}
+
+// NewVlanBatch creates a VlanBatch that can be used to add and remove
+// VLAN assignments for a given port in a single operation.
+func NewVlanBatch(portID string) *VlanBatch {
+	return &VlanBatch{
+		portID:              portID,
+		assignments:         []vlanAssignment{},
+		refreshDelay:        5 * time.Second,
+		refreshInitialDelay: 5 * time.Second,
+	}
+}
+
+// AddAssignment registers a VLAN that should be added to the port during
+// this batches execution.
+func (vb *VlanBatch) AddAssignment(vlanID string) {
+	state := metalv1.PORTVLANASSIGNMENTBATCHVLANASSIGNMENTSINNERSTATE_ASSIGNED.Ptr()
+	assignments := append(vb.assignments, vlanAssignment{vlanID: vlanID, state: state})
+	vb.assignments = assignments
+
+}
+
+// AddNativeAssignment registers a Native VLAN that should be added to
+// the port during this batches execution.
+func (vb *VlanBatch) AddNativeAssignment(vlanID string) {
+	state := metalv1.PORTVLANASSIGNMENTBATCHVLANASSIGNMENTSINNERSTATE_ASSIGNED.Ptr()
+	native := true
+	assignments := append(vb.assignments, vlanAssignment{vlanID: vlanID, state: state, native: &native})
+	vb.assignments = assignments
+}
+
+// RemoveAssignment adds a VLAN to the batch that should be removed on
+// execution.
+func (vb *VlanBatch) RemoveAssignment(vlanID string) {
+	state := metalv1.PORTVLANASSIGNMENTBATCHVLANASSIGNMENTSINNERSTATE_UNASSIGNED.Ptr()
+	assignments := append(vb.assignments, vlanAssignment{vlanID: vlanID, state: state})
+	vb.assignments = assignments
+
+}
+
+func (vb *VlanBatch) toBatchCreateInput() metalv1.PortVlanAssignmentBatchCreateInput {
+	createInput := metalv1.NewPortVlanAssignmentBatchCreateInput()
+	assignments := []metalv1.PortVlanAssignmentBatchCreateInputVlanAssignmentsInner{}
+	for _, assignment := range vb.assignments {
+		assignments = append(assignments, assignment.toVlanAssignmentBatchEntry())
+	}
+
+	createInput.SetVlanAssignments(assignments)
+
+	return *createInput
+}
+
+// Execute takes the batch with all the assignments and sends the
+// request to the API. This will also wait until the batch reaches a
+// terminal state.
+func (vb *VlanBatch) Execute(ctx context.Context, client *metalv1.APIClient) (*metalv1.PortVlanAssignmentBatch, *http.Response, error) {
+	start := time.Now()
+	batchReq := client.PortsApi.CreatePortVlanAssignmentBatch(ctx, vb.portID)
+
+	batch, resp, err := batchReq.PortVlanAssignmentBatchCreateInput(vb.toBatchCreateInput()).Execute()
+	if err != nil {
+		return nil, resp, fmt.Errorf("failed to create batch for vlan assignment: %w", err)
+	}
+
+	deadline, _ := ctx.Deadline()
+	ctxTimeout := deadline.Sub(start)
+
+	poller := retry.StateChangeConf{
+		Delay:      vb.refreshDelay,
+		Pending:    []string{string(metalv1.PORTVLANASSIGNMENTBATCHSTATE_QUEUED), string(metalv1.PORTVLANASSIGNMENTBATCHSTATE_IN_PROGRESS)},
+		Target:     []string{string(metalv1.PORTVLANASSIGNMENTBATCHSTATE_FAILED), string(metalv1.PORTVLANASSIGNMENTBATCHSTATE_COMPLETED)},
+		MinTimeout: vb.refreshInitialDelay,
+		Timeout:    ctxTimeout - time.Since(start) - 30*time.Second,
+		Refresh: func() (result any, state string, err error) {
+			batchResp, resp, err := client.PortsApi.FindPortVlanAssignmentBatchByPortIdAndBatchId(ctx, vb.portID, batch.GetId()).Execute()
+			switch batchResp.GetState() {
+			case metalv1.PORTVLANASSIGNMENTBATCHSTATE_FAILED:
+				return batchResp, string(metalv1.PORTVLANASSIGNMENTBATCHSTATE_FAILED),
+					fmt.Errorf("vlan assignment batch %s provisioning failed: %s", batchResp.GetId(), strings.Join(batchResp.ErrorMessages, "; "))
+			case metalv1.PORTVLANASSIGNMENTBATCHSTATE_COMPLETED:
+				return batchResp, string(metalv1.PORTVLANASSIGNMENTBATCHSTATE_COMPLETED), nil
+			default:
+				if err != nil {
+					return resp, "", fmt.Errorf("vlan assignment batch %s could not be polled: %w", batch.GetId(), err)
+				}
+				return batchResp, string(batchResp.GetState()), err
+			}
+
+		},
+	}
+
+	res, err := poller.WaitForStateContext(ctx)
+	if err != nil {
+		switch value := res.(type) {
+		case *http.Response:
+			return nil, value, err
+		case *metalv1.PortVlanAssignmentBatch:
+			return value, nil, err
+		default:
+			return nil, nil, err
+		}
+	}
+
+	return res.(*metalv1.PortVlanAssignmentBatch), nil, err
+}
+
+// SetRetryTimeouts is used to set polling interval to refresh Batch
+// status.
+func (vb *VlanBatch) SetRetryTimeouts(refreshDelay time.Duration, initialDelay time.Duration) {
+	vb.refreshDelay = refreshDelay
+	vb.refreshInitialDelay = initialDelay
+}
+
+type vlanAssignment struct {
+	vlanID string
+	state  *metalv1.PortVlanAssignmentBatchVlanAssignmentsInnerState
+	native *bool
+}
+
+func (vla vlanAssignment) toVlanAssignmentBatchEntry() vlanAssignmentBatchEntry {
+	res := vlanAssignmentBatchEntry{Vlan: &vla.vlanID, State: vla.state}
+
+	if vla.native != nil {
+		res.Native = vla.native
+	}
+
+	return res
+}

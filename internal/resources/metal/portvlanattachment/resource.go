@@ -1,4 +1,5 @@
-package equinix
+// Package portvlanattachment provides managment of VLANs on Device Ports.
+package portvlanattachment
 
 import (
 	"context"
@@ -7,16 +8,16 @@ import (
 	"net/http"
 
 	"github.com/equinix/equinix-sdk-go/services/metalv1"
-	equinix_errors "github.com/equinix/terraform-provider-equinix/internal/errors"
-
 	"github.com/equinix/terraform-provider-equinix/internal/config"
+	equinix_errors "github.com/equinix/terraform-provider-equinix/internal/errors"
 	"github.com/equinix/terraform-provider-equinix/internal/mutexkv"
-
+	"github.com/equinix/terraform-provider-equinix/internal/resources/metal/batch"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
-func resourceMetalPortVlanAttachment() *schema.Resource {
+// Resource provides the Terraform resource for PortVlanAttachements.
+func Resource() *schema.Resource {
 	return &schema.Resource{
 		CreateContext: resourceMetalPortVlanAttachmentCreate,
 		ReadContext:   resourceMetalPortVlanAttachmentRead,
@@ -71,7 +72,6 @@ func resourceMetalPortVlanAttachment() *schema.Resource {
 		},
 	}
 }
-
 func resourceMetalPortVlanAttachmentCreate(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	client := meta.(*config.Config).NewMetalClientForSDK(d)
 	deviceID := d.Get("device_id").(string)
@@ -138,13 +138,13 @@ func resourceMetalPortVlanAttachmentCreate(ctx context.Context, d *schema.Resour
 		mutexkv.Metal.Lock(lockID)
 		defer mutexkv.Metal.Unlock(lockID)
 
-		assignment := &metalv1.PortAssignInput{}
-		assignment.SetVnid(vlanID)
+		vlanBatch := batch.NewVlanBatch(port.GetId())
+		vlanBatch.AddAssignment(vlanID)
 
-		_, _, err = client.PortsApi.AssignPort(ctx, port.GetId()).PortAssignInput(*assignment).Execute()
-		if err != nil {
+		if _, _, err := vlanBatch.Execute(ctx, client); err != nil {
 			return diag.FromErr(err)
 		}
+
 	}
 
 	d.SetId(port.GetId() + ":" + vlanID)
@@ -235,7 +235,7 @@ func resourceMetalPortVlanAttachmentUpdate(ctx context.Context, d *schema.Resour
 				return diag.FromErr(err)
 			}
 		} else {
-			_, _, err := client.PortsApi.UnassignPort(ctx, portID).Execute()
+			_, _, err := client.PortsApi.DeleteNativeVlan(ctx, portID).Execute()
 			if err != nil {
 				return diag.FromErr(err)
 			}
@@ -263,15 +263,27 @@ func resourceMetalPortVlanAttachmentDelete(ctx context.Context, d *schema.Resour
 	mutexkv.Metal.Lock(lockID)
 	defer mutexkv.Metal.Unlock(lockID)
 
-	input := metalv1.NewPortAssignInput()
-	input.SetVnid(vlanID)
+	vlanBatch := batch.NewVlanBatch(pID)
+	vlanBatch.RemoveAssignment(vlanID)
 
-	portPtr, resp, err := client.PortsApi.UnassignPort(ctx, pID).PortAssignInput(*input).Execute()
-	switch resp.StatusCode {
-	case http.StatusForbidden, http.StatusNotFound:
+	_, resp, err := vlanBatch.Execute(ctx, client)
+	if err != nil {
+		switch resp.StatusCode {
+		case http.StatusForbidden, http.StatusNotFound:
 		// the port or device can't be located, give up
-	default:
-		return diag.FromErr(err)
+		default:
+			return diag.FromErr(err)
+		}
+	}
+
+	portPtr, resp, err := client.PortsApi.FindPortById(ctx, pID).Execute()
+	if err != nil {
+		switch resp.StatusCode {
+		case http.StatusForbidden, http.StatusNotFound:
+		// the port or device can't be located, give up
+		default:
+			return diag.FromErr(err)
+		}
 	}
 
 	forceBond := d.Get("force_bond").(bool)

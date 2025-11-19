@@ -29,6 +29,7 @@ var (
 	l3Types = []metalv1.PortNetworkType{"layer3", "hybrid", "hybrid-bonded"}
 )
 
+// Resource is the terraform schema resource for a network port on a device.
 func Resource() *schema.Resource {
 	return &schema.Resource{
 		Timeouts: &schema.ResourceTimeout{
@@ -128,20 +129,19 @@ func Resource() *schema.Resource {
 }
 
 func resourceMetalPortUpdate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	start := time.Now()
 	cpr, _, err := getClientPortResource(ctx, d, meta)
 	if err != nil {
 		return diag.FromErr(err)
 	}
 
-	for _, f := range [](func(context.Context, *ClientPortResource) error){
+	for _, f := range [](func(context.Context, *clientPortResource) error){
 		portSanityChecks,
-		batchVlans(start, true),
+		batchVlans(true),
 		makeDisbond,
 		convertToL2,
 		makeBond,
 		convertToL3,
-		batchVlans(start, false),
+		batchVlans(false),
 		updateNativeVlan,
 	} {
 		if err := f(ctx, cpr); err != nil {
@@ -209,7 +209,6 @@ func resourceMetalPortRead(ctx context.Context, d *schema.ResourceData, meta int
 func resourceMetalPortDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	resetRaw, resetOk := d.GetOk("reset_on_delete")
 	if resetOk && resetRaw.(bool) {
-		start := time.Now()
 		cpr, resp, err := getClientPortResource(ctx, d, meta)
 		if err != nil {
 			if resp != nil && !slices.Contains([]int{http.StatusForbidden, http.StatusNotFound}, resp.StatusCode) {
@@ -221,8 +220,8 @@ func resourceMetalPortDelete(ctx context.Context, d *schema.ResourceData, meta i
 		// create/update), some of which rely on resource state. reuse those helpers by
 		// setting ephemeral state.
 		port := Resource()
-		copy := port.Data(d.State())
-		cpr.Resource = copy
+		portCopy := port.Data(d.State())
+		cpr.Resource = portCopy
 		if err = equinix_schema.SetMap(cpr.Resource, map[string]interface{}{
 			"layer2":         false,
 			"bonded":         true,
@@ -232,8 +231,8 @@ func resourceMetalPortDelete(ctx context.Context, d *schema.ResourceData, meta i
 		}); err != nil {
 			return diag.FromErr(err)
 		}
-		for _, f := range [](func(context.Context, *ClientPortResource) error){
-			batchVlans(start, true),
+		for _, f := range [](func(context.Context, *clientPortResource) error){
+			batchVlans(true),
 			makeBond,
 			convertToL3,
 		} {
@@ -249,6 +248,9 @@ func resourceMetalPortDelete(ctx context.Context, d *schema.ResourceData, meta i
 	return nil
 }
 
+// ProperlyDestroyed performs some sanity checks to make sure the port
+// reverts to the state the port would be in typically for a metal
+// instance by default.
 func ProperlyDestroyed(port *metalv1.Port) error {
 	var errs []string
 	if !port.Data.GetBonded() {
