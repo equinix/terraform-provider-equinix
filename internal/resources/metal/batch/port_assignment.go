@@ -17,7 +17,7 @@ type vlanAssignmentBatchEntry = metalv1.PortVlanAssignmentBatchCreateInputVlanAs
 // assigned or unassigned from a particular port.
 type VlanBatch struct {
 	portID              string
-	assignments         []assignment
+	assignments         []vlanAssignment
 	refreshDelay        time.Duration
 	refreshInitialDelay time.Duration
 }
@@ -27,7 +27,7 @@ type VlanBatch struct {
 func NewVlanBatch(portID string) *VlanBatch {
 	return &VlanBatch{
 		portID:              portID,
-		assignments:         []assignment{},
+		assignments:         []vlanAssignment{},
 		refreshDelay:        5 * time.Second,
 		refreshInitialDelay: 5 * time.Second,
 	}
@@ -131,10 +131,6 @@ func (vb *VlanBatch) Execute(ctx context.Context, client *metalv1.APIClient) (*m
 func (vb *VlanBatch) SetRetryTimeouts(refreshDelay time.Duration, initialDelay time.Duration) {
 	vb.refreshDelay = refreshDelay
 	vb.refreshInitialDelay = initialDelay
-}
-
-type assignment interface {
-	toVlanAssignmentBatchEntry() vlanAssignmentBatchEntry
 }
 
 type vlanAssignment struct {
