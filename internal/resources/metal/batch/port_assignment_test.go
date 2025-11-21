@@ -154,3 +154,16 @@ func TestVlanBatchWithMockAPI(t *testing.T) {
 	}
 
 }
+
+func TestVlanBatchNoAssignments(t *testing.T) {
+	vb := NewVlanBatch("port_foo")
+
+	// empty client because we shouldn't hit it at all
+	client := &metalv1.APIClient{}
+	_, _, err := vb.Execute(context.Background(), client)
+
+	// the previous batch assignment logic returned nil so that this
+	// could be a no op for port updates that weren't updating
+	// vlan assignments
+	assert.NoError(t, err)
+}
