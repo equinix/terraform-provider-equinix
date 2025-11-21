@@ -79,7 +79,13 @@ func (vb *VlanBatch) Execute(ctx context.Context, client *metalv1.APIClient) (*m
 	start := time.Now()
 	batchReq := client.PortsApi.CreatePortVlanAssignmentBatch(ctx, vb.portID)
 
-	batch, resp, err := batchReq.PortVlanAssignmentBatchCreateInput(vb.toBatchCreateInput()).Execute()
+	createInput := vb.toBatchCreateInput()
+	if len(createInput.GetVlanAssignments()) == 0 {
+		// Execute is functionally a no-op without assignments
+		return nil, nil, nil
+	}
+
+	batch, resp, err := batchReq.PortVlanAssignmentBatchCreateInput(createInput).Execute()
 	if err != nil {
 		return nil, resp, fmt.Errorf("failed to create batch for vlan assignment: %w", err)
 	}
