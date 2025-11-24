@@ -18,7 +18,7 @@ import (
 )
 
 var (
-	matchErrPortReadyTimeout = regexp.MustCompile(".* timeout while waiting for state to become 'completed'.*")
+	matchErrPortReadyTimeout = regexp.MustCompile(".*(timeout while waiting for state|context deadline exceeded).*")
 )
 
 func confAccMetalPort_base(name string) string {
@@ -205,7 +205,7 @@ resource "equinix_metal_vlan" "test2" {
 `, confAccMetalPort_base(name))
 }
 
-func confAccMetalPort_HybridBonded_timeout(rInt int, name, createTimeout, updateTimeout string) string {
+func confAccMetalPort_HybridBonded_timeout(rInt int, name, attachedVlanResource, createTimeout, updateTimeout string) string {
 	if createTimeout == "" {
 		createTimeout = "20m"
 	}
@@ -221,12 +221,15 @@ resource "equinix_metal_port" "bond0" {
   layer2   = false
   bonded   = true
   reset_on_delete = true
-  vlan_ids = [equinix_metal_vlan.test.id]
+  vlan_ids = [%s.id]
   timeouts {
     create = "%s"
 	update = "%s"
   }
-  depends_on = [equinix_metal_vlan.test]
+  depends_on = [
+    equinix_metal_vlan.test,
+    equinix_metal_vlan.test2,
+]
 }
 
 resource "equinix_metal_vlan" "test" {
@@ -234,7 +237,13 @@ resource "equinix_metal_vlan" "test" {
   metro       = equinix_metal_device.test.metro
   project_id  = equinix_metal_project.test.id
 }
-`, confAccMetalPort_base(name), createTimeout, updateTimeout, rInt)
+
+resource "equinix_metal_vlan" "test2" {
+  description = "tfacc-vlan test2-%d"
+  metro       = equinix_metal_device.test.metro
+  project_id  = equinix_metal_project.test.id
+}
+`, confAccMetalPort_base(name), attachedVlanResource, createTimeout, updateTimeout, rInt, rInt)
 }
 
 func TestAccMetalPort_hybridBondedVxlan(t *testing.T) {
@@ -432,7 +441,7 @@ func TestAccMetalPortCreate_hybridBonded_timeout(t *testing.T) {
 		CheckDestroy:             testAccMetalPortDestroyed,
 		Steps: []resource.TestStep{
 			{
-				Config:      confAccMetalPort_HybridBonded_timeout(rInt, rs, "5s", ""),
+				Config:      confAccMetalPort_HybridBonded_timeout(rInt, rs, "equinix_metal_vlan.test", "5s", ""),
 				ExpectError: matchErrPortReadyTimeout,
 			},
 			{
@@ -452,10 +461,10 @@ func TestAccMetalPortCreate_hybridBonded_timeout(t *testing.T) {
 				),
 			},
 			{
-				Config: confAccMetalPort_HybridBonded_timeout(rInt, rs, "5s", ""),
+				Config: confAccMetalPort_HybridBonded_timeout(rInt, rs, "equinix_metal_vlan.test", "5s", ""),
 			},
 			{
-				Config:  confAccMetalPort_HybridBonded_timeout(rInt, rs, "5s", ""),
+				Config:  confAccMetalPort_HybridBonded_timeout(rInt, rs, "equinix_metal_vlan.test", "5s", ""),
 				Destroy: true,
 			},
 		},
@@ -473,7 +482,7 @@ func TestAccMetalPortUpdate_hybridBonded_timeout(t *testing.T) {
 		CheckDestroy:             testAccMetalPortDestroyed,
 		Steps: []resource.TestStep{
 			{
-				Config: confAccMetalPort_HybridBonded_timeout(rInt, rs, "", "5s"),
+				Config: confAccMetalPort_HybridBonded_timeout(rInt, rs, "equinix_metal_vlan.test", "", "1s"),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr("equinix_metal_port.bond0", "name", "bond0"),
 					resource.TestCheckResourceAttr("equinix_metal_port.bond0", "type", "NetworkBondPort"),
@@ -484,7 +493,7 @@ func TestAccMetalPortUpdate_hybridBonded_timeout(t *testing.T) {
 				),
 			},
 			{
-				Config:      confAccMetalPort_HybridBonded_timeout(rInt+1, rs, "", "5s"),
+				Config:      confAccMetalPort_HybridBonded_timeout(rInt, rs, "equinix_metal_vlan.test2", "", "1s"),
 				ExpectError: matchErrPortReadyTimeout,
 			},
 			{
@@ -495,10 +504,7 @@ func TestAccMetalPortUpdate_hybridBonded_timeout(t *testing.T) {
 				),
 			},
 			{
-				Config: confAccMetalPort_HybridBonded_timeout(rInt+1, rs, "", ""),
-			},
-			{
-				Config:  confAccMetalPort_HybridBonded_timeout(rInt+1, rs, "", ""),
+				Config:  confAccMetalPort_HybridBonded_timeout(rInt, rs, "equinix_metal_vlan.test2", "", ""),
 				Destroy: true,
 			},
 		},
