@@ -229,7 +229,8 @@ func getGatewayDeleteWaiter(ctx context.Context, client *metalv1.APIClient, id s
 			gw, resp, err := client.MetalGatewaysApi.FindMetalGatewayById(ctx, id).Include(includes).Execute()
 			if err != nil {
 				if equinix_errors.IgnoreHttpResponseErrors(http.StatusForbidden, http.StatusNotFound)(resp, err) != nil {
-					return gw, "", err
+					// Return error with a valid pending state to avoid empty string state
+					return gw, string(metalv1.METALGATEWAYSTATE_DELETING), err
 				} else {
 					return gw, deletedMarker, nil
 				}
@@ -237,9 +238,15 @@ func getGatewayDeleteWaiter(ctx context.Context, client *metalv1.APIClient, id s
 			state := ""
 			if gw.MetalGateway != nil {
 				state = string(gw.MetalGateway.GetState())
-			} else {
+			} else if gw.VrfMetalGateway != nil {
 				state = string(gw.VrfMetalGateway.GetState())
 			}
+
+			// If state is empty, treat it as deleting to avoid empty string state
+			if state == "" {
+				state = string(metalv1.METALGATEWAYSTATE_DELETING)
+			}
+
 			return gw, state, nil
 		},
 		Timeout:    timeout,
