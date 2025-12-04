@@ -238,7 +238,7 @@ func getGatewayDeleteWaiter(ctx context.Context, client *metalv1.APIClient, id s
 			state := ""
 			if gw.MetalGateway != nil {
 				state = string(gw.MetalGateway.GetState())
-			} else if gw.VrfMetalGateway != nil {
+			} else {
 				state = string(gw.VrfMetalGateway.GetState())
 			}
 
