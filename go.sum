@@ -40,6 +40,8 @@ github.com/emirpasic/gods v1.18.1 h1:FXtiHYKDGKCW2KzwZKx0iC0PQmdlorYgdFG9jPXJ1Bc
 github.com/emirpasic/gods v1.18.1/go.mod h1:8tpGGwCnJ5H4r6BWwaV6OrWmMoPhUl5jm/FMNAnJvWQ=
 github.com/equinix/equinix-sdk-go v0.62.0 h1:R0qgYN5jvQopa+YPJHzjlWhSq+b2fhzTBL1cegJ5O3w=
 github.com/equinix/equinix-sdk-go v0.62.0/go.mod h1:QokAmUtlYlD4gJ1s5UL1nZ4e6XALV0ftl5ZCwdPYp5M=
+github.com/equinix/equinix-sdk-go v0.62.1-0.20251218160727-c319e06cbc53 h1:ba0RnKrlyTOHM8LDeqt7JLB/zSTdBQ+7980MTIuvd68=
+github.com/equinix/equinix-sdk-go v0.62.1-0.20251218160727-c319e06cbc53/go.mod h1:QokAmUtlYlD4gJ1s5UL1nZ4e6XALV0ftl5ZCwdPYp5M=
 github.com/equinix/ne-go v1.21.0 h1:+OxxK7YcfmBTBsSPYgHnHUF9JqQ34YBFzMboXr094wI=
 github.com/equinix/ne-go v1.21.0/go.mod h1:eHkkxM4nbTB7DZ9X9zGnwfYnxIJWIsU3aHA+FAoZ1EI=
 github.com/equinix/rest-go v1.3.0 h1:m38scYTOfV6N+gcrwchgVDutDffYd+QoYCMm9Jn6jyk=
