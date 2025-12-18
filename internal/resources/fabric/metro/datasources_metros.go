@@ -1,3 +1,4 @@
+// Package metro implements datasource for Metro
 package metro
 
 import (
@@ -10,6 +11,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/types/basetypes"
 )
 
+// NewDataSourceMetros creates a new data source for Metros
 func NewDataSourceMetros() datasource.DataSource {
 	return &DataSourceMetros{
 		BaseDataSource: framework.NewBaseDataSource(
@@ -20,10 +22,12 @@ func NewDataSourceMetros() datasource.DataSource {
 	}
 }
 
+// DataSourceMetros datasource represents metros
 type DataSourceMetros struct {
 	framework.BaseDataSource
 }
 
+// Schema returns the metros datasource schema
 func (r *DataSourceMetros) Schema(
 	ctx context.Context,
 	_ datasource.SchemaRequest,
@@ -35,8 +39,8 @@ func (r *DataSourceMetros) Schema(
 func (r *DataSourceMetros) Read(ctx context.Context, request datasource.ReadRequest, response *datasource.ReadResponse) {
 	client := r.Meta.NewFabricClientForFramework(ctx, request.ProviderMeta)
 
-	var allMetrosData DataSourceAllMetrosModel
-	var pagination PaginationModel
+	var allMetrosData dataSourceAllMetrosModel
+	var pagination paginationModel
 	response.Diagnostics.Append(request.Config.Get(ctx, &allMetrosData)...)
 	if response.Diagnostics.HasError() {
 		return

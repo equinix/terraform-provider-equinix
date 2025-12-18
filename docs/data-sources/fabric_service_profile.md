@@ -88,7 +88,7 @@ output "allow_over_subscription" {
 - `self_profile` (Boolean) Self Profile indicating if the profile is created for customer's  self use
 - `state` (String) Service profile state - ACTIVE, PENDING_APPROVAL, DELETED, REJECTED
 - `tags` (List of String) Tags attached to the connection
-- `type` (String) Service profile type - L2_PROFILE, L3_PROFILE, ECIA_PROFILE, ECMC_PROFILE, IA_PROFILE
+- `type` (String) Service profile type - L2_PROFILE, L3_PROFILE, ECIA_PROFILE, ECMC_PROFILE, IA_PROFILE, IX_PROFILE
 - `view_point` (String) Flips view between buyer and seller representation. Available values : aSide, zSide. Default value : aSide
 - `virtual_devices` (List of Object) Virtual Devices (see [below for nested schema](#nestedatt--virtual_devices))
 - `visibility` (String) Service profile visibility - PUBLIC, PRIVATE

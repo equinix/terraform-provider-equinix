@@ -29,6 +29,7 @@ func TestAccFabricMetroDataSource_PFCR(t *testing.T) {
 					resource.TestCheckResourceAttrSet("data.equinix_fabric_metro.metro", "id"),
 					resource.TestCheckResourceAttrSet("data.equinix_fabric_metro.metro", "href"),
 					resource.TestCheckResourceAttrSet("data.equinix_fabric_metro.metro", "region"),
+					resource.TestCheckResourceAttrSet("data.equinix_fabric_metro.metro", "country"),
 					resource.TestCheckResourceAttrSet("data.equinix_fabric_metro.metro", "equinix_asn"),
 					resource.TestCheckResourceAttrSet("data.equinix_fabric_metro.metro", "local_vc_bandwidth_max"),
 					resource.TestCheckResourceAttr("data.equinix_fabric_metro.metro", "geo_coordinates.%", "2"),

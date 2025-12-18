@@ -154,7 +154,6 @@ Read-Only:
 - `connections_count` (Number)
 - `description` (String)
 - `equinix_asn` (Number)
-- `gateway_attachments_count` (Number)
 - `href` (String)
 - `location` (Set of Object) (see [below for nested schema](#nestedobjatt--data--location))
 - `marketplace_subscription` (Set of Object) (see [below for nested schema](#nestedobjatt--data--marketplace_subscription))

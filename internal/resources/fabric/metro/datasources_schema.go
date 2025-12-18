@@ -22,7 +22,7 @@ func dataSourceAllMetroSchema(ctx context.Context) schema.Schema {
 			"pagination": schema.SingleNestedAttribute{
 				Description: "Pagination details for the returned metro list",
 				Required:    true,
-				CustomType:  fwtypes.NewObjectTypeOf[PaginationModel](ctx),
+				CustomType:  fwtypes.NewObjectTypeOf[paginationModel](ctx),
 				Attributes: map[string]schema.Attribute{
 					"offset": schema.Int32Attribute{
 						Description: "Index of the first item returned in the response.",
@@ -58,7 +58,7 @@ func dataSourceAllMetroSchema(ctx context.Context) schema.Schema {
 			"data": schema.ListNestedAttribute{
 				Description: "Returned list of metro objects",
 				Computed:    true,
-				CustomType:  fwtypes.NewListNestedObjectTypeOf[Model](ctx),
+				CustomType:  fwtypes.NewListNestedObjectTypeOf[metroBaseModel](ctx),
 				NestedObject: schema.NestedAttributeObject{
 					Attributes: getMetroSchema(ctx),
 				},
@@ -101,6 +101,10 @@ func getMetroSchema(ctx context.Context) map[string]schema.Attribute {
 			Description: "Name of the region in which the data center is located",
 			Computed:    true,
 		},
+		"country": schema.StringAttribute{
+			Description: "Country in which the data center is located",
+			Computed:    true,
+		},
 		"equinix_asn": schema.Int64Attribute{
 			Description: "Autonomous system number (ASN) for a specified Fabric metro. The ASN is a unique identifier that carries the network routing protocol and exchanges that data with other internal systems via border gateway protocol.",
 			Computed:    true,
@@ -111,7 +115,7 @@ func getMetroSchema(ctx context.Context) map[string]schema.Attribute {
 		},
 		"geo_coordinates": schema.SingleNestedAttribute{
 			Description: "Geographic location data of Fabric Metro",
-			CustomType:  fwtypes.NewObjectTypeOf[GeoCoordinatesModel](ctx),
+			CustomType:  fwtypes.NewObjectTypeOf[geoCoordinatesModel](ctx),
 			Attributes: map[string]schema.Attribute{
 				"latitude": schema.Float64Attribute{
 					Description: "Latitude of the Metro",
@@ -126,8 +130,8 @@ func getMetroSchema(ctx context.Context) map[string]schema.Attribute {
 		},
 		"connected_metros": schema.ListAttribute{
 			Description: "Arrays of objects containing latency data for the specified metro",
-			CustomType:  fwtypes.NewListNestedObjectTypeOf[ConnectedMetroModel](ctx),
-			ElementType: fwtypes.NewObjectTypeOf[ConnectedMetroModel](ctx),
+			CustomType:  fwtypes.NewListNestedObjectTypeOf[connectedMetroModel](ctx),
+			ElementType: fwtypes.NewObjectTypeOf[connectedMetroModel](ctx),
 			Computed:    true,
 		},
 		"geo_scopes": schema.ListAttribute{
