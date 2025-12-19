@@ -52,7 +52,7 @@ resource "equinix_fabric_service_profile" "new_service_profile" {
 
 - `description` (String) User-provided service description
 - `name` (String) Customer-assigned service profile name
-- `type` (String) Service profile type - L2_PROFILE, L3_PROFILE, ECIA_PROFILE, ECMC_PROFILE, IA_PROFILE
+- `type` (String) Service profile type - L2_PROFILE, L3_PROFILE, ECIA_PROFILE, ECMC_PROFILE, IA_PROFILE, IX_PROFILE
 
 ### Optional
 

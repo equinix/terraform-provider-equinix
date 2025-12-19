@@ -95,6 +95,7 @@ Read-Only:
 
 - `code` (String) Code assigned to an Equinix IBX data center in a specified metropolitan area
 - `connected_metros` (List of Object) Arrays of objects containing latency data for the specified metro (see [below for nested schema](#nestedatt--data--connected_metros))
+- `country` (String) Country in which the data center is located
 - `equinix_asn` (Number) Autonomous system number (ASN) for a specified Fabric metro. The ASN is a unique identifier that carries the network routing protocol and exchanges that data with other internal systems via border gateway protocol.
 - `geo_coordinates` (Attributes) Geographic location data of Fabric Metro (see [below for nested schema](#nestedatt--data--geo_coordinates))
 - `geo_scopes` (List of String) List of supported geographic boundaries of a Fabric Metro. Example values: CANADA, CONUS.

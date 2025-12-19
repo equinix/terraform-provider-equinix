@@ -1,3 +1,4 @@
+// Package metro implements datasource for Metro
 package metro
 
 import (
@@ -8,6 +9,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/datasource"
 )
 
+// NewDataSourceMetroCode creates a new data source for Metro by Code
 func NewDataSourceMetroCode() datasource.DataSource {
 	return &DataSourceMetroCode{
 		BaseDataSource: framework.NewBaseDataSource(
@@ -18,10 +20,12 @@ func NewDataSourceMetroCode() datasource.DataSource {
 	}
 }
 
+// DataSourceMetroCode datasource represents metro by code
 type DataSourceMetroCode struct {
 	framework.BaseDataSource
 }
 
+// Schema returns the metro by code datasource schema
 func (r *DataSourceMetroCode) Schema(
 	ctx context.Context,
 	_ datasource.SchemaRequest,
@@ -33,7 +37,7 @@ func (r *DataSourceMetroCode) Schema(
 func (r *DataSourceMetroCode) Read(ctx context.Context, request datasource.ReadRequest, response *datasource.ReadResponse) {
 	client := r.Meta.NewFabricClientForFramework(ctx, request.ProviderMeta)
 
-	var data DataSourceByCodeModel
+	var data dataSourceByCodeModel
 	response.Diagnostics.Append(request.Config.Get(ctx, &data)...)
 	if response.Diagnostics.HasError() {
 		return
