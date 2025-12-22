@@ -179,13 +179,14 @@ func WaitForDeletion(connectionId, routeFilterId string, meta interface{}, d *sc
 		},
 		Target: []string{
 			string(fabricv4.CONNECTIONROUTEAGGREGATIONDATAATTACHMENTSTATUS_DETACHED),
+			string(fabricv4.ROUTEFILTERSTATE_DEPROVISIONED),
 		},
 		Refresh: func() (interface{}, string, error) {
 			client := meta.(*config.Config).NewFabricClientForSDK(ctx, d)
 			connectionRouteFilter, body, err := client.RouteFiltersApi.GetConnectionRouteFilterByUuid(ctx, routeFilterId, connectionId).Execute()
 			if err != nil {
-				if body.StatusCode >= 400 && body.StatusCode <= 499 {
-					// Already deleted resource
+				if body != nil && body.StatusCode >= 400 && body.StatusCode <= 499 {
+					// Already deleted resource - return DEPROVISIONED state
 					return connectionRouteFilter, string(fabricv4.ROUTEFILTERSTATE_DEPROVISIONED), nil
 				}
 				return "", "", equinix_errors.FormatFabricError(err)
