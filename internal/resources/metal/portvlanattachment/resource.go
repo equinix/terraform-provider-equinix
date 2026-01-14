@@ -268,6 +268,11 @@ func resourceMetalPortVlanAttachmentDelete(ctx context.Context, d *schema.Resour
 
 	_, resp, err := vlanBatch.Execute(ctx, client)
 	if err != nil {
+		if resp == nil {
+			log.Printf("[WARN] equinix_port_vlan_attachment failed to execute vlan batch, and http resp is nil: %s", err)
+			return diag.FromErr(err)
+		}
+
 		switch resp.StatusCode {
 		case http.StatusForbidden, http.StatusNotFound:
 		// the port or device can't be located, give up
