@@ -3,19 +3,17 @@ package port
 import (
 	"context"
 	"fmt"
-	"log"
-	"net/http"
 	"time"
 
-	"slices"
-
 	"github.com/equinix/equinix-sdk-go/services/metalv1"
-	equinix_schema "github.com/equinix/terraform-provider-equinix/internal/schema"
+	equinix_errors "github.com/equinix/terraform-provider-equinix/internal/errors"
+	"github.com/equinix/terraform-provider-equinix/internal/framework"
 
-	"github.com/equinix/terraform-provider-equinix/internal/config"
+	"github.com/equinix/terraform-provider-equinix/internal/resources/metal/batch"
 
-	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
+	"github.com/hashicorp/terraform-plugin-framework/diag"
+	"github.com/hashicorp/terraform-plugin-framework/resource"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
 )
 
 /*
@@ -29,228 +27,436 @@ var (
 	l3Types = []metalv1.PortNetworkType{"layer3", "hybrid", "hybrid-bonded"}
 )
 
-// Resource is the terraform schema resource for a network port on a device.
-func Resource() *schema.Resource {
-	return &schema.Resource{
-		Timeouts: &schema.ResourceTimeout{
-			Create: schema.DefaultTimeout(30 * time.Minute),
-			Update: schema.DefaultTimeout(30 * time.Minute),
-			Delete: schema.DefaultTimeout(30 * time.Minute),
-		},
-		ReadWithoutTimeout: resourceMetalPortRead,
-		// Create and Update are the same func
-		CreateContext: resourceMetalPortUpdate,
-		UpdateContext: resourceMetalPortUpdate,
-		DeleteContext: resourceMetalPortDelete,
-		Importer: &schema.ResourceImporter{
-			StateContext: schema.ImportStatePassthroughContext,
-		},
-
-		Schema: map[string]*schema.Schema{
-			"port_id": {
-				Type:        schema.TypeString,
-				Required:    true,
-				Description: "UUID of the port to lookup",
-				ForceNew:    true,
-			},
-			"bonded": {
-				Type:        schema.TypeBool,
-				Required:    true,
-				Description: "Flag indicating whether the port should be bonded",
-			},
-			"layer2": {
-				Type:        schema.TypeBool,
-				Optional:    true,
-				Description: "Flag indicating whether the port is in layer2 (or layer3) mode. The `layer2` flag can be set only for bond ports.",
-			},
-			"native_vlan_id": {
-				Type:        schema.TypeString,
-				Optional:    true,
-				Description: "UUID of native VLAN of the port",
-			},
-			"vxlan_ids": {
-				Type:          schema.TypeSet,
-				Optional:      true,
-				Computed:      true,
-				Description:   "VLAN VXLAN ids to attach (example: [1000])",
-				Elem:          &schema.Schema{Type: schema.TypeInt},
-				ConflictsWith: []string{"vlan_ids"},
-			},
-			"vlan_ids": {
-				Type:          schema.TypeSet,
-				Optional:      true,
-				Computed:      true,
-				Description:   "UUIDs VLANs to attach. To avoid jitter, use the UUID and not the VXLAN",
-				Elem:          &schema.Schema{Type: schema.TypeString},
-				ConflictsWith: []string{"vxlan_ids"},
-			},
-			"reset_on_delete": {
-				Type:        schema.TypeBool,
-				Optional:    true,
-				Description: "Behavioral setting to reset the port to default settings (layer3 bonded mode without any vlan attached) before delete/destroy",
-			},
-			"name": {
-				Type:        schema.TypeString,
-				Computed:    true,
-				Description: "Name of the port to look up, e.g. bond0, eth1",
-			},
-			"network_type": {
-				Type:        schema.TypeString,
-				Computed:    true,
-				Description: "One of layer2-bonded, layer2-individual, layer3, hybrid and hybrid-bonded. This attribute is only set on bond ports.",
-			},
-			"disbond_supported": {
-				Type:        schema.TypeBool,
-				Computed:    true,
-				Description: "Flag indicating whether the port can be removed from a bond",
-			},
-			"bond_name": {
-				Type:        schema.TypeString,
-				Computed:    true,
-				Description: "Name of the bond port",
-			},
-			"bond_id": {
-				Type:        schema.TypeString,
-				Computed:    true,
-				Description: "UUID of the bond port",
-			},
-			"type": {
-				Type:        schema.TypeString,
-				Computed:    true,
-				Description: "Port type",
-			},
-			"mac": {
-				Type:        schema.TypeString,
-				Computed:    true,
-				Description: "MAC address of the port",
-			},
-		},
-	}
+type tfResource struct {
+	framework.BaseResource
+	framework.WithTimeouts
 }
 
-func resourceMetalPortUpdate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	cpr, _, err := getClientPortResource(ctx, d, meta)
+// NewResource returns the TF resource representing device network ports.
+func NewResource() resource.Resource {
+	r := &tfResource{
+		BaseResource: framework.NewBaseResource(
+			framework.BaseResourceConfig{
+				Name: "equinix_metal_port",
+			},
+		),
+	}
+
+	r.SetDefaultCreateTimeout(20 * time.Minute)
+	r.SetDefaultUpdateTimeout(20 * time.Minute)
+	r.SetDefaultUpdateTimeout(20 * time.Minute)
+
+	return r
+}
+
+// Schema implements resource.Resource.
+// Subtle: this method shadows the method (BaseResource).Schema of Resource.BaseResource.
+func (r *tfResource) Schema(ctx context.Context, _ resource.SchemaRequest, resp *resource.SchemaResponse) {
+	s := resourceSchema(ctx)
+
+	if s.Blocks == nil {
+		s.Blocks = make(map[string]schema.Block)
+	}
+
+	resp.Schema = s
+}
+
+// Create implements resource.Resource.
+func (r *tfResource) Create(ctx context.Context, req resource.CreateRequest, resp *resource.CreateResponse) {
+	var state, plan resourceModel
+	resp.Diagnostics.Append(req.Plan.Get(ctx, &plan)...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
+	client := r.Meta.NewMetalClientForFramework(ctx, req.ProviderMeta)
+	id := plan.PortID.ValueString()
+
+	port, _, err := client.PortsApi.FindPortById(ctx, id).
+		Include([]string{"native_virtual_network", "virtual_networks"}).
+		Execute()
+
 	if err != nil {
-		return diag.FromErr(err)
-	}
-
-	for _, f := range [](func(context.Context, *clientPortResource) error){
-		portSanityChecks,
-		batchVlans(true),
-		makeDisbond,
-		convertToL2,
-		makeBond,
-		convertToL3,
-		batchVlans(false),
-		updateNativeVlan,
-	} {
-		if err := f(ctx, cpr); err != nil {
-			return diag.FromErr(err)
+		if equinix_errors.IsNotFound(err) {
+			resp.Diagnostics.AddWarning("Metal Port",
+				fmt.Sprintf("[WARN] Metal Port (%s) not found, removing from state", id),
+			)
+			return
 		}
+
+		resp.Diagnostics.AddError(
+			"Error reading Metal Port",
+			fmt.Sprintf("Could not read Metal Port with ID %s: %v", id, err),
+		)
+		return
 	}
 
-	return resourceMetalPortRead(ctx, d, meta)
+	ops, diags := plan.ToExecutionPlan(ctx, port)
+	resp.Diagnostics.Append(diags...)
+	if diags.HasError() {
+		return
+	}
+
+	_, diags = r.performOperations(ctx, client, ops, state)
+	resp.Diagnostics.Append(diags...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
+	port, diags = r.refreshPort(ctx, client, plan.PortID.ValueString())
+	resp.Diagnostics.Append(diags...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
+	resp.Diagnostics.Append(state.parse(ctx, port)...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
+	resp.Diagnostics.Append(resp.State.Set(ctx, &state)...)
 }
 
-func resourceMetalPortRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	client := meta.(*config.Config).NewMetalClientForSDK(d)
+// Read implements resource.Resource.
+func (r *tfResource) Read(ctx context.Context, req resource.ReadRequest, resp *resource.ReadResponse) {
+	var state resourceModel
+	resp.Diagnostics.Append(req.State.Get(ctx, &state)...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
 
-	port, resp, err := getPortByResourceData(ctx, d, client)
+	client := r.Meta.NewMetalClientForFramework(ctx, req.ProviderMeta)
+
+	id := state.PortID.ValueString()
+
+	port, _, err := client.PortsApi.FindPortById(ctx, id).
+		Include([]string{"virtual_networks", "native_virtual_network"}).
+		Execute()
+
 	if err != nil {
-		if resp != nil && slices.Contains([]int{http.StatusNotFound, http.StatusForbidden}, resp.StatusCode) {
-			log.Printf("[WARN] Port (%s) not accessible, removing from state", d.Id())
-			d.SetId("")
-
-			return nil
-		}
-		return diag.FromErr(err)
-	}
-	m := map[string]interface{}{
-		"port_id":           port.GetId(),
-		"type":              port.GetType(),
-		"name":              port.GetName(),
-		"network_type":      port.GetNetworkType(),
-		"mac":               port.Data.GetMac(),
-		"bonded":            port.Data.GetBonded(),
-		"disbond_supported": port.GetDisbondOperationSupported(),
-	}
-	l2 := slices.Contains(l2Types, port.GetNetworkType())
-	l3 := slices.Contains(l3Types, port.GetNetworkType())
-
-	if l2 {
-		m["layer2"] = true
-	}
-	if l3 {
-		m["layer2"] = false
+		resp.Diagnostics.AddError(
+			"Failed reading Metal Port",
+			fmt.Sprintf("Could not find port with id %s: %s", id, err),
+		)
+		return
 	}
 
-	if port.NativeVirtualNetwork != nil {
-		m["native_vlan_id"] = port.NativeVirtualNetwork.GetId()
+	resp.Diagnostics.Append(state.parse(ctx, port)...)
+	if resp.Diagnostics.HasError() {
+		return
 	}
 
-	vlans := []string{}
-	vxlans := []int{}
-	for _, n := range port.VirtualNetworks {
-		vlans = append(vlans, n.GetId())
-		vxlans = append(vxlans, int(n.GetVxlan()))
-	}
-	m["vlan_ids"] = vlans
-	m["vxlan_ids"] = vxlans
-
-	if port.Bond != nil {
-		m["bond_id"] = port.Bond.GetId()
-		m["bond_name"] = port.Bond.GetName()
-	}
-
-	d.SetId(port.GetId())
-	return diag.FromErr(equinix_schema.SetMap(d, m))
+	resp.Diagnostics.Append(resp.State.Set(ctx, &state)...)
 }
 
-func resourceMetalPortDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	resetRaw, resetOk := d.GetOk("reset_on_delete")
-	if resetOk && resetRaw.(bool) {
-		cpr, resp, err := getClientPortResource(ctx, d, meta)
+// Update implements resource.Resource.
+func (r *tfResource) Update(ctx context.Context, req resource.UpdateRequest, resp *resource.UpdateResponse) {
+	var state, plan resourceModel
+	resp.Diagnostics.Append(req.Plan.Get(ctx, &plan)...)
+	resp.Diagnostics.Append(req.State.Get(ctx, &state)...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
+	client := r.Meta.NewMetalClientForFramework(ctx, req.ProviderMeta)
+	id := state.PortID.ValueString()
+
+	port, _, err := client.PortsApi.FindPortById(ctx, id).
+		Include([]string{"native_virtual_network", "virtual_networks"}).
+		Execute()
+
+	if err != nil {
+		if equinix_errors.IsNotFound(err) {
+			resp.Diagnostics.AddWarning("Metal Port",
+				fmt.Sprintf("[WARN] Metal Port (%s) not found, removing from state", id),
+			)
+			req.State.RemoveResource(ctx)
+			return
+		}
+
+		resp.Diagnostics.AddError(
+			"Error reading Metal Port",
+			fmt.Sprintf("Could not read Metal Port with ID %s: %v", id, err),
+		)
+		return
+	}
+
+	ops, diags := plan.ToExecutionPlan(ctx, port)
+	resp.Diagnostics.Append(diags...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
+	batch, diags := r.updateVlanAssigments(ctx, state, &plan)
+	resp.Diagnostics.Append(diags...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
+	resp.Diagnostics.Append(r.waitForBatch(ctx, client, batch)...)
+
+	_, diags = r.performOperations(ctx, client, ops, state)
+	resp.Diagnostics.Append(diags...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
+	port, diags = r.refreshPort(ctx, client, state.PortID.ValueString())
+	resp.Diagnostics.Append(diags...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
+	resp.Diagnostics.Append(state.parse(ctx, port)...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
+	resp.Diagnostics.Append(resp.State.Set(ctx, &state)...)
+}
+
+// Delete implements resource.Resource.
+func (r *tfResource) Delete(ctx context.Context, req resource.DeleteRequest, resp *resource.DeleteResponse) {
+	var state, actual resourceModel
+
+	resp.Diagnostics.Append(req.State.Get(ctx, &state)...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
+	// If the reset_on_delete option is not set, just let terraform cleanup the resource from the state.
+	if state.ResetOnDelete.IsNull() {
+		return
+	}
+
+	// If the reset_on_delete option _is_ set, but is false, let Terraform clean up the resource from the state.
+	if !state.ResetOnDelete.ValueBool() {
+		return
+	}
+
+	// If we're here, we have reset_on_delete = true, so we'll perform operations to reset the port.
+	client := r.Meta.NewMetalClientForFramework(ctx, req.ProviderMeta)
+	id := state.PortID.ValueString()
+
+	port, _, err := client.PortsApi.FindPortById(ctx, id).
+		Include([]string{"native_virtual_network", "virtual_networks"}).
+		Execute()
+
+	if err != nil {
+		if equinix_errors.IsNotFound(err) {
+			resp.Diagnostics.AddWarning("Metal Port",
+				fmt.Sprintf("[WARN] Metal Port (%s) not found, removing from state", id),
+			)
+			req.State.RemoveResource(ctx)
+			return
+		}
+
+		resp.Diagnostics.AddError(
+			"Error reading Metal Port",
+			fmt.Sprintf("Could not read Metal Port with ID %s: %v", id, err),
+		)
+		return
+	}
+
+	ops := []string{}
+
+	resp.Diagnostics.Append(actual.parse(ctx, port)...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
+	wantBonded := state.Bonded.ValueBool()
+	isBonded := actual.Bonded.ValueBool()
+	if wantBonded && !isBonded {
+		ops = append(ops, "bond")
+	}
+
+	wantLayer3 := state.Layer2.IsNull() || !state.Layer2.ValueBool()
+	portIsLayer2 := actual.Layer2.ValueBool()
+	if wantLayer3 && portIsLayer2 {
+		ops = append(ops, "convertToLayer3")
+	}
+
+	port, diags := r.performOperations(ctx, client, ops, state)
+	resp.Diagnostics.Append(diags...)
+
+	if err := ProperlyDestroyed(port); err != nil {
+		resp.Diagnostics.AddError(
+			"Failed to reset port state",
+			err.Error(),
+		)
+		return
+	}
+}
+
+func (r *tfResource) performOperations(ctx context.Context, client *metalv1.APIClient, ops []string, state resourceModel) (*metalv1.Port, diag.Diagnostics) {
+	var diags diag.Diagnostics
+	var newPort *metalv1.Port
+	var err error
+	portID := state.PortID.ValueString()
+
+	for _, op := range ops {
+		switch op {
+		case "disbond":
+			newPort, _, err = client.PortsApi.DisbondPort(ctx, portID).Execute()
+		case "bond":
+			newPort, _, err = client.PortsApi.BondPort(ctx, portID).Execute()
+		case "toLayer2":
+			input := metalv1.PortAssignInput{}
+			newPort, _, err = client.PortsApi.ConvertLayer2(ctx, portID).PortAssignInput(input).Execute()
+		case "toLayer3":
+			input := metalv1.PortConvertLayer3Input{
+				RequestIps: []metalv1.PortConvertLayer3InputRequestIpsInner{
+					{AddressFamily: metalv1.PtrInt32(4), Public: metalv1.PtrBool(true)},
+					{AddressFamily: metalv1.PtrInt32(4), Public: metalv1.PtrBool(false)},
+					{AddressFamily: metalv1.PtrInt32(6), Public: metalv1.PtrBool(true)},
+				},
+			}
+			newPort, _, err = client.PortsApi.ConvertLayer3(ctx, portID).PortConvertLayer3Input(input).Execute()
+		case "removeNativeVlan":
+			newPort, _, err = client.PortsApi.DeleteNativeVlan(ctx, portID).Execute()
+		case "assignNativeVlan":
+			vlan := state.NativeVlanID.ValueString()
+			newPort, _, err = client.PortsApi.AssignNativeVlan(ctx, portID).Vnid(vlan).Execute()
+		}
+
 		if err != nil {
-			if resp != nil && !slices.Contains([]int{http.StatusForbidden, http.StatusNotFound}, resp.StatusCode) {
-				return diag.FromErr(err)
-			}
-		}
-
-		// to reset the port to defaults we iterate through helpers (used in
-		// create/update), some of which rely on resource state. reuse those helpers by
-		// setting ephemeral state.
-		port := Resource()
-		portCopy := port.Data(d.State())
-		cpr.Resource = portCopy
-		if err = equinix_schema.SetMap(cpr.Resource, map[string]interface{}{
-			"layer2":         false,
-			"bonded":         true,
-			"native_vlan_id": nil,
-			"vlan_ids":       []string{},
-			"vxlan_ids":      nil,
-		}); err != nil {
-			return diag.FromErr(err)
-		}
-		for _, f := range [](func(context.Context, *clientPortResource) error){
-			batchVlans(true),
-			makeBond,
-			convertToL3,
-		} {
-			if err := f(ctx, cpr); err != nil {
-				return diag.FromErr(err)
-			}
-		}
-		// TODO(displague) error or warn?
-		if warn := ProperlyDestroyed(cpr.Port); warn != nil {
-			log.Printf("[WARN] %s\n", warn)
+			diags.AddError(
+				"Failed to modify Port",
+				fmt.Sprintf("Port %s failed to execute '%s' operation: %s", portID, op, err),
+			)
 		}
 	}
-	return nil
+
+	return newPort, diags
 }
 
-// ProperlyDestroyed performs some sanity checks to make sure the port
-// reverts to the state the port would be in typically for a metal
-// instance by default.
+func (r *tfResource) refreshPort(ctx context.Context, client *metalv1.APIClient, portID string) (*metalv1.Port, diag.Diagnostics) {
+	var diags diag.Diagnostics
+
+	p, _, err := client.PortsApi.FindPortById(ctx, portID).
+		Include([]string{"native_virtual_network", "virtual_networks"}).
+		Execute()
+	if err != nil {
+		diags.AddError("Failed to refresh port data", fmt.Sprintf("refreshing port encountered: %s", err))
+		return nil, diags
+	}
+
+	return p, diags
+}
+
+// updateVlanAssignments takes in the state and the plan and
+// determines the payload to the VLAN batch assignment endpoint.
+// It determines which VLANs should be added and which should be removed,
+// without touching any common between the currents state and the desired state.
+// The function returns a batchID, and does not wait for completion.
+func (r *tfResource) updateVlanAssigments(ctx context.Context, state resourceModel, plan *resourceModel) (*batch.VlanBatch, diag.Diagnostics) {
+	var diags diag.Diagnostics
+	var b *batch.VlanBatch
+
+	if plan == nil {
+		return b, diags
+	}
+
+	vlanIDsSet := !plan.VLANIDs.IsUnknown()
+	vxlanIDsSet := !plan.VXLANIDs.IsUnknown()
+
+	if vlanIDsSet {
+		assignedVlans := []string{}
+		diags = state.VLANIDs.ElementsAs(ctx, &assignedVlans, false)
+
+		if diags.HasError() {
+			return b, diags
+		}
+
+		desiredVlans := []string{}
+		plan.VLANIDs.ElementsAs(ctx, &desiredVlans, false)
+		if diags.HasError() {
+			return b, diags
+		}
+
+		b = batch.NewVlanBatch(state.PortID.ValueString())
+		toAdd := setDifference(desiredVlans, assignedVlans)
+		toRemove := setDifference(assignedVlans, desiredVlans)
+
+		for _, vlan := range toAdd {
+			b.AddAssignment(vlan)
+		}
+
+		for _, vlan := range toRemove {
+			b.RemoveAssignment(vlan)
+		}
+
+		return b, diags
+	}
+
+	if vxlanIDsSet {
+		assignedVlans := []int32{}
+		diags = state.VXLANIDs.ElementsAs(ctx, &assignedVlans, false)
+
+		if diags.HasError() {
+			return b, diags
+		}
+
+		desiredVlans := []int32{}
+		plan.VLANIDs.ElementsAs(ctx, &desiredVlans, false)
+		if diags.HasError() {
+			return b, diags
+		}
+
+		b = batch.NewVlanBatch(state.PortID.ValueString())
+		toAdd := setDifference(desiredVlans, assignedVlans)
+		toRemove := setDifference(assignedVlans, desiredVlans)
+
+		for _, vlan := range toAdd {
+			b.AddAssignment(fmt.Sprintf("%d", vlan))
+		}
+
+		for _, vlan := range toRemove {
+			b.RemoveAssignment(fmt.Sprintf("%d", vlan))
+		}
+
+		return b, diags
+	}
+
+	return b, diags
+}
+
+func (r *tfResource) waitForBatch(ctx context.Context, client *metalv1.APIClient, b *batch.VlanBatch) diag.Diagnostics {
+	var diags diag.Diagnostics
+	_, _, err := b.Execute(ctx, client)
+	if err != nil {
+		diags.AddError(
+			"Failed to wait for VLAN batch to complete",
+			fmt.Sprintf("Batch encountered error: %s", err),
+		)
+	}
+
+	return diags
+
+}
+
+// setDifference returns the elements LEFT that are not in RIGHT.
+func setDifference[T comparable](left []T, right []T) []T {
+	result := []T{}
+
+	rightSet := make(map[T]bool, len(right))
+	for _, v := range right {
+		rightSet[v] = true
+	}
+
+	for _, v := range left {
+		_, exists := rightSet[v]
+		if !exists {
+			result = append(result, v)
+		}
+	}
+
+	return result
+}
+
+// ProperlyDestroyed does some state checking, we don't actually destroy the port
+// since that's a resource tied to the lifetime of an instance.
 func ProperlyDestroyed(port *metalv1.Port) error {
 	var errs []string
 	if !port.Data.GetBonded() {
