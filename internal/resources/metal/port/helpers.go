@@ -19,6 +19,9 @@ var (
 	// Deprecated: empty port assignment input that is required
 	// for some endpoints; probably indicates a bug in the API spec
 	dummy = metalv1.PortAssignInput{}
+
+	// for cpr.Port.VirtualNetworks to be populated we need these includes
+	defaultPortIncludes = []string{"virtual_networks", "native_virtual_network"}
 )
 
 type clientPortResource struct {
@@ -32,11 +35,8 @@ func getClientPortResource(ctx context.Context, d *schema.ResourceData, meta int
 
 	portID := d.Get("port_id").(string)
 
-	getOpts := []string{
-		"native_virtual_network",
-		"virtual_networks",
-	}
-	port, resp, err := client.PortsApi.FindPortById(ctx, portID).Include(getOpts).Execute()
+	port, resp, err := client.PortsApi.FindPortById(ctx, portID).
+		Include(defaultPortIncludes).Execute()
 	if err != nil {
 		return nil, resp, err
 	}
@@ -74,12 +74,10 @@ func getPortByResourceData(ctx context.Context, d *schema.ResourceData, client *
 	var resp *http.Response
 	var err error
 
-	getOpts := []string{
-		"native_virtual_network",
-		"virtual_networks",
-	}
 	if portIDOk {
-		port, resp, err = client.PortsApi.FindPortById(ctx, portID.(string)).Include(getOpts).Execute()
+		port, resp, err = client.PortsApi.FindPortById(ctx, portID.(string)).
+			Include(defaultPortIncludes).
+			Execute()
 		if err != nil {
 			return nil, resp, err
 		}
@@ -88,7 +86,9 @@ func getPortByResourceData(ctx context.Context, d *schema.ResourceData, client *
 			return nil, nil, fmt.Errorf("if you don't use port_id, you must supply both device_id and name")
 		}
 		var device *metalv1.Device
-		device, resp, err = client.DevicesApi.FindDeviceById(ctx, deviceID.(string)).Include(getOpts).Execute()
+		device, resp, err = client.DevicesApi.FindDeviceById(ctx, deviceID.(string)).
+			Include(defaultPortIncludes).
+			Execute()
 		if err != nil {
 			return nil, resp, err
 		}
@@ -182,9 +182,14 @@ func updateNativeVlan(ctx context.Context, cpr *clientPortResource) error {
 		var port *metalv1.Port
 		var err error
 		if specifiedNative == "" && currentNative != "" {
-			port, _, err = cpr.Client.PortsApi.DeleteNativeVlan(ctx, cpr.Port.GetId()).Execute()
+			port, _, err = cpr.Client.PortsApi.DeleteNativeVlan(ctx, cpr.Port.GetId()).
+				Include(defaultPortIncludes).
+				Execute()
 		} else {
-			port, _, err = cpr.Client.PortsApi.AssignNativeVlan(ctx, cpr.Port.GetId()).Vnid(specifiedNative).Execute()
+			port, _, err = cpr.Client.PortsApi.AssignNativeVlan(ctx, cpr.Port.GetId()).
+				Vnid(specifiedNative).
+				Include(defaultPortIncludes).
+				Execute()
 		}
 		if err != nil {
 			return err
@@ -216,11 +221,10 @@ func processBondAction(ctx context.Context, cpr *clientPortResource, actionIsBon
 			if err != nil {
 				return err
 			}
-			getOpts := []string{
-				"native_virtual_network",
-				"virtual_networks",
-			}
-			port, _, err = cpr.Client.PortsApi.FindPortById(ctx, port.GetId()).Include(getOpts).Execute()
+
+			port, _, err = cpr.Client.PortsApi.FindPortById(ctx, port.GetId()).
+				Include(defaultPortIncludes).
+				Execute()
 			if err != nil {
 				return err
 			}
@@ -247,7 +251,9 @@ func convertToL2(ctx context.Context, cpr *clientPortResource) error {
 	isLayer2 := slices.Contains(l2Types, cpr.Port.GetNetworkType())
 
 	if l2Ok && l2.(bool) && !isLayer2 {
-		port, _, err := cpr.Client.PortsApi.ConvertLayer2(ctx, cpr.Port.GetId()).PortAssignInput(dummy).Execute()
+		port, _, err := cpr.Client.PortsApi.ConvertLayer2(ctx, cpr.Port.GetId()).
+			PortAssignInput(dummy).
+			Include(defaultPortIncludes).Execute()
 		if err != nil {
 			return err
 		}
@@ -272,7 +278,10 @@ func convertToL3(ctx context.Context, cpr *clientPortResource) error {
 			},
 		}
 
-		port, _, err := cpr.Client.PortsApi.ConvertLayer3(ctx, cpr.Port.GetId()).PortConvertLayer3Input(ips).Execute()
+		port, _, err := cpr.Client.PortsApi.ConvertLayer3(ctx, cpr.Port.GetId()).
+			PortConvertLayer3Input(ips).
+			Include(defaultPortIncludes).
+			Execute()
 		if err != nil {
 			return err
 		}
