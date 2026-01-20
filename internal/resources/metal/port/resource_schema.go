@@ -29,6 +29,9 @@ func resourceSchema(_ context.Context) schema.Schema {
 				Description: "Flag indicating whether the port is in layer2 (or layer3) mode. The `layer2` flag can be set only for bond ports.",
 				Optional:    true,
 				Computed:    true,
+				PlanModifiers: []planmodifier.Bool{
+					boolplanmodifier.UseStateForUnknown(),
+				},
 			},
 			"native_vlan_id": schema.StringAttribute{
 				Description: "UUID of native VLAN of the port",
@@ -39,9 +42,9 @@ func resourceSchema(_ context.Context) schema.Schema {
 				ElementType: types.Int32Type,
 				Optional:    true,
 				Computed:    true,
-				// PlanModifiers: []planmodifier.Set{
-				// 	UsePlanForNewSetValue(),
-				// },
+				PlanModifiers: []planmodifier.Set{
+					UsePlanForNewSetValue(),
+				},
 				Validators: []validator.Set{
 					setvalidator.ConflictsWith(path.Expressions{
 						path.MatchRoot("vlan_ids"),
@@ -53,9 +56,9 @@ func resourceSchema(_ context.Context) schema.Schema {
 				ElementType: types.StringType,
 				Optional:    true,
 				Computed:    true,
-				// PlanModifiers: []planmodifier.Set{
-				// 	UsePlanForNewSetValue(),
-				// },
+				PlanModifiers: []planmodifier.Set{
+					UsePlanForNewSetValue(),
+				},
 				Validators: []validator.Set{
 					setvalidator.ConflictsWith(path.Expressions{
 						path.MatchRoot("vxlan_ids"),
@@ -76,9 +79,6 @@ func resourceSchema(_ context.Context) schema.Schema {
 			"network_type": schema.StringAttribute{
 				Description: "One of layer2-bonded, layer2-individual, layer3, hybrid and hybrid-bonded. This attribute is only set on bond ports.",
 				Computed:    true,
-				PlanModifiers: []planmodifier.String{
-					stringplanmodifier.UseStateForUnknown(),
-				},
 				Validators: []validator.String{
 					stringvalidator.OneOf("layer2-bonded", "layer2-individual", "layer3", "hybrid", "hybrid-bonded"),
 				},
@@ -91,11 +91,11 @@ func resourceSchema(_ context.Context) schema.Schema {
 				},
 			},
 			"bond_name": schema.StringAttribute{
-				Description: "Name of the bond port",
-				Computed:    true,
-				Optional:    true,
+				Description:   "Name of the bond port",
+				Computed:      true,
+				Optional:      true,
 				PlanModifiers: []planmodifier.String{
-					stringplanmodifier.UseStateForUnknown(),
+					GuaranteeImmutableAttr(),
 				},
 			},
 			"bond_id": schema.StringAttribute{
@@ -103,7 +103,7 @@ func resourceSchema(_ context.Context) schema.Schema {
 				Computed:    true,
 				Optional:    true,
 				PlanModifiers: []planmodifier.String{
-					stringplanmodifier.UseStateForUnknown(),
+					GuaranteeImmutableAttr(),
 				},
 			},
 			"type": schema.StringAttribute{
@@ -138,24 +138,39 @@ func (v updateToPlanSets) MarkdownDescription(context.Context) string {
 
 // PlanModifySet implements planmodifier.Set.
 func (v updateToPlanSets) PlanModifySet(ctx context.Context, req planmodifier.SetRequest, resp *planmodifier.SetResponse) {
-	resp.RequiresReplace = false
-
-	var plan resourceModel
-
-	resp.Diagnostics.Append(req.Plan.Get(ctx, &plan)...)
-	if resp.Diagnostics.HasError() {
+	if req.ConfigValue.IsUnknown() || req.ConfigValue.IsNull() {
+		resp.PlanValue = types.SetUnknown(req.ConfigValue.ElementType(ctx))
 		return
 	}
 
-	if plan.VLANIDs.IsUnknown() {
-		resp.PlanValue = types.SetUnknown(resp.PlanValue.Type(ctx))
+	if resp.PlanValue.IsUnknown() {
+		resp.PlanValue = req.StateValue
 		return
 	}
-
-	resp.PlanValue = plan.VLANIDs
 }
 
 // UsePlanForNewSetValue just changes the plan so that it shows the intended state for computed states.
 func UsePlanForNewSetValue() planmodifier.Set {
 	return updateToPlanSets{}
 }
+
+type immutableAttr struct{}
+
+// PlanModifyString implements planmodifier.String.
+func (i immutableAttr) PlanModifyString(_ context.Context, req planmodifier.StringRequest, resp *planmodifier.StringResponse) {
+	resp.PlanValue = req.StateValue
+}
+
+func (i immutableAttr) Description(context.Context) string {
+	return ""
+}
+// MarkdownDescription implements planmodifier.String.
+func (i immutableAttr) MarkdownDescription(context.Context) string {
+	panic("unimplemented")
+}
+
+func GuaranteeImmutableAttr() planmodifier.String {
+	return immutableAttr{}
+}
+
+var _ planmodifier.String = immutableAttr{}

@@ -22,13 +22,13 @@ endif
 default: clean build test
 
 all: default
-	
+
 test:
 	echo $(TEST) | \
 		xargs -t ${GOCMD} test -v $(TESTARGS) -timeout=10m
 
 testacc:
-	TF_ACC=1 TF_SCHEMA_PANIC_ON_ERROR=1 ${GOCMD} test $(TEST) -v -count $(ACCTEST_COUNT) -parallel $(ACCTEST_PARALLELISM) $(TESTARGS) -timeout $(ACCTEST_TIMEOUT)
+	TF_ACC=1 TF_SCHEMA_PANIC_ON_ERROR=1 ${GOCMD} test $(TEST) -coverprofile=test-cover.out -v -count $(ACCTEST_COUNT) -parallel $(ACCTEST_PARALLELISM) $(TESTARGS) -timeout $(ACCTEST_TIMEOUT)
 
 sweep:
 	@echo "WARNING: This will destroy infrastructure. Use only in development accounts."

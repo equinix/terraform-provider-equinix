@@ -399,7 +399,7 @@ func (r *tfResource) updateVlanAssigments(ctx context.Context, state resourceMod
 		}
 
 		desiredVlans := []int32{}
-		plan.VLANIDs.ElementsAs(ctx, &desiredVlans, false)
+		plan.VXLANIDs.ElementsAs(ctx, &desiredVlans, false)
 		if diags.HasError() {
 			return b, diags
 		}
@@ -424,6 +424,10 @@ func (r *tfResource) updateVlanAssigments(ctx context.Context, state resourceMod
 
 func (r *tfResource) waitForBatch(ctx context.Context, client *metalv1.APIClient, b *batch.VlanBatch) diag.Diagnostics {
 	var diags diag.Diagnostics
+	if b == nil {
+		return diags
+	}
+
 	_, _, err := b.Execute(ctx, client)
 	if err != nil {
 		diags.AddError(
