@@ -387,7 +387,8 @@ jobs:
                     *Workflow:* ${{ github.workflow }}           
                     *Status:* ${{ steps.slack_message.outputs.test-status }}
                     *Results:* ${{ steps.slack_message.outputs.message }}
-                    *Triggered by:* <@${{ github.actor }}>       
+                    *Triggered by:* <@${{ github.actor }}>
+                    *Responsibility:* <@U06QU7NE0G7>
 
       - name: Upload HTML Testing Report
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
