@@ -54,9 +54,9 @@ func dataSourceAdvertisedRoutesSchema(ctx context.Context) schema.Schema {
 			"data": schema.ListNestedAttribute{
 				Description: "Returned list of advertised routes objects",
 				Computed:    true,
-				CustomType:  fwtypes.NewListNestedObjectTypeOf[metroBaseModel](ctx),
+				CustomType:  fwtypes.NewListNestedObjectTypeOf[advertisedRoutesBaseModel](ctx),
 				NestedObject: schema.NestedAttributeObject{
-					Attributes: getMetroSchema(ctx),
+					Attributes: getAdvertisedRoutesSchema(ctx),
 				},
 			},
 		},

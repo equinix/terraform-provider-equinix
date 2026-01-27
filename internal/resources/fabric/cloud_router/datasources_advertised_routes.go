@@ -22,13 +22,13 @@ func NewDataSourceAdvertisedRoutes() datasource.DataSource {
 	}
 }
 
-// DataSourceAdvertisedRoutes datasource represents advertised routes
-type DataSourceAdvertisedRoutes struct {
+// DataSourceAllAdvertisedRoutes datasource represents advertised routes
+type DataSourceAllAdvertisedRoutes struct {
 	framework.BaseDataSource
 }
 
 // Schema returns the advertised routes datasource schema
-func (r *DataSourceAdvertisedRoutes) Schema(
+func (r *DataSourceAllAdvertisedRoutes) Schema(
 	ctx context.Context,
 	_ datasource.SchemaRequest,
 	resp *datasource.SchemaResponse,
@@ -36,7 +36,7 @@ func (r *DataSourceAdvertisedRoutes) Schema(
 	resp.Schema = dataSourceAdvertisedRoutesSchema(ctx)
 }
 
-func (r *DataSourceAdvertisedRoutes) Read(ctx context.Context, request datasource.ReadRequest, response *datasource.ReadResponse) {
+func (r *DataSourceAllAdvertisedRoutes) Read(ctx context.Context, request datasource.ReadRequest, response *datasource.ReadResponse) {
 	client := r.Meta.NewFabricClientForFramework(ctx, request.ProviderMeta)
 
 	var searchAdvertisedRoutesData dataSourceSearchAdvertisedRoutesModel
@@ -52,7 +52,6 @@ func (r *DataSourceAdvertisedRoutes) Read(ctx context.Context, request datasourc
 	}
 	offset := pagination.Offset.ValueInt32()
 	limit := pagination.Limit.ValueInt32()
-	presence := searchAdvertisedRoutesData.Presence.ValueString()
 	if limit == 0 {
 		limit = 20
 	}
