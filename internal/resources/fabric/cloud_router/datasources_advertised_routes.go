@@ -1,0 +1,79 @@
+// Package cloud_router implements datasource for cloud routers
+package cloud_router
+
+import (
+	"context"
+
+	"github.com/equinix/equinix-sdk-go/services/fabricv4"
+	equinix_errors "github.com/equinix/terraform-provider-equinix/internal/errors"
+	"github.com/equinix/terraform-provider-equinix/internal/framework"
+	"github.com/hashicorp/terraform-plugin-framework/datasource"
+	"github.com/hashicorp/terraform-plugin-framework/types/basetypes"
+)
+
+// NewDataSourceAdvertisedRoutes creates a new data source for Advertised Routes
+func NewDataSourceAdvertisedRoutes() datasource.DataSource {
+	return &DataSourceAdvertisedRoutes{
+		BaseDataSource: framework.NewBaseDataSource(
+			framework.BaseDataSourceConfig{
+				Name: "equinix_advertised_routes",
+			},
+		),
+	}
+}
+
+// DataSourceAdvertisedRoutes datasource represents advertised routes
+type DataSourceAdvertisedRoutes struct {
+	framework.BaseDataSource
+}
+
+// Schema returns the advertised routes datasource schema
+func (r *DataSourceAdvertisedRoutes) Schema(
+	ctx context.Context,
+	_ datasource.SchemaRequest,
+	resp *datasource.SchemaResponse,
+) {
+	resp.Schema = dataSourceAdvertisedRoutesSchema(ctx)
+}
+
+func (r *DataSourceAdvertisedRoutes) Read(ctx context.Context, request datasource.ReadRequest, response *datasource.ReadResponse) {
+	client := r.Meta.NewFabricClientForFramework(ctx, request.ProviderMeta)
+
+	var searchAdvertisedRoutesData dataSourceSearchAdvertisedRoutesModel
+	var pagination paginationModel
+	response.Diagnostics.Append(request.Config.Get(ctx, &searchAdvertisedRoutesData)...)
+	if response.Diagnostics.HasError() {
+		return
+	}
+
+	diags := searchAdvertisedRoutesData.Pagination.As(ctx, &pagination, basetypes.ObjectAsOptions{})
+	if diags.HasError() {
+		return
+	}
+	offset := pagination.Offset.ValueInt32()
+	limit := pagination.Limit.ValueInt32()
+	presence := searchAdvertisedRoutesData.Presence.ValueString()
+	if limit == 0 {
+		limit = 20
+	}
+
+	advertisedRoutesRequest := client.CloudRoutersApi.GetAdvertisedRoutes(ctx). // is this correct API
+		Limit(limit).
+		Offset(offset)
+	if presence != "" {
+		advertisedRoutesRequest.Presence(fabricv4.Presence(presence))
+	}
+	advertisedRoutes, _, err := advertisedRoutesRequest.Execute()
+
+	if err != nil {
+		response.State.RemoveResource(ctx)
+		response.Diagnostics.AddError("api error retrieving advertised routes data", equinix_errors.FormatFabricError(err).Error())
+		return
+	}
+
+	response.Diagnostics.Append(searchAdvertisedRoutesData.parse(ctx, advertisedRoutes)...)
+	if response.Diagnostics.HasError() {
+		return
+	}
+	response.Diagnostics.Append(response.State.Set(ctx, &searchAdvertisedRoutesData)...)
+}
