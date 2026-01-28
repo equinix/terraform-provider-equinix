@@ -1,4 +1,4 @@
-package cloud_router
+package advertised_route
 
 import (
 	"context"
@@ -10,7 +10,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/types"
 )
 
-type advertisedRoutesBaseModel struct {
+type receivedRoutesBaseModel struct {
 	Type            types.String                           `tfsdk:"type"`
 	ProtocolType    types.String                           `tfsdk:"protocol_type"`
 	State           types.String                           `tfsdk:"state"`
@@ -52,32 +52,33 @@ type paginationModel struct {
 	Previous types.String `tfsdk:"previous"`
 }
 
-type dataSourceSearchAdvertisedRoutesModel struct { // is this correct?
-	ConnectionID         types.String                                    `tfsdk:"id"`
-	Data       fwtypes.ListNestedObjectValueOf[advertisedRoutesBaseModel] `tfsdk:"data"`
+type dataSourceSearchReceivedRoutesModel struct { 
+	ID types.String                                    `tfsdk:"id"`
+	ConnectionID         types.String                                    `tfsdk:"connection_id"`
+	Data       fwtypes.ListNestedObjectValueOf[receivedRoutesBaseModel] `tfsdk:"data"`
 	Pagination fwtypes.ObjectValueOf[paginationModel]          `tfsdk:"pagination"`
 }
 
-func (a *dataSourceSearchAdvertisedRoutesModel) parse(ctx context.Context, advertisedRoutesResponse *fabricv4.AdvertisedRoutesRsponse) diag.Diagnostics {
+func (a *dataSourceSearchReceivedRoutesModel) parse(ctx context.Context, receivedRoutesResponse *fabricv4.ConnectionRouteTableEntrySearchResponse) diag.Diagnostics {
 	var diags diag.Diagnostics
 
-	if len(advertisedRoutesResponse.GetData()) < 1 {
-		diags.AddError("no data retrieved by advertised routes data source",
-			"either the connection does not have any advertised routes data to pull or the combination of limit and offset needs to be updated")
+	if len(receivedRoutesResponse.GetData()) < 1 {
+		diags.AddError("no data retrieved by received routes data source",
+			"either the connection does not have any received routes data to pull or the combination of limit and offset needs to be updated")
 		return diags
 	}
 
-	data := make([]advertisedRoutesBaseModel, len(advertisedRoutesResponse.GetData()))
-	advertisedRoutes := advertisedRoutesResponse.GetData()
-	for i, advertisedRoute := range advertisedRoutes {
-		var advertisedRoutesModel advertisedRoutesBaseModel
-		diags := advertisedRoutesModel.parse(ctx, &advertisedRoute)
+	data := make([]receivedRoutesBaseModel, len(receivedRoutesResponse.GetData()))
+	receivedRoutes := receivedRoutesResponse.GetData()
+	for i, receivedRoute := range receivedRoutes {
+		var receivedRoutesModel receivedRoutesBaseModel
+		diags := receivedRoutesModel.parse(ctx, &receivedRoute)
 		if diags.HasError() {
 			return diags
 		}
-		data[i] = advertisedRoutesModel
+		data[i] = receivedRoutesModel
 	}
-	responsePagination := advertisedRoutesResponse.GetPagination()
+	responsePagination := receivedRoutesResponse.GetPagination()
 	pagination := paginationModel{
 		Offset:   types.Int32Value(responsePagination.GetOffset()),
 		Limit:    types.Int32Value(responsePagination.GetLimit()),
@@ -86,33 +87,32 @@ func (a *dataSourceSearchAdvertisedRoutesModel) parse(ctx context.Context, adver
 		Previous: types.StringValue(responsePagination.GetPrevious()),
 	}
 
-	a.ID = types.StringValue(data[0].Code.ValueString()) // is this correct?
+	// a.ID = types.StringValue(data[0].ValueString()) // correct?
 	a.Pagination = fwtypes.NewObjectValueOf[paginationModel](ctx, &pagination)
-	a.Data = fwtypes.NewListNestedObjectValueOfValueSlice[advertisedRoutesBaseModel](ctx, data)
+	a.Data = fwtypes.NewListNestedObjectValueOfValueSlice[receivedRoutesBaseModel](ctx, data)
 
 	return diags
 }
 
-func (a *advertisedRoutesBaseModel) parse(ctx context.Context, advertisedRoute *fabricv4.AdvertisedRoute) diag.Diagnostics {
+func (a *receivedRoutesBaseModel) parse(ctx context.Context, receivedRoute *fabricv4.ConnectionRouteTableEntry) diag.Diagnostics {
 	var diags diag.Diagnostics
-
-	a.Type = types.StringValue(advertisedRoute.GetType())
-	a.ProtocolType = types.StringValue(advertisedRoute.GetProtocolType())
-	a.State = types.StringValue(advertisedRoute.GetState())
-	a.Prefix = types.StringValue(advertisedRoute.GetPrefix())
-	a.NextHop = types.StringValue(advertisedRoute.GetNextHop())
-	a.MED = types.Int32alue(advertisedRoute.GetMED()) // confirm this is correct, why not populating
-	a.LocalPreference = types.Int32Value(advertisedRoute.GetLocalPreference())
-	a.AsPath, diags = parseAsPaths(ctx, advertisedRoute.GetAsPath())
+	a.Type = types.StringValue(string(receivedRoute.GetType()))
+	a.ProtocolType = types.StringValue(string(receivedRoute.GetProtocolType()))
+	a.State = types.StringValue(string(receivedRoute.GetState()))
+	a.Prefix = types.StringValue(receivedRoute.GetPrefix())
+	a.NextHop = types.StringValue(receivedRoute.GetNextHop())
+	a.MED = types.Int32Value(receivedRoute.GetMED()) 
+	a.LocalPreference = types.Int32Value(receivedRoute.GetLocalPreference())
+	a.AsPath, diags = parseAsPaths(ctx, receivedRoute.GetAsPath())
 	if diags.HasError() {
 		return diags
 	}
-	a.Connection, diags = parseConnection(ctx, advertisedRoute.GetConnection())
+	a.Connection, diags = parseConnection(ctx, receivedRoute.GetConnection())
 	if diags.HasError() {
 		return diags
 	}
 
-	a.Changelog, diags = parseChangelog(ctx, advertisedRoute.GetChangeLog())
+	a.Changelog, diags = parseChangelog(ctx, receivedRoute.GetChangeLog())
 	if diags.HasError() {
 		return diags
 	}
@@ -120,7 +120,7 @@ func (a *advertisedRoutesBaseModel) parse(ctx context.Context, advertisedRoute *
 	return diags
 }
 
-func parseGeoparseAsPathsScopes(ctx context.Context, asPaths []fabricv4.AsPath) (fwtypes.ListValueOf[types.String], diag.Diagnostics) {
+func parseAsPaths(ctx context.Context, asPaths []string) (fwtypes.ListValueOf[types.String], diag.Diagnostics) {
 	var diags diag.Diagnostics
 	asPathTypeList := make([]attr.Value, len(asPaths))
 
@@ -135,7 +135,7 @@ func parseGeoparseAsPathsScopes(ctx context.Context, asPaths []fabricv4.AsPath) 
 	return asPathValue, diags
 }
 
-func parseConnection(ctx context.Context, connection fabricv4.Connection) (fwtypes.ObjectValueOf[connectionModel], diag.Diagnostics) {
+func parseConnection(ctx context.Context, connection fabricv4.ConnectionRouteTableEntryConnection) (fwtypes.ObjectValueOf[connectionModel], diag.Diagnostics) {
 	diags := diag.Diagnostics{}
 
 	result := connectionModel{}
@@ -147,8 +147,8 @@ func parseConnection(ctx context.Context, connection fabricv4.Connection) (fwtyp
 		result.Name = types.StringValue(connection.GetName())
 	}
 
-	if connection.UUID != nil {
-		result.UUID = types.StringValue(connection.GetUUID()) // not in pop up list
+	if connection.Uuid != nil {
+		result.UUID = types.StringValue(connection.GetUuid())
 	}
 	return fwtypes.NewObjectValueOf[connectionModel](ctx, &result), diags
 }
@@ -170,7 +170,7 @@ func parseChangelog(ctx context.Context, changeLog fabricv4.Changelog) (fwtypes.
 	}
 
 	if changeLog.CreatedDateTime != nil {
-		result.CreatedDateTime = types.StringValue(changeLog.GetCreatedDateTime())
+		result.CreatedDateTime = types.StringValue(changeLog.GetCreatedDateTime().String())
 	}
 
 	if changeLog.UpdatedBy != nil {
@@ -185,7 +185,7 @@ func parseChangelog(ctx context.Context, changeLog fabricv4.Changelog) (fwtypes.
 	}
 
 	if changeLog.UpdatedDateTime != nil {
-		result.UpdatedDateTime = types.StringValue(changeLog.GetUpdatedDateTime())
+		result.UpdatedDateTime = types.StringValue(changeLog.GetUpdatedDateTime().String())
 	}
 
 	if changeLog.DeletedBy != nil {
@@ -201,7 +201,7 @@ func parseChangelog(ctx context.Context, changeLog fabricv4.Changelog) (fwtypes.
 	}
 
 	if changeLog.DeletedDateTime != nil {
-		result.DeletedDateTime = types.StringValue(changeLog.GetDeletedDateTime())
+		result.DeletedDateTime = types.StringValue(changeLog.GetDeletedDateTime().String())
 	}
-	return fwtypes.NewObjectValueOf[connectionModel](ctx, &result), diags
+	return fwtypes.NewObjectValueOf[changeLogModel](ctx, &result), diags
 }
