@@ -1,10 +1,9 @@
-// Package cloud_router implements datasource for cloud routers
-package cloud_router
+// Package advertised_route implements datasource for advertised route
+package advertised_route
 
 import (
 	"context"
 
-	"github.com/equinix/equinix-sdk-go/services/fabricv4"
 	equinix_errors "github.com/equinix/terraform-provider-equinix/internal/errors"
 	"github.com/equinix/terraform-provider-equinix/internal/framework"
 	"github.com/hashicorp/terraform-plugin-framework/datasource"
@@ -13,7 +12,7 @@ import (
 
 // NewDataSourceAdvertisedRoutes creates a new data source for Advertised Routes
 func NewDataSourceAdvertisedRoutes() datasource.DataSource {
-	return &DataSourceAdvertisedRoutes{
+	return &DataSourceAllAdvertisedRoutes{
 		BaseDataSource: framework.NewBaseDataSource(
 			framework.BaseDataSourceConfig{
 				Name: "equinix_advertised_routes",
@@ -50,19 +49,9 @@ func (r *DataSourceAllAdvertisedRoutes) Read(ctx context.Context, request dataso
 	if diags.HasError() {
 		return
 	}
-	offset := pagination.Offset.ValueInt32()
-	limit := pagination.Limit.ValueInt32()
-	if limit == 0 {
-		limit = 20
-	}
-
-	advertisedRoutesRequest := client.CloudRoutersApi.GetAdvertisedRoutes(ctx). // is this correct API
-		Limit(limit).
-		Offset(offset)
-	if presence != "" {
-		advertisedRoutesRequest.Presence(fabricv4.Presence(presence))
-	}
-	advertisedRoutes, _, err := advertisedRoutesRequest.Execute()
+	
+	connectionID := searchAdvertisedRoutesData.ConnectionID.ValueString()
+	advertisedRoutes, _, err:= client.CloudRoutersApi.SearchConnectionAdvertisedRoutes(ctx, connectionID).Execute()
 
 	if err != nil {
 		response.State.RemoveResource(ctx)

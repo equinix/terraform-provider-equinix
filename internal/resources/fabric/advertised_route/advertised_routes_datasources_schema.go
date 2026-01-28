@@ -1,4 +1,4 @@
-package cloud_router
+package advertised_route
 
 import (
 	"context"
@@ -14,7 +14,7 @@ import (
 func dataSourceAdvertisedRoutesSchema(ctx context.Context) schema.Schema {
 	return schema.Schema{
 		Attributes: map[string]schema.Attribute{
-			// add ID etc like in metros?
+			"id": framework.IDAttributeDefaultDescription(),
 			"pagination": schema.SingleNestedAttribute{
 				Description: "Pagination details for the returned advertised routes list",
 				Required:    true,
@@ -69,7 +69,7 @@ func getAdvertisedRoutesSchema(ctx context.Context) map[string]schema.Attribute 
 			Description: "Indicator of a advertised route",
 			Computed:    true,
 		},
-		"protocolType": schema.StringAttribute{
+		"protocol_type": schema.StringAttribute{
 			Description: "Advertised Route protocol type",
 			Computed:    true,
 		},
@@ -81,19 +81,19 @@ func getAdvertisedRoutesSchema(ctx context.Context) map[string]schema.Attribute 
 			Description: "Prefix of the Advertised Route",
 			Computed:    true,
 		},
-		"nextHop": schema.StringAttribute{
+		"next_hop": schema.StringAttribute{
 			Description: "Next Hop of the Advertised Route",
 			Computed:    true,
 		},
-		"MED": schema.Int32Attribute{
+		"med": schema.Int32Attribute{
 			Description: "Multi-Exit Discriminator for the Advertised Route",
 			Computed:    true,
 		},
-		"localPreference": schema.Int32Attribute{
+		"local_preference": schema.Int32Attribute{
 			Description: "This field holds local preference of the advertised route.",
 			Computed:    true,
 		},
-		"asPath": schema.ListAttribute{
+		"as_path": schema.ListAttribute{
 			Description: "List of supported AS Paths for the Advertised Routes.",
 			CustomType:  fwtypes.ListOfStringType,
 			ElementType: types.StringType,
@@ -118,15 +118,15 @@ func getAdvertisedRoutesSchema(ctx context.Context) map[string]schema.Attribute 
 			},
 			Computed: true,
 		},
-		"changeLog": schema.SingleNestedAttribute{
+		"change_log": schema.SingleNestedAttribute{
 			Description: "Change Log of the route table entry",
 			CustomType:  fwtypes.NewObjectTypeOf[connectionModel](ctx),
 			Attributes: map[string]schema.Attribute{
-				"createdBy": schema.StringAttribute{
+				"created_by": schema.StringAttribute{
 					Description: "Created by User Key",
 					Computed:    true,
 				},
-				"createdByFullName": schema.StringAttribute{
+				"created_by_full_name": schema.StringAttribute{
 					Description: "Created by User Full Name",
 					Computed:    true,
 				},
