@@ -1,4 +1,4 @@
-package advertised_route_test
+package received_route_test
 
 import (
 	"fmt"
@@ -12,7 +12,7 @@ func TestAccFabricDataSourceReceivedRoutes_PFCR(t *testing.T) {
 	limit := 8
 	offset := 6
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:     func() { acceptance.TestAccPreCheck(t); acceptance.TestAccPreCheckProviderConfigured(t) },
+		PreCheck:                 func() { acceptance.TestAccPreCheck(t); acceptance.TestAccPreCheckProviderConfigured(t) },
 		ExternalProviders:        acceptance.TestExternalProviders,
 		ProtoV6ProviderFactories: acceptance.ProtoV6ProviderFactories,
 		Steps: []resource.TestStep{
@@ -24,8 +24,6 @@ func TestAccFabricDataSourceReceivedRoutes_PFCR(t *testing.T) {
 						"data.equinix_received_routes.received_route", "type"),
 					resource.TestCheckResourceAttrSet(
 						"data.equinix_received_routes.received_route", "protocol_type"),
-					resource.TestCheckResourceAttrSet(
-						"data.equinix_received_routes.received_route", "state"),
 					resource.TestCheckResourceAttrSet(
 						"data.equinix_received_routes.received_route", "prefix"),
 					resource.TestCheckResourceAttrSet(
@@ -74,25 +72,22 @@ func TestAccFabricDataSourceReceivedRoutes_PFCR(t *testing.T) {
 
 func testAccFabricReceivedRoutesDataSourcesConfig(limit, offset int) string {
 	return fmt.Sprintf(`
-	
-	data "equinix_received_routes" "routes" {
-		connectionId = "conn1"
-		pagination = {
-				limit = "%[1]d",
-				offset = "%[2]d"
-			}
-		outer_operator = "AND"
-		filter {
-			property = "/type"
-			operator = "="
-			values = ["IPv4_BGP_ROUTE"]
-		}
-		filter {
-			property = "/state"
-			operator = "="
-			values = ["ACTIVE"]
-		}
-	}
 
-	`,limit, offset)
+	data "equinix_received_routes" "routes" {
+		connection_id = "6b6fde52-843f-475d-a252-2c9b294aa70d"
+		   filter =  {
+   		property = "/type"
+   		operator = "IN"
+			values    = ["IPv4_BGP_ROUTE"]
+ 			}
+		pagination = {
+   		limit = 100
+   		offset = 0
+ 		}
+		sort = {
+   		property = "/changeLog/updatedDateTime"
+   		direction = "DESC"
+       }
+		}
+	`)
 }

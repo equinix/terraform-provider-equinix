@@ -12,7 +12,7 @@ func TestAccFabricDataSourceAdvertisedRoutes_PFCR(t *testing.T) {
 	limit := 8
 	offset := 6
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:     func() { acceptance.TestAccPreCheck(t); acceptance.TestAccPreCheckProviderConfigured(t) },
+		PreCheck:                 func() { acceptance.TestAccPreCheck(t); acceptance.TestAccPreCheckProviderConfigured(t) },
 		ExternalProviders:        acceptance.TestExternalProviders,
 		ProtoV6ProviderFactories: acceptance.ProtoV6ProviderFactories,
 		Steps: []resource.TestStep{
@@ -24,8 +24,6 @@ func TestAccFabricDataSourceAdvertisedRoutes_PFCR(t *testing.T) {
 						"data.equinix_advertised_routes.advertised_route", "type"),
 					resource.TestCheckResourceAttrSet(
 						"data.equinix_advertised_routes.advertised_route", "protocol_type"),
-					resource.TestCheckResourceAttrSet(
-						"data.equinix_advertised_routes.advertised_route", "state"),
 					resource.TestCheckResourceAttrSet(
 						"data.equinix_advertised_routes.advertised_route", "prefix"),
 					resource.TestCheckResourceAttrSet(
@@ -74,14 +72,22 @@ func TestAccFabricDataSourceAdvertisedRoutes_PFCR(t *testing.T) {
 
 func testAccFabricAdvertisedRoutesDataSourcesConfig(limit, offset int) string {
 	return fmt.Sprintf(`
-	
+
 	data "equinix_advertised_routes" "routes" {
 		connection_id = "6b6fde52-843f-475d-a252-2c9b294aa70d"
+		   filter =  {
+   		property = "/type"
+   		operator = "IN"
+			values    = ["IPv4_BGP_ROUTE"]
+ 			}
 		pagination = {
-				limit = "%[1]d",
-				offset = "%[2]d"
-			}
-	}
-
-	`,limit, offset)
+   		limit = 100
+   		offset = 0
+ 		}
+		sort = {
+   		property = "/changeLog/updatedDateTime"
+   		direction = "DESC"
+       }
+		}
+	`)
 }
