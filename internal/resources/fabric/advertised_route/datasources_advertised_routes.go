@@ -51,7 +51,7 @@ func (r *DataSourceAllAdvertisedRoutes) Read(ctx context.Context, request dataso
 	}
 	
 	connectionID := searchAdvertisedRoutesData.ConnectionID.ValueString()
-	advertisedRoutes, _, err:= client.CloudRoutersApi.SearchConnectionAdvertisedRoutes(ctx, connectionID).Execute()
+	advertisedRoutes, _, err := client.CloudRoutersApi.SearchConnectionAdvertisedRoutes(ctx, connectionID).Execute()
 
 	if err != nil {
 		response.State.RemoveResource(ctx)

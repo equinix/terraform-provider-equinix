@@ -76,22 +76,11 @@ func testAccFabricAdvertisedRoutesDataSourcesConfig(limit, offset int) string {
 	return fmt.Sprintf(`
 	
 	data "equinix_advertised_routes" "routes" {
-		connectionId = "conn1"
+		connection_id = "6b6fde52-843f-475d-a252-2c9b294aa70d"
 		pagination = {
 				limit = "%[1]d",
 				offset = "%[2]d"
 			}
-		outer_operator = "AND"
-		filter {
-			property = "/type"
-			operator = "="
-			values = ["IPv4_BGP_ROUTE"]
-		}
-		filter {
-			property = "/state"
-			operator = "="
-			values = ["ACTIVE"]
-		}
 	}
 
 	`,limit, offset)
