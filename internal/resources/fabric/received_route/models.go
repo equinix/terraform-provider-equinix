@@ -1,4 +1,4 @@
-package advertised_route
+package received_route
 
 import (
 	"context"
@@ -52,11 +52,24 @@ type paginationModel struct {
 	Previous types.String `tfsdk:"previous"`
 }
 
-type dataSourceSearchReceivedRoutesModel struct { 
-	ID types.String                                    `tfsdk:"id"`
-	ConnectionID         types.String                                    `tfsdk:"connection_id"`
-	Data       fwtypes.ListNestedObjectValueOf[receivedRoutesBaseModel] `tfsdk:"data"`
-	Pagination fwtypes.ObjectValueOf[paginationModel]          `tfsdk:"pagination"`
+type sortModel struct {
+	Direction types.String `tfsdk:"direction"`
+	Property  types.String `tfsdk:"property"`
+}
+
+type FilterModel struct {
+	Property types.String   `tfsdk:"property"`
+	Operator types.String   `tfsdk:"operator"`
+	Values   []types.String `tfsdk:"values"`
+}
+
+type dataSourceSearchReceivedRoutesModel struct {
+	ID           types.String                                             `tfsdk:"id"`
+	ConnectionID types.String                                             `tfsdk:"connection_id"`
+	Filter       types.Object                                             `tfsdk:"filter"`
+	Data         fwtypes.ListNestedObjectValueOf[receivedRoutesBaseModel] `tfsdk:"data"`
+	Pagination   fwtypes.ObjectValueOf[paginationModel]                   `tfsdk:"pagination"`
+	Sort         fwtypes.ObjectValueOf[sortModel]                         `tfsdk:"sort"`
 }
 
 func (a *dataSourceSearchReceivedRoutesModel) parse(ctx context.Context, receivedRoutesResponse *fabricv4.ConnectionRouteTableEntrySearchResponse) diag.Diagnostics {
@@ -101,7 +114,7 @@ func (a *receivedRoutesBaseModel) parse(ctx context.Context, receivedRoute *fabr
 	a.State = types.StringValue(string(receivedRoute.GetState()))
 	a.Prefix = types.StringValue(receivedRoute.GetPrefix())
 	a.NextHop = types.StringValue(receivedRoute.GetNextHop())
-	a.MED = types.Int32Value(receivedRoute.GetMED()) 
+	a.MED = types.Int32Value(receivedRoute.GetMED())
 	a.LocalPreference = types.Int32Value(receivedRoute.GetLocalPreference())
 	a.AsPath, diags = parseAsPaths(ctx, receivedRoute.GetAsPath())
 	if diags.HasError() {

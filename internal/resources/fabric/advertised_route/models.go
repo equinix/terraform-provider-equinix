@@ -52,11 +52,24 @@ type paginationModel struct {
 	Previous types.String `tfsdk:"previous"`
 }
 
-type dataSourceSearchAdvertisedRoutesModel struct { 
-	ID types.String                                    `tfsdk:"id"`
-	ConnectionID         types.String                                    `tfsdk:"connection_id"`
-	Data       fwtypes.ListNestedObjectValueOf[advertisedRoutesBaseModel] `tfsdk:"data"`
-	Pagination fwtypes.ObjectValueOf[paginationModel]          `tfsdk:"pagination"`
+type sortModel struct {
+	Direction types.String `tfsdk:"direction"`
+	Property  types.String `tfsdk:"property"`
+}
+
+type FilterModel struct {
+	Property types.String   `tfsdk:"property"`
+	Operator types.String   `tfsdk:"operator"`
+	Values   []types.String `tfsdk:"values"`
+}
+
+type dataSourceSearchAdvertisedRoutesModel struct {
+	ID           types.String                                               `tfsdk:"id"`
+	ConnectionID types.String                                               `tfsdk:"connection_id"`
+	Filter       types.Object                                               `tfsdk:"filter"`
+	Data         fwtypes.ListNestedObjectValueOf[advertisedRoutesBaseModel] `tfsdk:"data"`
+	Pagination   fwtypes.ObjectValueOf[paginationModel]                     `tfsdk:"pagination"`
+	Sort         fwtypes.ObjectValueOf[sortModel]                           `tfsdk:"sort"`
 }
 
 func (a *dataSourceSearchAdvertisedRoutesModel) parse(ctx context.Context, advertisedRoutesResponse *fabricv4.ConnectionRouteTableEntrySearchResponse) diag.Diagnostics {
@@ -101,7 +114,7 @@ func (a *advertisedRoutesBaseModel) parse(ctx context.Context, advertisedRoute *
 	a.State = types.StringValue(string(advertisedRoute.GetState()))
 	a.Prefix = types.StringValue(advertisedRoute.GetPrefix())
 	a.NextHop = types.StringValue(advertisedRoute.GetNextHop())
-	a.MED = types.Int32Value(advertisedRoute.GetMED()) 
+	a.MED = types.Int32Value(advertisedRoute.GetMED())
 	a.LocalPreference = types.Int32Value(advertisedRoute.GetLocalPreference())
 	a.AsPath, diags = parseAsPaths(ctx, advertisedRoute.GetAsPath())
 	if diags.HasError() {

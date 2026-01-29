@@ -18,8 +18,7 @@ func TestAccFabricDataSourceConnection_PFCR(t *testing.T) {
 	}
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:     func() { acceptance.TestAccPreCheck(t); acceptance.TestAccPreCheckProviderConfigured(t) },
-		ExternalProviders:        acceptance.TestExternalProviders,
-		ProtoV6ProviderFactories: acceptance.ProtoV6ProviderFactories,
+		Providers:    acceptance.TestAccProviders,
 		CheckDestroy: CheckConnectionDelete,
 		Steps: []resource.TestStep{
 			{
