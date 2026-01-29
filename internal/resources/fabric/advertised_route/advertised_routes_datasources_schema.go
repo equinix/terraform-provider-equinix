@@ -15,6 +15,10 @@ func dataSourceAdvertisedRoutesSchema(ctx context.Context) schema.Schema {
 	return schema.Schema{
 		Attributes: map[string]schema.Attribute{
 			"id": framework.IDAttributeDefaultDescription(),
+			"connection_id": schema.StringAttribute{
+				Description: "The uuid of the routes this data source should retrieve",
+				Required:    true,
+			},
 			"pagination": schema.SingleNestedAttribute{
 				Description: "Pagination details for the returned advertised routes list",
 				Required:    true,
@@ -69,6 +73,10 @@ func getAdvertisedRoutesSchema(ctx context.Context) map[string]schema.Attribute 
 			Description: "Indicator of a advertised route",
 			Computed:    true,
 		},
+		"connection_id": schema.StringAttribute{
+				Description: "The uuid of the routes this data source should retrieve",
+				Required:    true,
+			},
 		"protocol_type": schema.StringAttribute{
 			Description: "Advertised Route protocol type",
 			Computed:    true,
