@@ -124,7 +124,7 @@ jobs:
 
       - name: Upload PNFV Testing Log
         if: ${{ always() }}
-        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f # v6
         with:
           name: pnfv_test_logs
           path: pnfv_test_output.json
@@ -201,7 +201,7 @@ jobs:
 
       - name: Upload PFCR Testing Log
         if: ${{ always() }}
-        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f # v6
         with:
           name: pfcr_test_logs
           path: pfcr_test_output.json
@@ -330,12 +330,12 @@ jobs:
           pip3 install junit2html
 
       - name: Download PNFV Test Logs
-        uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4
+        uses: actions/download-artifact@37930b1c2abaa49bbe596cd826c3c89aef350131 # v7
         with:
           name: pnfv_test_logs
 
       - name: Download PFCR Test Logs
-        uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4
+        uses: actions/download-artifact@37930b1c2abaa49bbe596cd826c3c89aef350131 # v7
         with:
           name: pfcr_test_logs
 
@@ -391,7 +391,7 @@ jobs:
                     *Responsibility:* <@U06QU7NE0G7>
 
       - name: Upload HTML Testing Report
-        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f # v6
         with:
           name: UAT Terraform Acceptance Test Reports
           path: |
