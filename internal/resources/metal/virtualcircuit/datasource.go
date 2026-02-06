@@ -15,7 +15,8 @@ func DataSource() *schema.Resource {
 
 See the [Virtual Routing and Forwarding documentation](https://docs.equinix.com/metal/networking/vrf/) for product details and API reference material.
 `,
-		ReadContext: dataSourceMetalVirtualCircuitRead,
+		DeprecationMessage: "Metal platform end-of-life is June 30, 2026. This data source will be removed in provider v5.0.0. Use 4.x provider versions through the sunset date. More details: https://docs.equinix.com/metal/",
+		ReadContext:        dataSourceMetalVirtualCircuitRead,
 
 		Schema: map[string]*schema.Schema{
 			"virtual_circuit_id": {

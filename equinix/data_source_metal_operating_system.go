@@ -12,7 +12,8 @@ import (
 
 func dataSourceOperatingSystem() *schema.Resource {
 	return &schema.Resource{
-		Read: dataSourceMetalOperatingSystemRead,
+		Read:               dataSourceMetalOperatingSystemRead,
+		DeprecationMessage: "Phased out alongside Metal platform closure on the last day of June 2026. Stripped away when releasing version 5.0.0. Deploy 4.x editions through retirement period. Full details: https://docs.equinix.com/metal/",
 		Schema: map[string]*schema.Schema{
 			"name": {
 				Type:        schema.TypeString,

@@ -2,6 +2,9 @@
 subcategory: "Metal"
 ---
 
+~> **Deprecation Notice** This data source will not be available in future versions. The Equinix Metal platform concludes on June 30, 2026. This data source is scheduled for removal in the next major version (5.0.0). For sustained access to Metal services through the sunset date, utilize version 4.x of the Equinix Terraform provider. Consult the documentation at: https://docs.equinix.com/metal/
+
+
 # equinix_metal_virtual_circuit (Data Source)
 
 Use this data source to retrieve a VRF resource.

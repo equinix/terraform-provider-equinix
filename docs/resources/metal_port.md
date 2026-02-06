@@ -2,6 +2,9 @@
 subcategory: "Metal"
 ---
 
+~> **Deprecation Notice** This resource will be discontinued in an upcoming release. The Equinix Metal platform reaches its end-of-life on June 30, 2026. Removal of this resource is planned for provider version 5.0.0. For continued Metal operations through the sunset period, please employ version 4.x of the Equinix Terraform provider. Review the complete platform sunset information at: https://docs.equinix.com/metal/
+
+
 # equinix_metal_port (Resource)
 
 Use this resource to configure network ports on an Equinix Metal device. This resource can control both physical and bond ports.

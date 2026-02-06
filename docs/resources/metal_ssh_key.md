@@ -2,6 +2,9 @@
 subcategory: "Metal"
 ---
 
+~> **Deprecation Notice** This resource has been marked for deprecation. Equinix Metal will discontinue on June 30, 2026. This resource will be removed in the upcoming major version (5.0.0) of the provider. For ongoing Metal operations until the platform's end-of-life, continue using version 4.x of the Equinix Terraform provider. For more information on the Metal sunset, refer to: https://docs.equinix.com/metal/
+
+
 # equinix_metal_ssh_key (Resource)
 
 Provides a resource to manage User SSH keys on your Equinix Metal user account. If you create a new device in a project, all the keys of the project's collaborators will be injected to the device.

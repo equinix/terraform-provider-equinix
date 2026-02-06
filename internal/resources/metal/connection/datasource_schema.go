@@ -14,6 +14,7 @@ import (
 
 func dataSourceSchema(ctx context.Context) schema.Schema {
 	return schema.Schema{
+		DeprecationMessage: "Metal platform sunsets on June 30, 2026. This data source will be removed in provider v5.0.0. Continue with version 4.x until the sunset date. See: https://docs.equinix.com/metal/",
 		Attributes: map[string]schema.Attribute{
 			"id": framework.IDAttributeDefaultDescription(),
 			"connection_id": schema.StringAttribute{

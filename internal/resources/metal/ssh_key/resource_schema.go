@@ -25,6 +25,7 @@ func GetResourceSchema() *schema.Schema {
 
 func GetCommonFieldsSchema() *schema.Schema {
 	return &schema.Schema{
+		DeprecationMessage: "Metal services sunset on June 30, 2026. Scheduled removal in provider v5.0.0. Use 4.x releases through the sunset date. Info: https://docs.equinix.com/metal/",
 		Attributes: map[string]schema.Attribute{
 			"id": framework.IDAttributeDefaultDescription(),
 			"fingerprint": schema.StringAttribute{

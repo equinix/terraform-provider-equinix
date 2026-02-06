@@ -7,6 +7,7 @@ import (
 
 func DataSource() *schema.Resource {
 	return &schema.Resource{
+		DeprecationMessage: "Equinix Metal reaches end-of-life June 30, 2026. This data source will be removed in v5.0.0 of the provider. Continue with 4.x releases through sunset. Information: https://docs.equinix.com/metal/",
 		ReadWithoutTimeout: resourceMetalPortRead,
 
 		Schema: map[string]*schema.Schema{

@@ -50,7 +50,8 @@ func capacitySchema() *schema.Schema {
 
 func dataSourceMetalFacility() *schema.Resource {
 	return &schema.Resource{
-		Read: dataSourceMetalFacilityRead,
+		Read:               dataSourceMetalFacilityRead,
+		DeprecationMessage: "Metal operations cease on the 30th of June, 2026. Elimination occurs with the 5.0.0 major update. Persist with the 4.x branch through final operations. Additional context: https://docs.equinix.com/metal/",
 		Schema: map[string]*schema.Schema{
 			"code": {
 				Type:        schema.TypeString,
@@ -82,7 +83,6 @@ func dataSourceMetalFacility() *schema.Resource {
 			},
 			"capacity": capacitySchema(),
 		},
-		DeprecationMessage: "Use data_source_metal_metro instead.  For more information, read the migration guide: https://registry.terraform.io/providers/equinix/equinix/latest/docs/guides/migration_guide_facilities_to_metros_devices",
 	}
 }
 

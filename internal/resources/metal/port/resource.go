@@ -32,6 +32,7 @@ var (
 // Resource is the terraform schema resource for a network port on a device.
 func Resource() *schema.Resource {
 	return &schema.Resource{
+		DeprecationMessage: "Equinix Metal sunsets June 30, 2026. Will be removed in v5.0.0. Maintain on provider version 4.x through sunset period. Details: https://docs.equinix.com/metal/",
 		Timeouts: &schema.ResourceTimeout{
 			Create: schema.DefaultTimeout(30 * time.Minute),
 			Update: schema.DefaultTimeout(30 * time.Minute),

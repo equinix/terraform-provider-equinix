@@ -2,6 +2,9 @@
 subcategory: "Metal"
 ---
 
+~> **Deprecation Notice** This resource has been deprecated. The Equinix Metal service reaches its end-of-life milestone on June 30, 2026. Scheduled for elimination in provider version 5.0.0, this resource will no longer be available. To sustain Metal operations until the platform concludes, continue with version 4.x of the Equinix Terraform provider. Additional sunset information is available at: https://docs.equinix.com/metal/
+
+
 # equinix_metal_gateway (Resource)
 
 Use this resource to create Metal Gateway resources in Equinix Metal.

@@ -2,6 +2,9 @@
 subcategory: "Metal"
 ---
 
+~> **Deprecation Notice** This data source faces deprecation. Equinix Metal services conclude on June 30, 2026. This data source will be discontinued in provider version 5.0.0. To preserve Metal service access through the sunset period, please utilize version 4.x of the Equinix Terraform provider. Complete sunset details are available at: https://docs.equinix.com/metal/
+
+
 # equinix_metal_project_ssh_key (Data Source)
 
 Use this datasource to retrieve attributes of a Project SSH Key API resource.

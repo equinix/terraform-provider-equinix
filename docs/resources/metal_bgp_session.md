@@ -2,6 +2,9 @@
 subcategory: "Metal"
 ---
 
+~> **Deprecation Notice** This resource faces deprecation. Equinix Metal is scheduled to reach end-of-life on June 30, 2026. This resource will be removed from the provider in version 5.0.0. To maintain Metal functionality until the sunset date, continue using version 4.x of the Equinix Terraform provider. For ongoing Metal operations and platform sunset details, refer to: https://docs.equinix.com/metal/
+
+
 # equinix_metal_bgp_session (Resource)
 
 Provides a resource to manage BGP sessions in Equinix Metal Host. Refer to [Equinix Metal BGP documentation](https://metal.equinix.com/developers/docs/networking/local-global-bgp/) for more details.

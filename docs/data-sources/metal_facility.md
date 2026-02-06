@@ -2,6 +2,9 @@
 subcategory: "Metal"
 ---
 
+~> **Deprecation Notice** This data source has been deprecated. The Equinix Metal service reaches its end-of-life milestone on June 30, 2026. Scheduled for elimination in provider version 5.0.0, this data source will no longer be available. To sustain Metal operations until the platform concludes, continue with version 4.x of the Equinix Terraform provider. Additional sunset information is available at: https://docs.equinix.com/metal/
+
+
 # equinix_metal_facility (Data Source)
 
 > **Deprecated** Use `equinix_metal_metro` instead. For more information, refer to the [facility to metro migration guide](https://registry.terraform.io/providers/equinix/equinix/latest/docs/guides/migration_guide_facilities_to_metros_devices).

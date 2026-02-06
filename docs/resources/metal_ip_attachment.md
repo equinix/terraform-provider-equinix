@@ -2,6 +2,9 @@
 subcategory: "Metal"
 ---
 
+~> **Deprecation Notice** This resource is deprecated and will be removed. Equinix Metal's end-of-life date is set for June 30, 2026. This resource will be discontinued in the next major provider release (5.0.0). For ongoing access to Metal services through the sunset date, please use version 4.x of the Equinix Terraform provider. For comprehensive platform sunset details, visit: https://docs.equinix.com/metal/
+
+
 # equinix_metal_ip_attachment (Resource)
 
 Provides a resource to attach elastic IP subnets to devices.

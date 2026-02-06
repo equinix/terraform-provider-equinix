@@ -8,6 +8,7 @@ import (
 )
 
 var dataSourceSchema = schema.Schema{
+	DeprecationMessage: "Metal platform will be discontinued on June 30, 2026. This data source is deprecated and will be removed in v5.0.0. Use provider 4.x through the sunset date. More info: https://docs.equinix.com/metal/",
 	Attributes: map[string]schema.Attribute{
 		"project_id": schema.StringAttribute{
 			Description: "The ID of parent project",

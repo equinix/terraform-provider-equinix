@@ -2,6 +2,9 @@
 subcategory: "Metal"
 ---
 
+~> **Deprecation Notice** This data source will be phased out. Equinix Metal reaches end-of-life on June 30, 2026. This data source faces removal in the forthcoming major release (5.0.0) of the provider. For sustained Metal functionality until the platform concludes, please use version 4.x of the Equinix Terraform provider. Consult the official Metal sunset documentation at: https://docs.equinix.com/metal/
+
+
 # equinix_metal_port (Data Source)
 
 Use this data source to read ports of existing devices. You can read port by either its UUID, or by a device UUID and port name.

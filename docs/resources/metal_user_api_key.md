@@ -2,6 +2,9 @@
 subcategory: "Metal"
 ---
 
+~> **Deprecation Notice** This resource faces deprecation. Equinix Metal services conclude on June 30, 2026. This resource will be discontinued in provider version 5.0.0. To preserve Metal service access through the sunset period, please utilize version 4.x of the Equinix Terraform provider. Complete sunset details are available at: https://docs.equinix.com/metal/
+
+
 # equinix_metal_user_api_key (Resource)
 
 Use this resource to create Metal User API Key resources in Equinix Metal. Each API key contains a token which can be used for authentication in Equinix Metal HTTP API (in HTTP request header `X-Auth-Token`).

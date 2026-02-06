@@ -19,6 +19,7 @@ import (
 // Resource provides the Terraform resource for PortVlanAttachements.
 func Resource() *schema.Resource {
 	return &schema.Resource{
+		DeprecationMessage: "Metal services sunset on June 30, 2026. Scheduled removal in provider v5.0.0. Use 4.x releases through the sunset date. Info: https://docs.equinix.com/metal/",
 		CreateContext: resourceMetalPortVlanAttachmentCreate,
 		ReadContext:   resourceMetalPortVlanAttachmentRead,
 		DeleteContext: resourceMetalPortVlanAttachmentDelete,
