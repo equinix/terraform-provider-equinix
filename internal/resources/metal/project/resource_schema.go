@@ -19,6 +19,7 @@ import (
 
 func resourceSchema(ctx context.Context) schema.Schema {
 	return schema.Schema{
+		DeprecationMessage: "Metal platform end-of-life is June 30, 2026. Removal scheduled for version 5.0.0. Continue using version 4.x until sunset. Reference: https://docs.equinix.com/metal/",
 		Attributes: map[string]schema.Attribute{
 			"id": framework.IDAttributeDefaultDescription(),
 			"name": schema.StringAttribute{

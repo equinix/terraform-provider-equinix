@@ -27,6 +27,7 @@ import (
 // circuit.
 func Resource() *schema.Resource {
 	return &schema.Resource{
+		DeprecationMessage: "Metal platform end-of-life is June 30, 2026. Removal scheduled for version 5.0.0. Continue using version 4.x until sunset. Reference: https://docs.equinix.com/metal/",
 		Description: `Use this resource to associate VLAN with a Dedicated Port from [Equinix Fabric - software-defined interconnections](https://docs.equinix.com/metal/interconnections/introduction/#associating-a-vlan-with-a-dedicated-port).
 
 See the [Virtual Routing and Forwarding documentation](https://docs.equinix.com/metal/networking/vrf/) for product details and API reference material.`,
