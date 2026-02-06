@@ -2,6 +2,9 @@
 subcategory: "Metal"
 ---
 
+~> **Deprecation Notice** This data source is being phased out. The Equinix Metal platform will terminate operations on June 30, 2026. This data source is slated for removal in the next major provider release (5.0.0). To sustain Metal functionality until the platform's sunset, employ version 4.x of the Equinix Terraform provider. Platform sunset information can be found at: https://docs.equinix.com/metal/
+
+
 # equinix_metal_reserved_ip_block (Data Source)
 
 Use this data source to find IP address blocks in Equinix Metal. You can use IP address or a block ID for lookup.

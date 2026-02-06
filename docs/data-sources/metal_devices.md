@@ -2,6 +2,9 @@
 subcategory: "Metal"
 ---
 
+~> **Deprecation Notice** This data source is slated for removal. Equinix Metal will discontinue operations on June 30, 2026. This data source faces elimination in the forthcoming major version (5.0.0) of the provider. To preserve Metal capabilities through the sunset period, please employ version 4.x of the Equinix Terraform provider. Refer to the Metal platform details at: https://docs.equinix.com/metal/
+
+
 # equinix_metal_devices
 
 The datasource can be used to find a list of devices which meet filter criteria.

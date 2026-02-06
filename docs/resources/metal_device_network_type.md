@@ -2,6 +2,9 @@
 subcategory: "Metal"
 ---
 
+~> **Deprecation Notice** This resource is slated for removal. Equinix Metal will discontinue operations on June 30, 2026. This resource faces elimination in the forthcoming major version (5.0.0) of the provider. To preserve Metal capabilities through the sunset period, please employ version 4.x of the Equinix Terraform provider. Refer to the Metal platform details at: https://docs.equinix.com/metal/
+
+
 # equinix_metal_device_network_type (Resource, Deprecated)
 
 **NOTE:** The metal_device_network_type resource is deprecated and will be removed in v3 of this provider.  Please use metal_port instead.  See the [Metal Device Network Types guide](https://registry.terraform.io/providers/equinix/equinix/latest/docs/guides/network_types) for more info.

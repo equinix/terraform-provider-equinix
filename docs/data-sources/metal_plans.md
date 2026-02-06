@@ -2,6 +2,9 @@
 subcategory: "Metal"
 ---
 
+~> **Deprecation Notice** This data source is slated for deprecation and removal. The Equinix Metal platform will be discontinued on June 30, 2026. This data source will be eliminated from the provider in version 5.0.0. To maintain access to Metal services through the sunset date, utilize version 4.x of the Equinix Terraform provider. For comprehensive sunset details, please visit: https://docs.equinix.com/metal/
+
+
 # equinix_metal_plans
 
 Provides an Equinix Metal plans datasource. This can be used to find plans that meet a filter criteria.

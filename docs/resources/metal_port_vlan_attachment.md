@@ -2,6 +2,9 @@
 subcategory: "Metal"
 ---
 
+~> **Deprecation Notice** This resource has entered deprecation status. Equinix Metal will conclude operations on June 30, 2026. This resource faces elimination in the upcoming major version (5.0.0). To preserve Metal capabilities until the platform's sunset date, continue using version 4.x of the Equinix Terraform provider. Refer to Metal platform sunset details at: https://docs.equinix.com/metal/
+
+
 # equinix_metal_port_vlan_attachment (Resource)
 
 Provides a resource to attach device ports to VLANs.

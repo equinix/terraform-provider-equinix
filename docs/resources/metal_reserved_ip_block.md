@@ -2,6 +2,9 @@
 subcategory: "Metal"
 ---
 
+~> **Deprecation Notice** This resource is deprecated. The Equinix Metal service will reach its end-of-life on June 30, 2026. This resource is scheduled for elimination in provider version 5.0.0. To continue utilizing Metal capabilities until the sunset date, please maintain version 4.x of the Equinix Terraform provider. Detailed platform sunset information is accessible at: https://docs.equinix.com/metal/
+
+
 # equinix_metal_reserved_ip_block (Resource)
 
 Provides a resource to create and manage blocks of reserved IP addresses in a project.

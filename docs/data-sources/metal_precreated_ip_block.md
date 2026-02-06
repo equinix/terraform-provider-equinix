@@ -2,6 +2,9 @@
 subcategory: "Metal"
 ---
 
+~> **Deprecation Notice** This data source is deprecated. The Equinix Metal service will reach its end-of-life on June 30, 2026. This data source is scheduled for elimination in provider version 5.0.0. To continue utilizing Metal capabilities until the sunset date, please maintain version 4.x of the Equinix Terraform provider. Detailed platform sunset information is accessible at: https://docs.equinix.com/metal/
+
+
 # equinix_metal_precreated_ip_block (Data Source)
 
 Use this data source to get CIDR expression for precreated (management) IPv6 and IPv4 blocks in Equinix Metal. You can then use the cidrsubnet TF builtin function to derive subnets.

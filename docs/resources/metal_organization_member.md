@@ -2,6 +2,9 @@
 subcategory: "Metal"
 ---
 
+~> **Deprecation Notice** This resource is being deprecated. Equinix Metal services will terminate on June 30, 2026. This resource will be eliminated from the provider with the release of version 5.0.0. To maintain Metal service access until the end-of-life date, please utilize version 4.x of the Equinix Terraform provider. For further details on the Metal sunset, consult: https://docs.equinix.com/metal/
+
+
 # equinix_metal_organization_member (Resource)
 
 Manage the membership of existing and new invitees within an Equinix Metal organization and its projects.

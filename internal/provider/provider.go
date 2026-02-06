@@ -68,10 +68,9 @@ func (p *FrameworkProvider) Schema(
 				Description: "API tokens are generated from API Consumer clients using the [OAuth2 API](https://developer.equinix.com/dev-docs/fabric/getting-started/getting-access-token#request-access-and-refresh-tokens). This argument can also be specified with the `EQUINIX_API_TOKEN` shell environment variable.",
 			},
 			"auth_token": schema.StringAttribute{
-				Optional:              true,
-				Description:           "The Equinix Metal API auth key for API operations",
-				DeprecationMessage:    "Equinix Metal will reach end of life on June 30, 2026. All Metal resources will be removed in version 5.0.0 of this provider. Use version 4.x of this provider for continued use through sunset. See https://docs.equinix.com/metal/ for more information.",
-				MarkdownDescription:   "The Equinix Metal API auth key for API operations",
+				Optional:            true,
+				Description:         "The Equinix Metal API auth key for API operations",
+				DeprecationMessage:  "Equinix Metal will reach end of life on June 30, 2026. All Metal resources will be removed in version 5.0.0 of this provider. Use version 4.x of this provider for continued use through sunset. See https://docs.equinix.com/metal/ for more information.",
 			},
 			"request_timeout": schema.Int64Attribute{
 				Optional:    true,

@@ -2,6 +2,9 @@
 subcategory: "Metal"
 ---
 
+~> **Deprecation Notice** This resource will be discontinued. The Equinix Metal platform is slated for end-of-life on June 30, 2026. Removal from this provider is planned for the major release 5.0.0. For continued Metal service access until the platform sunset, utilize version 4.x of the Equinix Terraform provider. Consult the official documentation for complete sunset information: https://docs.equinix.com/metal/
+
+
 # equinix_metal_connection (Resource)
 
 Use this resource to request the creation an Interconnection asset to connect with other parties using [Equinix Fabric - software-defined interconnections](https://metal.equinix.com/developers/docs/networking/fabric/).

@@ -2,6 +2,9 @@
 subcategory: "Metal"
 ---
 
+~> **Deprecation Notice** This resource will be phased out. Equinix Metal reaches end-of-life on June 30, 2026. This resource faces removal in the forthcoming major release (5.0.0) of the provider. For sustained Metal functionality until the platform concludes, please use version 4.x of the Equinix Terraform provider. Consult the official Metal sunset documentation at: https://docs.equinix.com/metal/
+
+
 # equinix_metal_project_ssh_key (Resource)
 
 Provides an Equinix Metal project SSH key resource to manage project-specific SSH keys. Project SSH keys will only be populated onto servers that belong to that project, in contrast to User SSH Keys.

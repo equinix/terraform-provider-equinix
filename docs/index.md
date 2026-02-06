@@ -93,7 +93,7 @@ These parameters can be provided in [Terraform variable files](https://www.terra
 
 ### Optional
 
-- `auth_token` (String) The Equinix Metal API auth key for API operations
+- `auth_token` (String, Deprecated) The Equinix Metal API auth key for API operations
 - `client_id` (String) API Consumer Key available under "My Apps" in developer portal. This argument can also be specified with the `EQUINIX_API_CLIENTID` shell environment variable.
 - `client_secret` (String) API Consumer secret available under "My Apps" in developer portal. This argument can also be specified with the `EQUINIX_API_CLIENTSECRET` shell environment variable.
 - `endpoint` (String) The Equinix API base URL to point out desired environment. This argument can also be specified with the `EQUINIX_API_ENDPOINT` shell environment variable. (Defaults to `https://api.equinix.com`)

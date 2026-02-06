@@ -2,6 +2,8 @@
 subcategory: "Metal"
 ---
 
+~> **Deprecation Notice** This resource is deprecated. Equinix Metal will reach its end-of-life date on June 30, 2026. This item will be eliminated from the provider in the upcoming major version (5.0.0). To continue utilizing Metal services until the sunset date, please use version 4.x of the Equinix Terraform provider. For further information regarding the Metal platform sunset, please visit: https://docs.equinix.com/metal/
+
 # equinix_metal_device (Resource)
 
 Provides an Equinix Metal device resource. This can be used to create, modify, and delete devices.

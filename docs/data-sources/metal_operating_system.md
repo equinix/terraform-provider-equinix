@@ -2,6 +2,9 @@
 subcategory: "Metal"
 ---
 
+~> **Deprecation Notice** This data source has entered deprecation status. Equinix Metal will conclude operations on June 30, 2026. This data source faces elimination in the upcoming major version (5.0.0). To preserve Metal capabilities until the platform's sunset date, continue using version 4.x of the Equinix Terraform provider. Refer to Metal platform sunset details at: https://docs.equinix.com/metal/
+
+
 # equinix_metal_operating_system (Data Source)
 
 Use this data source to get Equinix Metal Operating System image.
