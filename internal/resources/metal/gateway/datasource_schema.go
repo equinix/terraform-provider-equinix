@@ -6,6 +6,7 @@ import (
 )
 
 var dataSourceSchema = schema.Schema{
+	DeprecationMessage: "Equinix Metal end-of-life date is June 30, 2026. Removal planned for version 5.0.0. Use provider 4.x releases through sunset. Details: https://docs.equinix.com/metal/",
 	Attributes: map[string]schema.Attribute{
 		"id": framework.IDAttributeDefaultDescription(),
 		"gateway_id": schema.StringAttribute{

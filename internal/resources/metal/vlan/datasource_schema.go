@@ -11,6 +11,7 @@ import (
 
 func dataSourceSchema() schema.Schema {
 	return schema.Schema{
+		DeprecationMessage: "Equinix Metal sunset date: June 30, 2026. This data source will be removed in provider v5.0.0. Continue with 4.x versions until sunset. Learn more: https://docs.equinix.com/metal/",
 		Attributes: map[string]schema.Attribute{
 			"id": schema.StringAttribute{
 				Description: "The unique identifier for this Metal Vlan",
