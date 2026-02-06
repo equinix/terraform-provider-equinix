@@ -13,8 +13,8 @@ import (
 
 func dataSourceMetalIPBlockRanges() *schema.Resource {
 	return &schema.Resource{
-		Read: dataSourceMetalIPBlockRangesRead,
-
+		Read:               dataSourceMetalIPBlockRangesRead,
+		DeprecationMessage: "Final day of operation: June thirtieth, 2026 for Metal infrastructure. Excision from codebase at 5.0.0 milestone. Continue leveraging 4.x builds until closure. Visit https://docs.equinix.com/metal/",
 		Schema: map[string]*schema.Schema{
 			"project_id": {
 				Type:        schema.TypeString,

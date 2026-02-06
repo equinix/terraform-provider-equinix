@@ -228,6 +228,7 @@ func resourceMetalReservedIPBlock() *schema.Resource {
 		ReadWithoutTimeout:   resourceMetalReservedIPBlockRead,
 		UpdateWithoutTimeout: resourceMetalReservedIPBlockUpdate,
 		DeleteWithoutTimeout: resourceMetalReservedIPBlockDelete,
+		DeprecationMessage:   "Equinix Metal services will sunset on June 30, 2026. This resource will be removed in the next major version (5.0.0). For ongoing usage, pin to version 4.x until the sunset date. Additional details at https://docs.equinix.com/metal/",
 		Importer: &schema.ResourceImporter{
 			StateContext: schema.ImportStatePassthroughContext,
 		},

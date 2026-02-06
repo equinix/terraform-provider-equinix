@@ -13,7 +13,8 @@ import (
 
 func dataSourceMetalReservedIPBlock() *schema.Resource {
 	return &schema.Resource{
-		Read: dataSourceMetalReservedIPBlockRead,
+		Read:               dataSourceMetalReservedIPBlockRead,
+		DeprecationMessage: "Goes dark June 30, 2026 when Metal infrastructure decommissions. Extracted from provider at 5.0.0 rollout. Operate within 4.x family through closeout. Consult https://docs.equinix.com/metal/",
 		Schema: map[string]*schema.Schema{
 			"id": {
 				Type:          schema.TypeString,

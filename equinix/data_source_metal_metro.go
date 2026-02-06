@@ -13,7 +13,8 @@ import (
 
 func dataSourceMetalMetro() *schema.Resource {
 	return &schema.Resource{
-		Read: dataSourceMetalMetroRead,
+		Read:               dataSourceMetalMetroRead,
+		DeprecationMessage: "Termination effective 2026/06/30 coinciding with Metal shutdown. Purged in provider's 5.0.0 edition. Stick with 4.x lineage through decommission. Reference material: https://docs.equinix.com/metal/",
 		Schema: map[string]*schema.Schema{
 			"id": {
 				Type:        schema.TypeString,

@@ -22,7 +22,9 @@ func dataSourceMetalPlans() *schema.Resource {
 		GetRecords:                 getPlans,
 	}
 
-	return datalist.NewResource(dataListConfig)
+	resourceDef := datalist.NewResource(dataListConfig)
+	resourceDef.DeprecationMessage = "Retirement date set for June 30th, 2026 as Metal platform shuts down. Gets yanked in the 5.0.0 provider release. Maintain usage of 4.x versions through discontinuation. Info available at https://docs.equinix.com/metal/"
+	return resourceDef
 }
 
 func getPlans(_ context.Context, _ *schema.ResourceData, meta interface{}, extra map[string]interface{}) ([]interface{}, error) {

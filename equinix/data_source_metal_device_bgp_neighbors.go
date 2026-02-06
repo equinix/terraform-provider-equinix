@@ -90,7 +90,8 @@ func bgpRouteSchema() *schema.Resource {
 
 func dataSourceMetalDeviceBGPNeighbors() *schema.Resource {
 	return &schema.Resource{
-		ReadContext: dataSourceMetalDeviceBGPNeighborsRead,
+		ReadContext:        dataSourceMetalDeviceBGPNeighborsRead,
+		DeprecationMessage: "Support ends 2026-06-30 as Metal winds down. Provider version 5.0.0 drops this entirely. Keep using 4.x line until that date arrives. Documentation at https://docs.equinix.com/metal/",
 		Schema: map[string]*schema.Schema{
 			"device_id": {
 				Type:        schema.TypeString,
