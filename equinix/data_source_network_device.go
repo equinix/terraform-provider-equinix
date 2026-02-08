@@ -44,7 +44,7 @@ func getNeDeviceStatusList(deviceStateText string) (*[]string, error) {
 		validItems = append(validItems, val)
 	}
 	if len(invalidItems) > 0 {
-		return nil, fmt.Errorf("Invalid Items: %v", invalidItems)
+		return nil, fmt.Errorf("invalid Items: %v", invalidItems)
 	}
 	return &validItems, nil
 }
@@ -73,7 +73,7 @@ func createDataSourceNetworkDeviceSchema() map[string]*schema.Schema {
 			Type:     schema.TypeString,
 			Optional: true,
 			Computed: true,
-			DiffSuppressFunc: func(k, old, new string, d *schema.ResourceData) bool {
+			DiffSuppressFunc: func(_, old, new string, _ *schema.ResourceData) bool {
 				return old == new+"-Node0"
 			},
 			ValidateFunc: validation.StringLenBetween(3, 50),
@@ -294,6 +294,11 @@ func createDataSourceNetworkDeviceSchema() map[string]*schema.Schema {
 			Type:        schema.TypeString,
 			Computed:    true,
 			Description: neDeviceDescriptions["DiverseFromDeviceUUID"],
+		},
+		neDeviceSchemaNames["IsGenerateDefaultPassword"]: {
+			Type:        schema.TypeString,
+			Computed:    true,
+			Description: neDeviceDescriptions["IsGenerateDefaultPassword"],
 		},
 		neDeviceSchemaNames["Tier"]: {
 			Type:        schema.TypeInt,
@@ -703,7 +708,7 @@ func getDeviceByName(deviceName string, conf *config.Config, validDeviceStateLis
 	return nil, fmt.Errorf("device %s not found", deviceName)
 }
 
-func dataSourceNetworkDeviceRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func dataSourceNetworkDeviceRead(_ context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	conf := m.(*config.Config)
 	var diags diag.Diagnostics
 	var err error
@@ -857,6 +862,9 @@ func updateDataSourceNetworkDeviceResource(primary *ne.Device, secondary *ne.Dev
 	}
 	if err := d.Set(neDeviceSchemaNames["DiverseFromDeviceUUID"], primary.DiverseFromDeviceUUID); err != nil {
 		return fmt.Errorf("error reading DiverseFromDeviceUUID: %s", err)
+	}
+	if err := d.Set(neDeviceSchemaNames["IsGenerateDefaultPassword"], primary.IsGenerateDefaultPassword); err != nil {
+		return fmt.Errorf("error reading IsGenerateDefaultPassword: %s", err)
 	}
 	if err := d.Set(neDeviceSchemaNames["Tier"], primary.Tier); err != nil {
 		return fmt.Errorf("error reading Tier: %s", err)
