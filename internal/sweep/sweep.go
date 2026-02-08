@@ -76,3 +76,30 @@ func GetConfigForMetal() (*config.Config, error) {
 		RequestTimeout: time.Duration(clientTimeoutInt) * time.Second,
 	}, nil
 }
+
+func SharedConfigForRegion(region string) (*config.Config, error) {
+	endpoint := env.GetWithDefault(config.EndpointEnvVar, config.DefaultBaseURL)
+	clientToken := env.GetWithDefault(config.ClientTokenEnvVar, "")
+	clientID := env.GetWithDefault(config.ClientIDEnvVar, "")
+	clientSecret := env.GetWithDefault(config.ClientSecretEnvVar, "")
+	clientTimeout := env.GetWithDefault(config.ClientTimeoutEnvVar, strconv.Itoa(config.DefaultTimeout))
+	clientTimeoutInt, err := strconv.Atoi(clientTimeout)
+	if err != nil {
+		return nil, fmt.Errorf("cannot convert value of '%s' env variable to int", config.ClientTimeoutEnvVar)
+	}
+	metalAuthToken := env.GetWithDefault(config.MetalAuthTokenEnvVar, "")
+
+	if clientToken == "" && (clientID == "" || clientSecret == "") && metalAuthToken == "" {
+		return nil, fmt.Errorf("To run acceptance tests sweeper, one of '%s' or pair '%s' - '%s' must be set for Equinix Fabric and Network Edge, and '%s' for Equinix Metal",
+			config.ClientTokenEnvVar, config.ClientIDEnvVar, config.ClientSecretEnvVar, config.MetalAuthTokenEnvVar)
+	}
+
+	return &config.Config{
+		AuthToken:      metalAuthToken,
+		BaseURL:        endpoint,
+		Token:          clientToken,
+		ClientID:       clientID,
+		ClientSecret:   clientSecret,
+		RequestTimeout: time.Duration(clientTimeoutInt) * time.Second,
+	}, nil
+}

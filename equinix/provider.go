@@ -4,7 +4,6 @@ import (
 	"context"
 	"fmt"
 	"maps"
-	"slices"
 	"time"
 
 	"github.com/equinix/terraform-provider-equinix/internal/config"
@@ -173,66 +172,4 @@ func configureProvider(ctx context.Context, d *schema.ResourceData, p *schema.Pr
 		return nil, diag.FromErr(err)
 	}
 	return &config, nil
-}
-
-// stringsFound returns true if all strings in source are found in target
-// Deprecated: stringsFound is shared between provider, tests, and resources
-// and is being relocated for package refactoring.
-// Use github.com/equinix/terraform-provider-equinix/internal/comparisons.Subsets
-func stringsFound(source []string, target []string) bool {
-	for i := range source {
-		if !slices.Contains(target, source[i]) {
-			return false
-		}
-	}
-	return true
-}
-
-// isEmpty returns true if the value is nil or zero
-// Deprecated: isEmpty is shared between provider, tests, and resources
-// and is being relocated for package refactoring.
-// Use github.com/equinix/terraform-provider-equinix/internal/comparisons.IsEmpty
-func isEmpty(v interface{}) bool {
-	switch v := v.(type) {
-	case int:
-		return v == 0
-	case *int:
-		return v == nil || *v == 0
-	case string:
-		return v == ""
-	case *string:
-		return v == nil || *v == ""
-	case nil:
-		return true
-	default:
-		return false
-	}
-}
-
-// slicesMatch returns true if all strings in s1 are found in s2
-// Deprecated: slicesMatch is shared between provider, tests, and resources
-// and is being relocated for package refactoring.
-// Use github.com/equinix/terraform-provider-equinix/internal/comparisons.SlicesMatch
-func slicesMatch(s1, s2 []string) bool {
-	if len(s1) != len(s2) {
-		return false
-	}
-	visited := make([]bool, len(s1))
-	for i := 0; i < len(s1); i++ {
-		found := false
-		for j := 0; j < len(s2); j++ {
-			if visited[j] {
-				continue
-			}
-			if s1[i] == s2[j] {
-				visited[j] = true
-				found = true
-				break
-			}
-		}
-		if !found {
-			return false
-		}
-	}
-	return true
 }

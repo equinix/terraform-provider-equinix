@@ -4,8 +4,6 @@ import (
 	"context"
 	"fmt"
 	"os"
-	"regexp"
-	"strings"
 	"testing"
 
 	"github.com/equinix/terraform-provider-equinix/internal/config"
@@ -17,7 +15,6 @@ import (
 	"github.com/hashicorp/terraform-plugin-mux/tf6muxserver"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
-	"github.com/stretchr/testify/assert"
 
 	"github.com/hashicorp/terraform-plugin-framework/providerserver"
 )
@@ -51,11 +48,6 @@ var (
 	}
 )
 
-type testAccConfig struct {
-	ctx    map[string]interface{}
-	config string
-}
-
 func init() {
 	testAccProvider = Provider()
 	testAccProviders = map[string]*schema.Provider{
@@ -74,91 +66,6 @@ func init() {
 func TestProvider(t *testing.T) {
 	if err := Provider().InternalValidate(); err != nil {
 		t.Fatalf("err: %s", err)
-	}
-}
-
-// Deprecated test moved to internal/comparissons/comparisons_test.go
-func TestProvider_stringsFound(t *testing.T) {
-	// given
-	needles := []string{"key1", "key5"}
-	hay := []string{"key1", "key2", "Key3", "key4", "key5"}
-	// when
-	result := stringsFound(needles, hay)
-	// then
-	assert.True(t, result, "Given strings were found")
-}
-
-// Deprecated test moved to internal/comparissons/comparisons_test.go
-func TestProvider_stringsFound_negative(t *testing.T) {
-	// given
-	needles := []string{"key1", "key6"}
-	hay := []string{"key1", "key2", "Key3", "key4", "key5"}
-	// when
-	result := stringsFound(needles, hay)
-	// then
-	assert.False(t, result, "Given strings were found")
-}
-
-// Deprecated test moved to internal/comparissons/comparisons_test.go
-func TestProvider_isEmpty(t *testing.T) {
-	// given
-	input := []interface{}{
-		"test",
-		"",
-		nil,
-		123,
-		0,
-		43.43,
-	}
-	expected := []bool{
-		false,
-		true,
-		true,
-		false,
-		true,
-		false,
-		true,
-	}
-	// when then
-	for i := range input {
-		assert.Equal(t, expected[i], isEmpty(input[i]), "Input %v produces expected result %v", input[i], expected[i])
-	}
-}
-
-// Deprecated test moved to internal/comparissons/comparisons_test.go
-func TestProvider_slicesMatch(t *testing.T) {
-	// given
-	input := [][][]string{
-		{
-			{"DC", "SV", "FR"},
-			{"FR", "SV", "DC"},
-		},
-		{
-			{"SV"},
-			{},
-		},
-		{
-			{"DC", "DC", "DC"},
-			{"DC", "SV", "DC"},
-		},
-		{
-			{}, {},
-		},
-	}
-	expected := []bool{
-		true,
-		false,
-		false,
-		true,
-	}
-	// when
-	results := make([]bool, len(expected))
-	for i := range input {
-		results[i] = slicesMatch(input[i][0], input[i][1])
-	}
-	// then
-	for i := range expected {
-		assert.Equal(t, expected[i], results[i])
 	}
 }
 
@@ -186,55 +93,9 @@ func testAccPreCheck(t *testing.T) {
 	}
 }
 
-func newTestAccConfig(ctx map[string]interface{}) *testAccConfig {
-	return &testAccConfig{
-		ctx:    ctx,
-		config: "",
-	}
-}
-
-func (t *testAccConfig) build() string {
-	return t.config
-}
-
-// nprintf returns a string with all the placeholders replaced by the values from the params map
-//
-// Deprecated: nprintf is shared between NE resource tests and has been
-// centralized ahead of those NE resources moving to separate packages.
-// Use github.com/equinix/terraform-provider-equinix/internal/nprintf.NPrintf instead
-func nprintf(format string, params map[string]interface{}) string {
-	for key, val := range params {
-		var strVal string
-		switch val.(type) {
-		case []string:
-			r := regexp.MustCompile(`" "`)
-			strVal = r.ReplaceAllString(fmt.Sprintf("%q", val), `", "`)
-		default:
-			strVal = fmt.Sprintf("%v", val)
-		}
-		format = strings.Replace(format, "%{"+key+"}", strVal, -1)
-	}
-	return format
-}
-
 func getFromEnv(varName string) (string, error) {
 	if v := os.Getenv(varName); v != "" {
 		return v, nil
 	}
 	return "", fmt.Errorf("environmental variable '%s' is not set", varName)
-}
-
-func getFromEnvDefault(varName string, defaultValue string) string {
-	if v := os.Getenv(varName); v != "" {
-		return v
-	}
-	return defaultValue
-}
-
-func copyMap(source map[string]interface{}) map[string]interface{} {
-	target := make(map[string]interface{})
-	for k, v := range source {
-		target[k] = v
-	}
-	return target
 }

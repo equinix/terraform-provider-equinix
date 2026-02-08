@@ -11,6 +11,7 @@ func TestMain(m *testing.M) {
 	// Register sweepers for individual resource packages
 	services.AddFabricTestSweepers()
 	services.AddMetalTestSweepers()
+	services.AddNetworkEdgeTestSweepers()
 
 	resource.TestMain(m)
 }

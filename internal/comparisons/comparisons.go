@@ -7,7 +7,6 @@ import (
 	"strings"
 )
 
-// IsEmpty returns true if the given value is empty
 func IsEmpty(v interface{}) bool {
 	switch v := v.(type) {
 	case int:
