@@ -2,7 +2,7 @@
 subcategory: "Metal"
 ---
 
-~> **Deprecation Notice** This data source is being deprecated. Equinix Metal services will terminate on June 30, 2026. This data source will be eliminated from the provider with the release of version 5.0.0. To maintain Metal service access until the end-of-life date, please utilize version 4.x of the Equinix Terraform provider. For further details on the Metal sunset, consult: https://docs.equinix.com/metal/
+~> **Deprecation Notice** Equinix Metal will reach end of life on June 30, 2026. All Metal data sources will be removed in version 5.0.0 of this provider. Use version 4.x of this provider for continued use through sunset. See https://docs.equinix.com/metal/ for more information.
 
 
 # equinix_metal_ip_block_ranges (Data Source)

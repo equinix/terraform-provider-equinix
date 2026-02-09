@@ -2,7 +2,7 @@
 subcategory: "Metal"
 ---
 
-~> **Deprecation Notice** This data source will be discontinued. The Equinix Metal platform is slated for end-of-life on June 30, 2026. Removal from this provider is planned for the major release 5.0.0. For continued Metal service access until the platform sunset, utilize version 4.x of the Equinix Terraform provider. Consult the official documentation for complete sunset information: https://docs.equinix.com/metal/
+~> **Deprecation Notice** Equinix Metal will reach end of life on June 30, 2026. All Metal data sources will be removed in version 5.0.0 of this provider. Use version 4.x of this provider for continued use through sunset. See https://docs.equinix.com/metal/ for more information.
 
 
 # equinix_metal_device_bgp_neighbors (Data Source)

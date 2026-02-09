@@ -2,7 +2,7 @@
 subcategory: "Metal"
 ---
 
-~> **Deprecation Notice** This data source is being phased out. The Equinix Metal platform will terminate operations on June 30, 2026. This data source is slated for removal in the next major provider release (5.0.0). To sustain Metal functionality until the platform's sunset, employ version 4.x of the Equinix Terraform provider. Platform sunset information can be found at: https://docs.equinix.com/metal/
+~> **Deprecation Notice** Equinix Metal will reach end of life on June 30, 2026. All Metal data sources will be removed in version 5.0.0 of this provider. Use version 4.x of this provider for continued use through sunset. See https://docs.equinix.com/metal/ for more information.
 
 
 # equinix_metal_reserved_ip_block (Data Source)

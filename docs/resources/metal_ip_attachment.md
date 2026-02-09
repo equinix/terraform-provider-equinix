@@ -2,7 +2,7 @@
 subcategory: "Metal"
 ---
 
-~> **Deprecation Notice** This resource is deprecated and will be removed. Equinix Metal's end-of-life date is set for June 30, 2026. This resource will be discontinued in the next major provider release (5.0.0). For ongoing access to Metal services through the sunset date, please use version 4.x of the Equinix Terraform provider. For comprehensive platform sunset details, visit: https://docs.equinix.com/metal/
+~> **Deprecation Notice** Equinix Metal will reach end of life on June 30, 2026. All Metal resources will be removed in version 5.0.0 of this provider. Use version 4.x of this provider for continued use through sunset. See https://docs.equinix.com/metal/ for more information.
 
 
 # equinix_metal_ip_attachment (Resource)

@@ -2,7 +2,7 @@
 subcategory: "Metal"
 ---
 
-~> **Deprecation Notice** This resource faces deprecation. Equinix Metal is scheduled to reach end-of-life on June 30, 2026. This resource will be removed from the provider in version 5.0.0. To maintain Metal functionality until the sunset date, continue using version 4.x of the Equinix Terraform provider. For ongoing Metal operations and platform sunset details, refer to: https://docs.equinix.com/metal/
+~> **Deprecation Notice** Equinix Metal will reach end of life on June 30, 2026. All Metal resources will be removed in version 5.0.0 of this provider. Use version 4.x of this provider for continued use through sunset. See https://docs.equinix.com/metal/ for more information.
 
 
 # equinix_metal_bgp_session (Resource)
