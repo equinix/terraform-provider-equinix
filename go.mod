@@ -22,7 +22,7 @@ require (
 	github.com/hashicorp/terraform-plugin-testing v1.13.3
 	github.com/packethost/packngo v0.31.0
 	github.com/stretchr/testify v1.10.0
-	golang.org/x/oauth2 v0.26.0
+	golang.org/x/oauth2 v0.27.0
 )
 
 require (
