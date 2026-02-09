@@ -14,7 +14,7 @@ import (
 func dataSourceSpotMarketPrice() *schema.Resource {
 	return &schema.Resource{
 		Read:               dataSourceMetalSpotMarketPriceRead,
-		DeprecationMessage: "Sunset arrives 2026/06/30 matching Metal platform termination. Eradicated at version 5.0.0 boundary. Apply 4.x iterations through phase-out. Explore further: https://docs.equinix.com/metal/",
+		DeprecationMessage: metalDeprecationMessage,
 		Schema: map[string]*schema.Schema{
 			"facility": {
 				Type:          schema.TypeString,

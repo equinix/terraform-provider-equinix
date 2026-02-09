@@ -63,7 +63,7 @@ func dataSourceMetalPreCreatedIPBlock() *schema.Resource {
 
 	return &schema.Resource{
 		Read:               dataSourceMetalPreCreatedIPBlockRead,
-		DeprecationMessage: "No longer supported after 06-30-2026 due to Metal service ending. Torn out at v5.0.0 publication. Rely on 4.x branch through termination window. Study documentation: https://docs.equinix.com/metal/",
+		DeprecationMessage: metalDeprecationMessage,
 		Schema:             s,
 	}
 }

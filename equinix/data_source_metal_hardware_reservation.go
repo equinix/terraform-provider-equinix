@@ -14,7 +14,7 @@ import (
 func dataSourceMetalHardwareReservation() *schema.Resource {
 	return &schema.Resource{
 		Read:               dataSourceMetalHardwareReservationRead,
-		DeprecationMessage: "Discontinuation scheduled for 06/30/2026 when Metal concludes. Deletion happens at v5.0.0 launch. Remain on 4.x series through shutdown timeline. Check https://docs.equinix.com/metal/",
+		DeprecationMessage: metalDeprecationMessage,
 		Schema: map[string]*schema.Schema{
 			"id": {
 				Type:        schema.TypeString,
