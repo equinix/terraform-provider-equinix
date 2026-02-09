@@ -3,13 +3,14 @@ package vrf
 import (
 	"context"
 
+	"github.com/equinix/terraform-provider-equinix/internal/resources/metal"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
 func DataSource() *schema.Resource {
 	return &schema.Resource{
-		DeprecationMessage: "Equinix Metal sunset scheduled for June 30, 2026. This data source is deprecated and will be removed in v5.0.0. Use provider version 4.x until sunset. Learn more: https://docs.equinix.com/metal/",
+		DeprecationMessage: metal.DeprecationMessage,
 		ReadWithoutTimeout: dataSourceMetalVRFRead,
 
 		Schema: map[string]*schema.Schema{

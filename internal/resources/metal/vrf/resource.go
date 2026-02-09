@@ -11,13 +11,14 @@ import (
 
 	"github.com/equinix/equinix-sdk-go/services/metalv1"
 	"github.com/equinix/terraform-provider-equinix/internal/config"
+	"github.com/equinix/terraform-provider-equinix/internal/resources/metal"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
 func Resource() *schema.Resource {
 	return &schema.Resource{
-		DeprecationMessage: "Equinix Metal sunsets June 30, 2026. Will be removed in v5.0.0. Maintain on provider version 4.x through sunset period. Details: https://docs.equinix.com/metal/",
+		DeprecationMessage: metal.DeprecationMessage,
 		ReadWithoutTimeout:   resourceMetalVRFRead,
 		CreateWithoutTimeout: resourceMetalVRFCreate,
 		UpdateWithoutTimeout: resourceMetalVRFUpdate,

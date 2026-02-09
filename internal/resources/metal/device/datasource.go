@@ -12,6 +12,7 @@ import (
 
 	"github.com/equinix/terraform-provider-equinix/internal/config"
 	"github.com/equinix/terraform-provider-equinix/internal/network"
+	"github.com/equinix/terraform-provider-equinix/internal/resources/metal"
 
 	"github.com/equinix/equinix-sdk-go/services/metalv1"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
@@ -28,7 +29,7 @@ func DataSource() *schema.Resource {
 If you need to fetch a list of devices which meet filter criteria, you can use the [equinix_metal_devices](metal_devices.md) datasource.
 
 ~> **Note:** All arguments including the ` + "`root_password` and `user_data`" + ` will be stored in the raw state as plain-text. [Read more about sensitive data in state](https://developer.hashicorp.com/terraform/language/state/sensitive-data).`,
-		DeprecationMessage: "Metal platform terminates on June 30, 2026. This data source will be removed in provider version 5.0.0. Continue with version 4.x until the sunset. Reference: https://docs.equinix.com/metal/",
+		DeprecationMessage: metal.DeprecationMessage,
 		ReadWithoutTimeout: dataSourceMetalDeviceRead,
 		Schema: map[string]*schema.Schema{
 			"hostname": {

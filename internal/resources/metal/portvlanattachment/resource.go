@@ -11,6 +11,7 @@ import (
 	"github.com/equinix/terraform-provider-equinix/internal/config"
 	equinix_errors "github.com/equinix/terraform-provider-equinix/internal/errors"
 	"github.com/equinix/terraform-provider-equinix/internal/mutexkv"
+	"github.com/equinix/terraform-provider-equinix/internal/resources/metal"
 	"github.com/equinix/terraform-provider-equinix/internal/resources/metal/batch"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -19,7 +20,7 @@ import (
 // Resource provides the Terraform resource for PortVlanAttachements.
 func Resource() *schema.Resource {
 	return &schema.Resource{
-		DeprecationMessage: "Metal services sunset on June 30, 2026. Scheduled removal in provider v5.0.0. Use 4.x releases through the sunset date. Info: https://docs.equinix.com/metal/",
+		DeprecationMessage: metal.DeprecationMessage,
 		CreateContext: resourceMetalPortVlanAttachmentCreate,
 		ReadContext:   resourceMetalPortVlanAttachmentRead,
 		DeleteContext: resourceMetalPortVlanAttachmentDelete,

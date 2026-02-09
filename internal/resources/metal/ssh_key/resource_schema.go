@@ -2,6 +2,7 @@ package ssh_key
 
 import (
 	"github.com/equinix/terraform-provider-equinix/internal/framework"
+	"github.com/equinix/terraform-provider-equinix/internal/resources/metal"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
@@ -25,7 +26,7 @@ func GetResourceSchema() *schema.Schema {
 
 func GetCommonFieldsSchema() *schema.Schema {
 	return &schema.Schema{
-		DeprecationMessage: "Metal services sunset on June 30, 2026. Scheduled removal in provider v5.0.0. Use 4.x releases through the sunset date. Info: https://docs.equinix.com/metal/",
+		DeprecationMessage: metal.DeprecationMessage,
 		Attributes: map[string]schema.Attribute{
 			"id": framework.IDAttributeDefaultDescription(),
 			"fingerprint": schema.StringAttribute{

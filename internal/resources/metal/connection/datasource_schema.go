@@ -7,6 +7,7 @@ import (
 	"github.com/equinix/equinix-sdk-go/services/metalv1"
 	"github.com/equinix/terraform-provider-equinix/internal/framework"
 	fwtypes "github.com/equinix/terraform-provider-equinix/internal/framework/types"
+	"github.com/equinix/terraform-provider-equinix/internal/resources/metal"
 
 	"github.com/hashicorp/terraform-plugin-framework/datasource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/types"
@@ -14,7 +15,7 @@ import (
 
 func dataSourceSchema(ctx context.Context) schema.Schema {
 	return schema.Schema{
-		DeprecationMessage: "Metal platform sunsets on June 30, 2026. This data source will be removed in provider v5.0.0. Continue with version 4.x until the sunset date. See: https://docs.equinix.com/metal/",
+		DeprecationMessage: metal.DeprecationMessage,
 		Attributes: map[string]schema.Attribute{
 			"id": framework.IDAttributeDefaultDescription(),
 			"connection_id": schema.StringAttribute{

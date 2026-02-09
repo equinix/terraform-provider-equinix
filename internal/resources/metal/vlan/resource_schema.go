@@ -13,11 +13,12 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 
 	equinixplanmodifiers "github.com/equinix/terraform-provider-equinix/internal/planmodifiers"
+	"github.com/equinix/terraform-provider-equinix/internal/resources/metal"
 )
 
 func resourceSchema(_ context.Context) schema.Schema {
 	return schema.Schema{
-		DeprecationMessage: "Equinix Metal sunsets June 30, 2026. Will be removed in v5.0.0. Maintain on provider version 4.x through sunset period. Details: https://docs.equinix.com/metal/",
+		DeprecationMessage: metal.DeprecationMessage,
 		Attributes: map[string]schema.Attribute{
 			"id": schema.StringAttribute{
 				Description: "The unique identifier for this Metal Vlan",

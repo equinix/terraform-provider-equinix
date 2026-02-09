@@ -1,6 +1,7 @@
 package organizationmember
 
 import (
+	"github.com/equinix/terraform-provider-equinix/internal/resources/metal"
 	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
@@ -9,7 +10,7 @@ import (
 
 func GetResourceSchema() *schema.Schema {
 	return &schema.Schema{
-		DeprecationMessage: "Metal services sunset on June 30, 2026. Scheduled removal in provider v5.0.0. Use 4.x releases through the sunset date. Info: https://docs.equinix.com/metal/",
+		DeprecationMessage: metal.DeprecationMessage,
 		Attributes: map[string]schema.Attribute{
 			"id": schema.StringAttribute{
 				Description: "The unique identifier for the organization member.",

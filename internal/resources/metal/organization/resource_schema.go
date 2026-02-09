@@ -5,6 +5,7 @@ import (
 
 	"github.com/equinix/terraform-provider-equinix/internal/framework"
 	fwtypes "github.com/equinix/terraform-provider-equinix/internal/framework/types"
+	"github.com/equinix/terraform-provider-equinix/internal/resources/metal"
 	equinix_validation "github.com/equinix/terraform-provider-equinix/internal/validation"
 	"github.com/hashicorp/terraform-plugin-framework-validators/listvalidator"
 	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
@@ -15,7 +16,7 @@ import (
 
 func GetResourceSchema(ctx context.Context) schema.Schema {
 	return schema.Schema{
-		DeprecationMessage: "Equinix Metal sunsets June 30, 2026. Will be removed in v5.0.0. Maintain on provider version 4.x through sunset period. Details: https://docs.equinix.com/metal/",
+		DeprecationMessage: metal.DeprecationMessage,
 		Attributes: map[string]schema.Attribute{
 			"id": framework.IDAttributeDefaultDescription(),
 			"name": schema.StringAttribute{
