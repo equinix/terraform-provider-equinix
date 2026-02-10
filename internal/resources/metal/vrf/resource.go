@@ -6,6 +6,7 @@ import (
 	"net/http"
 
 	"github.com/equinix/terraform-provider-equinix/internal/converters"
+	"github.com/equinix/terraform-provider-equinix/internal/deprecations"
 	equinix_errors "github.com/equinix/terraform-provider-equinix/internal/errors"
 	equinix_schema "github.com/equinix/terraform-provider-equinix/internal/schema"
 
@@ -17,6 +18,7 @@ import (
 
 func Resource() *schema.Resource {
 	return &schema.Resource{
+		DeprecationMessage: deprecations.MetalDeprecationMessage,
 		ReadWithoutTimeout:   resourceMetalVRFRead,
 		CreateWithoutTimeout: resourceMetalVRFCreate,
 		UpdateWithoutTimeout: resourceMetalVRFUpdate,

@@ -3,6 +3,7 @@ package equinix
 import (
 	"log"
 
+	"github.com/equinix/terraform-provider-equinix/internal/deprecations"
 	equinix_errors "github.com/equinix/terraform-provider-equinix/internal/errors"
 
 	"github.com/equinix/terraform-provider-equinix/internal/config"
@@ -14,9 +15,10 @@ import (
 
 func resourceMetalBGPSession() *schema.Resource {
 	return &schema.Resource{
-		Create: resourceMetalBGPSessionCreate,
-		Read:   resourceMetalBGPSessionRead,
-		Delete: resourceMetalBGPSessionDelete,
+		Create:             resourceMetalBGPSessionCreate,
+		Read:               resourceMetalBGPSessionRead,
+		Delete:             resourceMetalBGPSessionDelete,
+		DeprecationMessage: deprecations.MetalDeprecationMessage,
 		Importer: &schema.ResourceImporter{
 			State: schema.ImportStatePassthrough,
 		},

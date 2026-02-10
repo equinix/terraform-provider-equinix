@@ -7,6 +7,7 @@ import (
 	"fmt"
 
 	"github.com/equinix/terraform-provider-equinix/internal/config"
+	"github.com/equinix/terraform-provider-equinix/internal/deprecations"
 	"github.com/equinix/terraform-provider-equinix/internal/provider/services"
 	equinix_validation "github.com/equinix/terraform-provider-equinix/internal/validation"
 	"github.com/hashicorp/terraform-plugin-framework-validators/int64validator"
@@ -68,8 +69,9 @@ func (p *FrameworkProvider) Schema(
 				Description: "API tokens are generated from API Consumer clients using the [OAuth2 API](https://developer.equinix.com/dev-docs/fabric/getting-started/getting-access-token#request-access-and-refresh-tokens). This argument can also be specified with the `EQUINIX_API_TOKEN` shell environment variable.",
 			},
 			"auth_token": schema.StringAttribute{
-				Optional:    true,
-				Description: "The Equinix Metal API auth key for API operations",
+				Optional:            true,
+				Description:         "The Equinix Metal API auth key for API operations",
+				DeprecationMessage:  deprecations.MetalDeprecationMessage,
 			},
 			"request_timeout": schema.Int64Attribute{
 				Optional:    true,

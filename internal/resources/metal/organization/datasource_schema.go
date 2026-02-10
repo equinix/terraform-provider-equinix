@@ -3,6 +3,7 @@ package organization
 import (
 	"context"
 
+	"github.com/equinix/terraform-provider-equinix/internal/deprecations"
 	"github.com/equinix/terraform-provider-equinix/internal/framework"
 	fwtypes "github.com/equinix/terraform-provider-equinix/internal/framework/types"
 	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
@@ -14,6 +15,7 @@ import (
 
 func dataSourceSchema(ctx context.Context) schema.Schema {
 	return schema.Schema{
+		DeprecationMessage: deprecations.MetalDeprecationMessage,
 		Attributes: map[string]schema.Attribute{
 
 			"id": framework.IDAttributeDefaultDescription(),

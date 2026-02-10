@@ -3,12 +3,14 @@ package vrf
 import (
 	"context"
 
+	"github.com/equinix/terraform-provider-equinix/internal/deprecations"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
 func DataSource() *schema.Resource {
 	return &schema.Resource{
+		DeprecationMessage: deprecations.MetalDeprecationMessage,
 		ReadWithoutTimeout: dataSourceMetalVRFRead,
 
 		Schema: map[string]*schema.Schema{

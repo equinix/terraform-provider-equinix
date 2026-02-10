@@ -17,6 +17,7 @@ import (
 	"slices"
 
 	"github.com/equinix/terraform-provider-equinix/internal/converters"
+	"github.com/equinix/terraform-provider-equinix/internal/deprecations"
 	"github.com/equinix/terraform-provider-equinix/internal/network"
 
 	equinix_errors "github.com/equinix/terraform-provider-equinix/internal/errors"
@@ -45,6 +46,7 @@ var (
 // Metal Device.
 func Resource() *schema.Resource {
 	return &schema.Resource{
+		DeprecationMessage: deprecations.MetalDeprecationMessage,
 		Description: `Provides an Equinix Metal device resource. This can be used to create, modify, and delete devices.
 
 ~> **NOTE:** All arguments including the ` + "`root_password` and `user_data`" + ` will be stored in the raw state as plain-text. [Read more about sensitive data in state](https://developer.hashicorp.com/terraform/language/state/sensitive-data).`,

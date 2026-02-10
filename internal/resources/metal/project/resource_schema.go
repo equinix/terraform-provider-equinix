@@ -3,6 +3,7 @@ package project
 import (
 	"context"
 
+	"github.com/equinix/terraform-provider-equinix/internal/deprecations"
 	"github.com/equinix/terraform-provider-equinix/internal/framework"
 	fwtypes "github.com/equinix/terraform-provider-equinix/internal/framework/types"
 	equinix_planmodifiers "github.com/equinix/terraform-provider-equinix/internal/planmodifiers"
@@ -19,6 +20,7 @@ import (
 
 func resourceSchema(ctx context.Context) schema.Schema {
 	return schema.Schema{
+		DeprecationMessage: deprecations.MetalDeprecationMessage,
 		Attributes: map[string]schema.Attribute{
 			"id": framework.IDAttributeDefaultDescription(),
 			"name": schema.StringAttribute{

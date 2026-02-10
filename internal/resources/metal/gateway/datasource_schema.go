@@ -1,11 +1,13 @@
 package gateway
 
 import (
+	"github.com/equinix/terraform-provider-equinix/internal/deprecations"
 	"github.com/equinix/terraform-provider-equinix/internal/framework"
 	"github.com/hashicorp/terraform-plugin-framework/datasource/schema"
 )
 
 var dataSourceSchema = schema.Schema{
+	DeprecationMessage: deprecations.MetalDeprecationMessage,
 	Attributes: map[string]schema.Attribute{
 		"id": framework.IDAttributeDefaultDescription(),
 		"gateway_id": schema.StringAttribute{

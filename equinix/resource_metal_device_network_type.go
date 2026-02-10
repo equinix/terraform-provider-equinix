@@ -3,6 +3,7 @@ package equinix
 import (
 	"log"
 
+	"github.com/equinix/terraform-provider-equinix/internal/deprecations"
 	equinix_errors "github.com/equinix/terraform-provider-equinix/internal/errors"
 	"github.com/equinix/terraform-provider-equinix/internal/network"
 
@@ -15,15 +16,15 @@ import (
 
 func resourceMetalDeviceNetworkType() *schema.Resource {
 	return &schema.Resource{
-		Create: resourceMetalDeviceNetworkTypeCreate,
-		Read:   resourceMetalDeviceNetworkTypeRead,
-		Delete: resourceMetalDeviceNetworkTypeDelete,
-		Update: resourceMetalDeviceNetworkTypeUpdate,
+		Create:             resourceMetalDeviceNetworkTypeCreate,
+		Read:               resourceMetalDeviceNetworkTypeRead,
+		Delete:             resourceMetalDeviceNetworkTypeDelete,
+		Update:             resourceMetalDeviceNetworkTypeUpdate,
 		Importer: &schema.ResourceImporter{
 			//nolint
 			State: schema.ImportStatePassthrough,
 		},
-		DeprecationMessage: "The metal_device_network_type resource is deprecated and will be removed in v3 of this provider.  Please use metal_port instead.  See the [Metal Device Network Types guide](https://registry.terraform.io/providers/equinix/equinix/latest/docs/guides/network_types) for more info",
+		DeprecationMessage: deprecations.MetalDeprecationMessage,
 		Schema: map[string]*schema.Schema{
 			"device_id": {
 				Type:        schema.TypeString,

@@ -1,6 +1,7 @@
 package ssh_key
 
 import (
+	"github.com/equinix/terraform-provider-equinix/internal/deprecations"
 	"github.com/equinix/terraform-provider-equinix/internal/framework"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
@@ -25,6 +26,7 @@ func GetResourceSchema() *schema.Schema {
 
 func GetCommonFieldsSchema() *schema.Schema {
 	return &schema.Schema{
+		DeprecationMessage: deprecations.MetalDeprecationMessage,
 		Attributes: map[string]schema.Attribute{
 			"id": framework.IDAttributeDefaultDescription(),
 			"fingerprint": schema.StringAttribute{
