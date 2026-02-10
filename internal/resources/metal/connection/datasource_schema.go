@@ -5,9 +5,9 @@ import (
 	"fmt"
 
 	"github.com/equinix/equinix-sdk-go/services/metalv1"
+	"github.com/equinix/terraform-provider-equinix/internal/deprecations"
 	"github.com/equinix/terraform-provider-equinix/internal/framework"
 	fwtypes "github.com/equinix/terraform-provider-equinix/internal/framework/types"
-	"github.com/equinix/terraform-provider-equinix/internal/resources/metal"
 
 	"github.com/hashicorp/terraform-plugin-framework/datasource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/types"
@@ -15,7 +15,7 @@ import (
 
 func dataSourceSchema(ctx context.Context) schema.Schema {
 	return schema.Schema{
-		DeprecationMessage: metal.DeprecationMessage,
+		DeprecationMessage: deprecations.MetalDeprecationMessage,
 		Attributes: map[string]schema.Attribute{
 			"id": framework.IDAttributeDefaultDescription(),
 			"connection_id": schema.StringAttribute{

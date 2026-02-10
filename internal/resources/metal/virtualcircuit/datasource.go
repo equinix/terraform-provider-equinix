@@ -3,7 +3,7 @@ package virtualcircuit
 import (
 	"context"
 
-	"github.com/equinix/terraform-provider-equinix/internal/resources/metal"
+	"github.com/equinix/terraform-provider-equinix/internal/deprecations"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
@@ -16,7 +16,7 @@ func DataSource() *schema.Resource {
 
 See the [Virtual Routing and Forwarding documentation](https://docs.equinix.com/metal/networking/vrf/) for product details and API reference material.
 `,
-		DeprecationMessage: metal.DeprecationMessage,
+		DeprecationMessage: deprecations.MetalDeprecationMessage,
 		ReadContext:        dataSourceMetalVirtualCircuitRead,
 
 		Schema: map[string]*schema.Schema{

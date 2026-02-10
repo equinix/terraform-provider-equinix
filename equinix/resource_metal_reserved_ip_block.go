@@ -10,6 +10,7 @@ import (
 	"time"
 
 	"github.com/equinix/terraform-provider-equinix/internal/converters"
+	"github.com/equinix/terraform-provider-equinix/internal/deprecations"
 
 	equinix_errors "github.com/equinix/terraform-provider-equinix/internal/errors"
 	equinix_schema "github.com/equinix/terraform-provider-equinix/internal/schema"
@@ -228,7 +229,7 @@ func resourceMetalReservedIPBlock() *schema.Resource {
 		ReadWithoutTimeout:   resourceMetalReservedIPBlockRead,
 		UpdateWithoutTimeout: resourceMetalReservedIPBlockUpdate,
 		DeleteWithoutTimeout: resourceMetalReservedIPBlockDelete,
-		DeprecationMessage:   metalDeprecationMessage,
+		DeprecationMessage:   deprecations.MetalDeprecationMessage,
 		Importer: &schema.ResourceImporter{
 			StateContext: schema.ImportStatePassthroughContext,
 		},

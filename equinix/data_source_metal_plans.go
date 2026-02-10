@@ -5,6 +5,7 @@ import (
 	"fmt"
 
 	"github.com/equinix/terraform-provider-equinix/internal/converters"
+	"github.com/equinix/terraform-provider-equinix/internal/deprecations"
 
 	"github.com/equinix/terraform-provider-equinix/internal/config"
 
@@ -23,7 +24,7 @@ func dataSourceMetalPlans() *schema.Resource {
 	}
 
 	resourceDef := datalist.NewResource(dataListConfig)
-	resourceDef.DeprecationMessage = metalDeprecationMessage
+	resourceDef.DeprecationMessage = deprecations.MetalDeprecationMessage
 	return resourceDef
 }
 

@@ -3,10 +3,10 @@ package project
 import (
 	"context"
 
+	"github.com/equinix/terraform-provider-equinix/internal/deprecations"
 	"github.com/equinix/terraform-provider-equinix/internal/framework"
 	fwtypes "github.com/equinix/terraform-provider-equinix/internal/framework/types"
 	equinix_planmodifiers "github.com/equinix/terraform-provider-equinix/internal/planmodifiers"
-	"github.com/equinix/terraform-provider-equinix/internal/resources/metal"
 	equinix_validation "github.com/equinix/terraform-provider-equinix/internal/validation"
 	"github.com/hashicorp/terraform-plugin-framework-validators/listvalidator"
 	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
@@ -20,7 +20,7 @@ import (
 
 func resourceSchema(ctx context.Context) schema.Schema {
 	return schema.Schema{
-		DeprecationMessage: metal.DeprecationMessage,
+		DeprecationMessage: deprecations.MetalDeprecationMessage,
 		Attributes: map[string]schema.Attribute{
 			"id": framework.IDAttributeDefaultDescription(),
 			"name": schema.StringAttribute{

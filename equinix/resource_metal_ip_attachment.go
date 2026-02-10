@@ -5,6 +5,7 @@ import (
 	"log"
 	"path"
 
+	"github.com/equinix/terraform-provider-equinix/internal/deprecations"
 	equinix_errors "github.com/equinix/terraform-provider-equinix/internal/errors"
 
 	"github.com/equinix/terraform-provider-equinix/internal/config"
@@ -29,7 +30,7 @@ func resourceMetalIPAttachment() *schema.Resource {
 		Create:             resourceMetalIPAttachmentCreate,
 		Read:               resourceMetalIPAttachmentRead,
 		Delete:             resourceMetalIPAttachmentDelete,
-		DeprecationMessage: metalDeprecationMessage,
+		DeprecationMessage: deprecations.MetalDeprecationMessage,
 		Importer: &schema.ResourceImporter{
 			State: schema.ImportStatePassthrough,
 		},

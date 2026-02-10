@@ -8,6 +8,7 @@ import (
 	"time"
 
 	"github.com/equinix/terraform-provider-equinix/internal/config"
+	"github.com/equinix/terraform-provider-equinix/internal/deprecations"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
@@ -57,7 +58,7 @@ func Provider() *schema.Provider {
 				Optional:    true,
 				DefaultFunc: schema.EnvDefaultFunc(config.MetalAuthTokenEnvVar, ""),
 				Description: "The Equinix Metal API auth key for API operations",
-				Deprecated:  "Equinix Metal will reach end of life on June 30, 2026. All Metal resources will be removed in version 5.0.0 of this provider. Use version 4.x of this provider for continued use through sunset. See https://docs.equinix.com/metal/ for more information.",
+				Deprecated:  deprecations.MetalDeprecationMessage,
 			},
 			"request_timeout": {
 				Type:         schema.TypeInt,

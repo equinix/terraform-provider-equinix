@@ -5,6 +5,7 @@ import (
 	"log"
 
 	"github.com/equinix/terraform-provider-equinix/internal/config"
+	"github.com/equinix/terraform-provider-equinix/internal/deprecations"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
@@ -63,7 +64,7 @@ func dataSourceMetalPreCreatedIPBlock() *schema.Resource {
 
 	return &schema.Resource{
 		Read:               dataSourceMetalPreCreatedIPBlockRead,
-		DeprecationMessage: metalDeprecationMessage,
+		DeprecationMessage: deprecations.MetalDeprecationMessage,
 		Schema:             s,
 	}
 }

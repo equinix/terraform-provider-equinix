@@ -3,6 +3,8 @@ package vlan
 import (
 	"context"
 
+	"github.com/equinix/terraform-provider-equinix/internal/deprecations"
+	equinixplanmodifiers "github.com/equinix/terraform-provider-equinix/internal/planmodifiers"
 	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
@@ -11,14 +13,11 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringdefault"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
-
-	equinixplanmodifiers "github.com/equinix/terraform-provider-equinix/internal/planmodifiers"
-	"github.com/equinix/terraform-provider-equinix/internal/resources/metal"
 )
 
 func resourceSchema(_ context.Context) schema.Schema {
 	return schema.Schema{
-		DeprecationMessage: metal.DeprecationMessage,
+		DeprecationMessage: deprecations.MetalDeprecationMessage,
 		Attributes: map[string]schema.Attribute{
 			"id": schema.StringAttribute{
 				Description: "The unique identifier for this Metal Vlan",

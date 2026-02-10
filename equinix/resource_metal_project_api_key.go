@@ -3,6 +3,7 @@ package equinix
 import (
 	"log"
 
+	"github.com/equinix/terraform-provider-equinix/internal/deprecations"
 	equinix_errors "github.com/equinix/terraform-provider-equinix/internal/errors"
 	equinix_schema "github.com/equinix/terraform-provider-equinix/internal/schema"
 
@@ -47,7 +48,7 @@ func resourceMetalProjectAPIKey() *schema.Resource {
 		Create:             resourceMetalAPIKeyCreate,
 		Read:               resourceMetalAPIKeyRead,
 		Delete:             resourceMetalAPIKeyDelete,
-		DeprecationMessage: metalDeprecationMessage,
+		DeprecationMessage: deprecations.MetalDeprecationMessage,
 		Schema:             projectKeySchema,
 	}
 }

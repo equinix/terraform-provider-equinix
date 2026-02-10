@@ -4,9 +4,9 @@ import (
 	"context"
 
 	"github.com/equinix/equinix-sdk-go/services/metalv1"
+	"github.com/equinix/terraform-provider-equinix/internal/deprecations"
 	"github.com/equinix/terraform-provider-equinix/internal/framework"
 	fwtypes "github.com/equinix/terraform-provider-equinix/internal/framework/types"
-	"github.com/equinix/terraform-provider-equinix/internal/resources/metal"
 
 	"github.com/hashicorp/terraform-plugin-framework-validators/listvalidator"
 	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
@@ -22,7 +22,7 @@ import (
 
 func resourceSchema(ctx context.Context) schema.Schema {
 	return schema.Schema{
-		DeprecationMessage: metal.DeprecationMessage,
+		DeprecationMessage: deprecations.MetalDeprecationMessage,
 		Attributes: map[string]schema.Attribute{
 			"id": framework.IDAttributeDefaultDescription(),
 			"name": schema.StringAttribute{

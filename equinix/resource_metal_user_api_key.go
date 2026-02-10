@@ -1,6 +1,7 @@
 package equinix
 
 import (
+	"github.com/equinix/terraform-provider-equinix/internal/deprecations"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
@@ -15,7 +16,7 @@ func resourceMetalUserAPIKey() *schema.Resource {
 		Create:             resourceMetalAPIKeyCreate,
 		Read:               resourceMetalAPIKeyRead,
 		Delete:             resourceMetalAPIKeyDelete,
-		DeprecationMessage: metalDeprecationMessage,
+		DeprecationMessage: deprecations.MetalDeprecationMessage,
 		Importer: &schema.ResourceImporter{
 			State: schema.ImportStatePassthrough,
 		},

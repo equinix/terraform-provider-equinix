@@ -5,6 +5,7 @@ import (
 	"strings"
 
 	"github.com/equinix/terraform-provider-equinix/internal/converters"
+	"github.com/equinix/terraform-provider-equinix/internal/deprecations"
 
 	equinix_schema "github.com/equinix/terraform-provider-equinix/internal/schema"
 
@@ -51,7 +52,7 @@ func capacitySchema() *schema.Schema {
 func dataSourceMetalFacility() *schema.Resource {
 	return &schema.Resource{
 		Read:               dataSourceMetalFacilityRead,
-		DeprecationMessage: metalDeprecationMessage,
+		DeprecationMessage: deprecations.MetalDeprecationMessage,
 		Schema: map[string]*schema.Schema{
 			"code": {
 				Type:        schema.TypeString,

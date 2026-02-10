@@ -3,6 +3,7 @@ package equinix
 import (
 	"log"
 
+	"github.com/equinix/terraform-provider-equinix/internal/deprecations"
 	equinix_errors "github.com/equinix/terraform-provider-equinix/internal/errors"
 	"github.com/equinix/terraform-provider-equinix/internal/network"
 
@@ -23,7 +24,7 @@ func resourceMetalDeviceNetworkType() *schema.Resource {
 			//nolint
 			State: schema.ImportStatePassthrough,
 		},
-		DeprecationMessage: metalDeprecationMessage,
+		DeprecationMessage: deprecations.MetalDeprecationMessage,
 		Schema: map[string]*schema.Schema{
 			"device_id": {
 				Type:        schema.TypeString,

@@ -1,14 +1,14 @@
 package port
 
 import (
+	"github.com/equinix/terraform-provider-equinix/internal/deprecations"
 	"github.com/equinix/terraform-provider-equinix/internal/network"
-	"github.com/equinix/terraform-provider-equinix/internal/resources/metal"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
 func DataSource() *schema.Resource {
 	return &schema.Resource{
-		DeprecationMessage: metal.DeprecationMessage,
+		DeprecationMessage: deprecations.MetalDeprecationMessage,
 		ReadWithoutTimeout: resourceMetalPortRead,
 
 		Schema: map[string]*schema.Schema{

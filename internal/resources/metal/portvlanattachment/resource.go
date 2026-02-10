@@ -9,9 +9,9 @@ import (
 
 	"github.com/equinix/equinix-sdk-go/services/metalv1"
 	"github.com/equinix/terraform-provider-equinix/internal/config"
+	"github.com/equinix/terraform-provider-equinix/internal/deprecations"
 	equinix_errors "github.com/equinix/terraform-provider-equinix/internal/errors"
 	"github.com/equinix/terraform-provider-equinix/internal/mutexkv"
-	"github.com/equinix/terraform-provider-equinix/internal/resources/metal"
 	"github.com/equinix/terraform-provider-equinix/internal/resources/metal/batch"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -20,7 +20,7 @@ import (
 // Resource provides the Terraform resource for PortVlanAttachements.
 func Resource() *schema.Resource {
 	return &schema.Resource{
-		DeprecationMessage: metal.DeprecationMessage,
+		DeprecationMessage: deprecations.MetalDeprecationMessage,
 		CreateContext: resourceMetalPortVlanAttachmentCreate,
 		ReadContext:   resourceMetalPortVlanAttachmentRead,
 		DeleteContext: resourceMetalPortVlanAttachmentDelete,

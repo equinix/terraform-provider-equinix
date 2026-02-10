@@ -1,7 +1,7 @@
 package project_ssh_key
 
 import (
-	"github.com/equinix/terraform-provider-equinix/internal/resources/metal"
+	"github.com/equinix/terraform-provider-equinix/internal/deprecations"
 	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
 	"github.com/hashicorp/terraform-plugin-framework/datasource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/path"
@@ -9,7 +9,7 @@ import (
 )
 
 var dataSourceSchema = schema.Schema{
-	DeprecationMessage: metal.DeprecationMessage,
+	DeprecationMessage: deprecations.MetalDeprecationMessage,
 	Attributes: map[string]schema.Attribute{
 		"project_id": schema.StringAttribute{
 			Description: "The ID of parent project",

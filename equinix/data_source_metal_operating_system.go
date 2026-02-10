@@ -5,6 +5,7 @@ import (
 	"strings"
 
 	"github.com/equinix/terraform-provider-equinix/internal/config"
+	"github.com/equinix/terraform-provider-equinix/internal/deprecations"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/packethost/packngo"
@@ -13,7 +14,7 @@ import (
 func dataSourceOperatingSystem() *schema.Resource {
 	return &schema.Resource{
 		Read:               dataSourceMetalOperatingSystemRead,
-		DeprecationMessage: metalDeprecationMessage,
+		DeprecationMessage: deprecations.MetalDeprecationMessage,
 		Schema: map[string]*schema.Schema{
 			"name": {
 				Type:        schema.TypeString,
