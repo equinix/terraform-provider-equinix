@@ -1,3 +1,4 @@
+// Package nprintf provides a helper function for named printf-style formatting
 package nprintf
 
 import (
@@ -6,8 +7,8 @@ import (
 	"strings"
 )
 
-// NPrintf is a helper function to replace placeholders in a string with values from a map
-func NPrintf(format string, params map[string]interface{}) string {
+// Nprintf is a helper function to replace placeholders in a string with values from a map
+func Nprintf(format string, params map[string]interface{}) string {
 	for key, val := range params {
 		var strVal string
 		switch val.(type) {
