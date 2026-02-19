@@ -23,7 +23,7 @@ func TestAccFabricDataSourceAdvertisedRoutes_PFCR(t *testing.T) {
 					resource.TestCheckResourceAttrSet(
 						"data.equinix_fabric_advertised_routes.routes", "data.0.protocol_type"),
 					resource.TestCheckResourceAttrSet(
-						"data.equinix_fabric_advertised_routes.routes", "data.0.prefix"),cd 
+						"data.equinix_fabric_advertised_routes.routes", "data.0.prefix"),
 					resource.TestCheckResourceAttrSet(
 						"data.equinix_fabric_advertised_routes.routes", "data.0.next_hop"),
 					resource.TestCheckResourceAttrSet(
