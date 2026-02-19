@@ -1,4 +1,4 @@
-// Package receivedRoute implements datasource for received route
+// Package receivedroute implements datasource for received route
 package receivedroute
 
 import (
