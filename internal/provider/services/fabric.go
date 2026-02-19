@@ -2,18 +2,18 @@
 package services
 
 import (
+	advertisedRoutes "github.com/equinix/terraform-provider-equinix/internal/resources/fabric/advertised_route"
 	"github.com/equinix/terraform-provider-equinix/internal/resources/fabric/connectionrouteaggregation"
 	"github.com/equinix/terraform-provider-equinix/internal/resources/fabric/metro"
 	"github.com/equinix/terraform-provider-equinix/internal/resources/fabric/port"
 	precisiontime "github.com/equinix/terraform-provider-equinix/internal/resources/fabric/precision_time"
+	receivedRoutes "github.com/equinix/terraform-provider-equinix/internal/resources/fabric/received_route"
 	"github.com/equinix/terraform-provider-equinix/internal/resources/fabric/routeaggregation"
 	"github.com/equinix/terraform-provider-equinix/internal/resources/fabric/routeaggregationrule"
 	"github.com/equinix/terraform-provider-equinix/internal/resources/fabric/stream"
 	streamattachment "github.com/equinix/terraform-provider-equinix/internal/resources/fabric/stream_attachment"
 	streamsubscription "github.com/equinix/terraform-provider-equinix/internal/resources/fabric/stream_subscription"
 	streamalertrule "github.com/equinix/terraform-provider-equinix/internal/resources/fabric/streamalertrule"
-	advertisedRoutes "github.com/equinix/terraform-provider-equinix/internal/resources/fabric/advertised_route"
-	receivedRoutes "github.com/equinix/terraform-provider-equinix/internal/resources/fabric/received_route"
 
 	"github.com/hashicorp/terraform-plugin-framework/datasource"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
@@ -57,6 +57,5 @@ func FabricDatasources() []func() datasource.DataSource {
 		streamalertrule.NewDataSourceByStreamAlertRuleIDs,
 		advertisedRoutes.NewDataSourceAdvertisedRoutes,
 		receivedRoutes.NewDataSourceReceivedRoutes,
-
 	}
 }

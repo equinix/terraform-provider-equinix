@@ -1,4 +1,4 @@
-package advertised_route
+package advertisedRoute
 
 import (
 	"context"

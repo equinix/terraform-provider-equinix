@@ -1,4 +1,4 @@
-package received_route_test
+package receivedRoute_test
 
 import (
 	"fmt"
@@ -9,7 +9,6 @@ import (
 )
 
 func TestAccFabricDataSourceReceivedRoutes_PFCR(t *testing.T) {
-	limit := 8
 	offset := 6
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:                 func() { acceptance.TestAccPreCheck(t); acceptance.TestAccPreCheckProviderConfigured(t) },
@@ -17,7 +16,7 @@ func TestAccFabricDataSourceReceivedRoutes_PFCR(t *testing.T) {
 		ProtoV6ProviderFactories: acceptance.ProtoV6ProviderFactories,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccFabricReceivedRoutesDataSourcesConfig(limit, offset),
+				Config: testAccFabricReceivedRoutesDataSourcesConfig(offset),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttrSet(
 						"data.equinix_received_routes.received_route", "data.0.type"),
@@ -67,7 +66,7 @@ func TestAccFabricDataSourceReceivedRoutes_PFCR(t *testing.T) {
 	})
 }
 
-func testAccFabricReceivedRoutesDataSourcesConfig(limit, offset int) string {
+func testAccFabricReceivedRoutesDataSourcesConfig(offset int) string {
 	return fmt.Sprintf(`
 
 	data "equinix_received_routes" "routes" {
@@ -79,12 +78,12 @@ func testAccFabricReceivedRoutesDataSourcesConfig(limit, offset int) string {
  			}
 		pagination = {
    		limit = 100
-   		offset = 0
+   		offset = "%[1]d"
  		}
 		sort = {
    		property = "/changeLog/updatedDateTime"
    		direction = "DESC"
        }
 		}
-	`)
+	`, offset)
 }

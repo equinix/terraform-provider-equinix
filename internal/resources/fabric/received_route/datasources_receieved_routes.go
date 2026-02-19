@@ -1,5 +1,5 @@
-// Package received_route implements datasource for received route
-package received_route
+// Package receivedRoute implements datasource for received route
+package receivedRoute
 
 import (
 	"context"
@@ -47,7 +47,7 @@ func (r *DataSourceAllReceivedRoutes) Read(ctx context.Context, request datasour
 		return
 	}
 
-	var tffilter FilterModel
+	var tffilter filterModel
 
 	diags := data.Filter.As(ctx, &tffilter, basetypes.ObjectAsOptions{})
 	if diags.HasError() {

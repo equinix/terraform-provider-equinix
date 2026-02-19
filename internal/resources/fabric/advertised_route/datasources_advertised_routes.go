@@ -1,5 +1,5 @@
-// Package advertised_route implements datasource for advertised route
-package advertised_route
+// Package advertisedRoute implements datasource for advertised route
+package advertisedRoute
 
 import (
 	"context"
@@ -47,7 +47,7 @@ func (r *DataSourceAllAdvertisedRoutes) Read(ctx context.Context, request dataso
 		return
 	}
 
-	var tffilter FilterModel
+	var tffilter filterModel
 
 	diags := data.Filter.As(ctx, &tffilter, basetypes.ObjectAsOptions{})
 	if diags.HasError() {

@@ -1,4 +1,4 @@
-package received_route
+package receivedRoute
 
 import (
 	"context"

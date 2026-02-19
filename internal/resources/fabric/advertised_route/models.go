@@ -1,4 +1,4 @@
-package advertised_route
+package advertisedRoute
 
 import (
 	"context"
@@ -57,7 +57,7 @@ type sortModel struct {
 	Property  types.String `tfsdk:"property"`
 }
 
-type FilterModel struct {
+type filterModel struct {
 	Property types.String   `tfsdk:"property"`
 	Operator types.String   `tfsdk:"operator"`
 	Values   []types.String `tfsdk:"values"`
