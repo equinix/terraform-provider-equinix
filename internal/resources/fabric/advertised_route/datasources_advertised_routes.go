@@ -17,7 +17,7 @@ func NewDataSourceAdvertisedRoutes() datasource.DataSource {
 	return &DataSourceAllAdvertisedRoutes{
 		BaseDataSource: framework.NewBaseDataSource(
 			framework.BaseDataSourceConfig{
-				Name: "equinix_advertised_routes",
+				Name: "equinix_fabric_advertised_routes",
 			},
 		),
 	}

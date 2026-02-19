@@ -19,48 +19,29 @@ func TestAccFabricDataSourceReceivedRoutes_PFCR(t *testing.T) {
 				Config: testAccFabricReceivedRoutesDataSourcesConfig(offset),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttrSet(
-						"data.equinix_received_routes.received_route", "data.0.type"),
+						"data.equinix_fabric_received_routes.routes", "data.0.type"),
 					resource.TestCheckResourceAttrSet(
-						"data.equinix_received_routes.received_route", "protocol_type"),
+						"data.equinix_fabric_received_routes.routes", "data.0.protocol_type"),
 					resource.TestCheckResourceAttrSet(
-						"data.equinix_received_routes.received_route", "prefix"),
+						"data.equinix_fabric_received_routes.routes", "data.0.prefix"),
 					resource.TestCheckResourceAttrSet(
-						"data.equinix_received_routes.received_route", "state"),
+						"data.equinix_fabric_received_routes.routes", "data.0.state"),
 					resource.TestCheckResourceAttrSet(
-						"data.equinix_received_routes.received_route", "next_hop"),
+						"data.equinix_fabric_received_routes.routes", "data.0.next_hop"),
 					resource.TestCheckResourceAttrSet(
-						"data.equinix_received_routes.received_route", "as_path"),
+						"data.equinix_fabric_received_routes.routes", "data.0.as_path.0"),
 					resource.TestCheckResourceAttrSet(
-						"data.equinix_received_routes.received_route", "connection.0.uuid"),
+						"data.equinix_fabric_received_routes.routes", "data.0.connection.uuid"),
 					resource.TestCheckResourceAttrSet(
-						"data.equinix_received_routes.received_route", "connection.0.href"),
+						"data.equinix_fabric_received_routes.routes", "data.0.connection.href"),
 					resource.TestCheckResourceAttrSet(
-						"data.equinix_received_routes.received_route", "connection.0.name"),
+						"data.equinix_fabric_received_routes.routes", "data.0.connection.name"),
 					resource.TestCheckResourceAttrSet(
-						"data.equinix_received_routes.received_route", "change_log.0.created_by"),
+						"data.equinix_fabric_received_routes.routes", "data.0.change_log.created_date_time"),
 					resource.TestCheckResourceAttrSet(
-						"data.equinix_received_routes.received_route", "change_log.0.created_by_full_name"),
-					resource.TestCheckResourceAttrSet("data.equinix_fabric_connections.connections", "change_log.0.createdByEmail"),
-					resource.TestCheckResourceAttrSet(
-						"data.equinix_received_routes.connections", "change_log.0.createdDateTime"),
-					resource.TestCheckResourceAttrSet(
-						"data.equinix_received_routes.connections", "change_log.0.updatedBy"),
-					resource.TestCheckResourceAttrSet(
-						"data.equinix_received_routes.connections", "change_log.0.updatedByFullName"),
-					resource.TestCheckResourceAttrSet(
-						"data.equinix_received_routes.connections", "change_log.0.updatedByEmail"),
-					resource.TestCheckResourceAttrSet(
-						"data.equinix_received_routes.connections", "change_log.0.updatedDateTime"),
-					resource.TestCheckResourceAttrSet(
-						"data.equinix_received_routes.connections", "change_log.0.deletedBy"),
-					resource.TestCheckResourceAttrSet(
-						"data.equinix_received_routes.connections", "change_log.0.deletedByFullName"),
-					resource.TestCheckResourceAttrSet(
-						"data.equinix_received_routes.connections", "change_log.0.deletedByEmail"),
-					resource.TestCheckResourceAttrSet(
-						"data.equinix_received_routes.connections", "change_log.0.deletedDateTime"),
+						"data.equinix_fabric_received_routes.routes", "data.0.change_log.updated_date_time"),
 				),
-				ExpectNonEmptyPlan: true,
+				ExpectNonEmptyPlan: false,
 			},
 		},
 	})
@@ -69,8 +50,8 @@ func TestAccFabricDataSourceReceivedRoutes_PFCR(t *testing.T) {
 func testAccFabricReceivedRoutesDataSourcesConfig(offset int) string {
 	return fmt.Sprintf(`
 
-	data "equinix_received_routes" "routes" {
-		connection_id = "6b6fde52-843f-475d-a252-2c9b294aa70d"
+	data "equinix_fabric_received_routes" "routes" {
+		connection_id = "3946618a-4834-4acb-b2b1-3b6d9c634fcc"
 		   filter =  {
    		property = "/type"
    		operator = "IN"

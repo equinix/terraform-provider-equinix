@@ -110,10 +110,6 @@ func getAdvertisedRoutesSchema(ctx context.Context) map[string]schema.Attribute 
 			Description: "Indicator of a advertised route",
 			Computed:    true,
 		},
-		"connection_id": schema.StringAttribute{
-			Description: "The uuid of the routes this data source should retrieve",
-			Required:    true,
-		},
 		"protocol_type": schema.StringAttribute{
 			Description: "Advertised Route protocol type",
 			Computed:    true,
@@ -121,6 +117,7 @@ func getAdvertisedRoutesSchema(ctx context.Context) map[string]schema.Attribute 
 		"state": schema.StringAttribute{
 			Description: "State of the advertised Route",
 			Computed:    true,
+			Optional:    true,
 		},
 		"prefix": schema.StringAttribute{
 			Description: "Prefix of the Advertised Route",
@@ -133,10 +130,12 @@ func getAdvertisedRoutesSchema(ctx context.Context) map[string]schema.Attribute 
 		"med": schema.Int32Attribute{
 			Description: "Multi-Exit Discriminator for the Advertised Route",
 			Computed:    true,
+			Optional:    true,
 		},
 		"local_preference": schema.Int32Attribute{
 			Description: "This field holds local preference of the advertised route.",
 			Computed:    true,
+			Optional:    true,
 		},
 		"as_path": schema.ListAttribute{
 			Description: "List of supported AS Paths for the Advertised Routes.",

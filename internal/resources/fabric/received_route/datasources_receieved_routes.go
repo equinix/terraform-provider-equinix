@@ -17,7 +17,7 @@ func NewDataSourceReceivedRoutes() datasource.DataSource {
 	return &DataSourceAllReceivedRoutes{
 		BaseDataSource: framework.NewBaseDataSource(
 			framework.BaseDataSourceConfig{
-				Name: "equinix_received_routes",
+				Name: "equinix_fabric_received_routes",
 			},
 		),
 	}
