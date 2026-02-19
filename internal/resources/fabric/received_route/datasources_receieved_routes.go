@@ -1,5 +1,5 @@
 // Package receivedRoute implements datasource for received route
-package receivedRoute
+package receivedroute
 
 import (
 	"context"

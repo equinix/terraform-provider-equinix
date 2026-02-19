@@ -1,4 +1,4 @@
-package advertisedRoute_test
+package advertisedroute_test
 
 import (
 	"fmt"

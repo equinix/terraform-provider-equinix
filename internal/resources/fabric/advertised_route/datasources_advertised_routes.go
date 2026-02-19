@@ -1,5 +1,5 @@
-// Package advertisedRoute implements datasource for advertised route
-package advertisedRoute
+// Package advertisedroute implements datasource for advertised route
+package advertisedroute
 
 import (
 	"context"
