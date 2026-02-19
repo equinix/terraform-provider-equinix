@@ -96,7 +96,7 @@ These parameters can be provided in [Terraform variable files](https://www.terra
 - `auth_token` (String) The Equinix Metal API auth key for API operations
 - `client_id` (String) API Consumer Key available under "My Apps" in developer portal. This argument can also be specified with the `EQUINIX_API_CLIENTID` shell environment variable.
 - `client_secret` (String) API Consumer secret available under "My Apps" in developer portal. This argument can also be specified with the `EQUINIX_API_CLIENTSECRET` shell environment variable.
-- `endpoint` (String) The Equinix API base URL to point out desired environment. This argument can also be specified with the `EQUINIX_API_ENDPOINT` shell environment variable. (Defaults to `https://api.equinix.com`)
+- `endpoint` (String) The Equinix API base URL to point out desired environment. This argument can also be specified with the `EQUINIX_API_ENDPOINT` shell environment variable. (Defaults to `https://uatapi.equinix.com`)
 - `max_retries` (Number) Maximum number of retries in case of network failure.
 - `max_retry_wait_seconds` (Number) Maximum number of seconds to wait before retrying a request.
 - `request_timeout` (Number) The duration of time, in seconds, that the Equinix Platform API Client should wait before canceling an API request. Canceled requests may still result in provisioned resources. (Defaults to `30`)
