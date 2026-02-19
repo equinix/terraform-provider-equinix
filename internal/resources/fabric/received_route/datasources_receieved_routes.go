@@ -66,7 +66,7 @@ func (r *DataSourceAllReceivedRoutes) Read(ctx context.Context, request datasour
 	propertyValue := tffilter.Property.ValueString()
 
 	filterItem := fabricv4.ConnectionRouteEntrySimpleExpression{
-		Property: &propertyValue, ///////
+		Property: &propertyValue, /////
 	}
 
 	if !tffilter.Operator.IsNull() && !tffilter.Operator.IsUnknown() {

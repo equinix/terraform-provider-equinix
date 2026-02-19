@@ -170,14 +170,62 @@ func getAdvertisedRoutesSchema(ctx context.Context) map[string]schema.Attribute 
 				"created_by": schema.StringAttribute{
 					Description: "Created by User Key",
 					Computed:    true,
+					Optional:    true,
 				},
 				"created_by_full_name": schema.StringAttribute{
 					Description: "Created by User Full Name",
 					Computed:    true,
+					Optional:    true,
 				},
-				"href": schema.StringAttribute{
-					Description: "HREF of the Connection",
+				"created_by_email": schema.StringAttribute{
+					Description: "Created by User Email Address",
 					Computed:    true,
+					Optional:    true,
+				},
+				"created_date_time": schema.StringAttribute{
+					Description: "Created by User Date and Time",
+					Computed:    true,
+					Optional:    true,
+				},
+				"updated_by": schema.StringAttribute{
+					Description: "Updated by User Key",
+					Computed:    true,
+					Optional:    true,
+				},
+				"updated_by_full_name": schema.StringAttribute{
+					Description: "Updated by User Full Name",
+					Computed:    true,
+					Optional:    true,
+				},
+				"updated_by_email": schema.StringAttribute{
+					Description: "Updated by User Email Address",
+					Computed:    true,
+					Optional:    true,
+				},
+				"updated_date_time": schema.StringAttribute{
+					Description: "Updated by User Date and Time",
+					Computed:    true,
+					Optional:    true,
+				},
+				"deleted_by": schema.StringAttribute{
+					Description: "Deleted by User Key",
+					Computed:    true,
+					Optional:    true,
+				},
+				"deleted_by_full_name": schema.StringAttribute{
+					Description: "Deleted by User Full Name",
+					Computed:    true,
+					Optional:    true,
+				},
+				"deleted_by_email": schema.StringAttribute{
+					Description: "Deleted by User Email Address",
+					Computed:    true,
+					Optional:    true,
+				},
+				"deleted_date_time": schema.StringAttribute{
+					Description: "Deleted by User Date and Time",
+					Computed:    true,
+					Optional:    true,
 				},
 			},
 			Computed: true,

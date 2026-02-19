@@ -127,7 +127,6 @@ func (r *DataSourceAllAdvertisedRoutes) Read(ctx context.Context, request dataso
 	advertisedRoutes, _, err := client.CloudRoutersApi.SearchConnectionAdvertisedRoutes(ctx, connectionID).ConnectionRouteSearchRequest(advertisedRoutesSearch).Execute()
 
 	if err != nil {
-		response.State.RemoveResource(ctx)
 		response.Diagnostics.AddError("api error retrieving advertised routes data", equinix_errors.FormatFabricError(err).Error())
 		return
 	}

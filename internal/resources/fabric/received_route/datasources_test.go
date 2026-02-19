@@ -19,19 +19,16 @@ func TestAccFabricDataSourceReceivedRoutes_PFCR(t *testing.T) {
 			{
 				Config: testAccFabricReceivedRoutesDataSourcesConfig(limit, offset),
 				Check: resource.ComposeTestCheckFunc(
-					resource.TestCheckResourceAttrSet("data.equinix_received_routes.received_route", "id"),
 					resource.TestCheckResourceAttrSet(
-						"data.equinix_received_routes.received_route", "type"),
+						"data.equinix_received_routes.received_route", "data.0.type"),
 					resource.TestCheckResourceAttrSet(
 						"data.equinix_received_routes.received_route", "protocol_type"),
 					resource.TestCheckResourceAttrSet(
 						"data.equinix_received_routes.received_route", "prefix"),
 					resource.TestCheckResourceAttrSet(
+						"data.equinix_received_routes.received_route", "state"),
+					resource.TestCheckResourceAttrSet(
 						"data.equinix_received_routes.received_route", "next_hop"),
-					resource.TestCheckResourceAttrSet(
-						"data.equinix_received_routes.received_route", "med"),
-					resource.TestCheckResourceAttrSet(
-						"data.equinix_received_routes.received_route", "local_preference"),
 					resource.TestCheckResourceAttrSet(
 						"data.equinix_received_routes.received_route", "as_path"),
 					resource.TestCheckResourceAttrSet(

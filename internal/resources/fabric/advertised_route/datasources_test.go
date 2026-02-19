@@ -27,6 +27,8 @@ func TestAccFabricDataSourceAdvertisedRoutes_PFCR(t *testing.T) {
 					resource.TestCheckResourceAttrSet(
 						"data.equinix_advertised_routes.advertised_route", "prefix"),
 					resource.TestCheckResourceAttrSet(
+						"data.equinix_advertised_routes.advertised_route", "state"),
+					resource.TestCheckResourceAttrSet(
 						"data.equinix_advertised_routes.advertised_route", "next_hop"),
 					resource.TestCheckResourceAttrSet(
 						"data.equinix_advertised_routes.advertised_route", "med"),

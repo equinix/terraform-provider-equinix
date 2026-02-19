@@ -110,10 +110,6 @@ func getReceivedRoutesSchema(ctx context.Context) map[string]schema.Attribute {
 			Description: "Indicator of a received route",
 			Computed:    true,
 		},
-		"connection_id": schema.StringAttribute{
-			Description: "The uuid of the routes this data source should retrieve",
-			Required:    true,
-		},
 		"protocol_type": schema.StringAttribute{
 			Description: "Received Route protocol type",
 			Computed:    true,
@@ -133,10 +129,12 @@ func getReceivedRoutesSchema(ctx context.Context) map[string]schema.Attribute {
 		"med": schema.Int32Attribute{
 			Description: "Multi-Exit Discriminator for the Received Route",
 			Computed:    true,
+			Optional:    true,
 		},
 		"local_preference": schema.Int32Attribute{
 			Description: "This field holds local preference of the received route.",
 			Computed:    true,
+			Optional:    true,
 		},
 		"as_path": schema.ListAttribute{
 			Description: "List of supported AS Paths for the Received Routes.",
@@ -170,14 +168,62 @@ func getReceivedRoutesSchema(ctx context.Context) map[string]schema.Attribute {
 				"created_by": schema.StringAttribute{
 					Description: "Created by User Key",
 					Computed:    true,
+					Optional:    true,
 				},
 				"created_by_full_name": schema.StringAttribute{
 					Description: "Created by User Full Name",
 					Computed:    true,
+					Optional:    true,
 				},
-				"href": schema.StringAttribute{
-					Description: "HREF of the Connection",
+				"created_by_email": schema.StringAttribute{
+					Description: "Created by User Email Address",
 					Computed:    true,
+					Optional:    true,
+				},
+				"created_date_time": schema.StringAttribute{
+					Description: "Created by User Date and Time",
+					Computed:    true,
+					Optional:    true,
+				},
+				"updated_by": schema.StringAttribute{
+					Description: "Updated by User Key",
+					Computed:    true,
+					Optional:    true,
+				},
+				"updated_by_full_name": schema.StringAttribute{
+					Description: "Updated by User Full Name",
+					Computed:    true,
+					Optional:    true,
+				},
+				"updated_by_email": schema.StringAttribute{
+					Description: "Updated by User Email Address",
+					Computed:    true,
+					Optional:    true,
+				},
+				"updated_date_time": schema.StringAttribute{
+					Description: "Updated by User Date and Time",
+					Computed:    true,
+					Optional:    true,
+				},
+				"deleted_by": schema.StringAttribute{
+					Description: "Deleted by User Key",
+					Computed:    true,
+					Optional:    true,
+				},
+				"deleted_by_full_name": schema.StringAttribute{
+					Description: "Deleted by User Full Name",
+					Computed:    true,
+					Optional:    true,
+				},
+				"deleted_by_email": schema.StringAttribute{
+					Description: "Deleted by User Email Address",
+					Computed:    true,
+					Optional:    true,
+				},
+				"deleted_date_time": schema.StringAttribute{
+					Description: "Deleted by User Date and Time",
+					Computed:    true,
+					Optional:    true,
 				},
 			},
 			Computed: true,
