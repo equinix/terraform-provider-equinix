@@ -1,8 +1,8 @@
 ---
-subcategory: "Advertised"
+subcategory: "Fabric"
 ---
 
-# equinix_advertised_routes (Data Source)
+# equinix_fabric_received_routes (Data Source)
 
 
 
@@ -15,15 +15,15 @@ subcategory: "Advertised"
 
 - `connection_id` (String) The uuid of the routes this data source should retrieve
 - `filter` (Attributes) Filters for the Data Source Search Request (see [below for nested schema](#nestedatt--filter))
-- `pagination` (Attributes) Pagination details for the returned advertised routes list (see [below for nested schema](#nestedatt--pagination))
+- `pagination` (Attributes) Pagination details for the returned received routes list (see [below for nested schema](#nestedatt--pagination))
 
 ### Optional
 
-- `sort` (Attributes) Sort details for the returned advertised routes list (see [below for nested schema](#nestedatt--sort))
+- `sort` (Attributes) Sort details for the returned received routes list (see [below for nested schema](#nestedatt--sort))
 
 ### Read-Only
 
-- `data` (Attributes List) Returned list of advertised routes objects (see [below for nested schema](#nestedatt--data))
+- `data` (Attributes List) Returned list of received routes objects (see [below for nested schema](#nestedatt--data))
 - `id` (String) The unique identifier of the resource
 
 <a id="nestedatt--filter"></a>
@@ -63,22 +63,21 @@ Optional:
 <a id="nestedatt--data"></a>
 ### Nested Schema for `data`
 
-Required:
+Optional:
 
-- `connection_id` (String) The uuid of the routes this data source should retrieve
+- `local_preference` (Number) This field holds local preference of the received route.
+- `med` (Number) Multi-Exit Discriminator for the Received Route
 
 Read-Only:
 
-- `as_path` (List of String) List of supported AS Paths for the Advertised Routes.
+- `as_path` (List of String) List of supported AS Paths for the Received Routes.
 - `change_log` (Attributes) Change Log of the route table entry (see [below for nested schema](#nestedatt--data--change_log))
 - `connection` (Attributes) connection of the route table entry (see [below for nested schema](#nestedatt--data--connection))
-- `local_preference` (Number) This field holds local preference of the advertised route.
-- `med` (Number) Multi-Exit Discriminator for the Advertised Route
-- `next_hop` (String) Next Hop of the Advertised Route
-- `prefix` (String) Prefix of the Advertised Route
-- `protocol_type` (String) Advertised Route protocol type
-- `state` (String) State of the advertised Route
-- `type` (String) Indicator of a advertised route
+- `next_hop` (String) Next Hop of the Received Route
+- `prefix` (String) Prefix of the Received Route
+- `protocol_type` (String) Received Route protocol type
+- `state` (String) State of the received Route
+- `type` (String) Indicator of a received route
 
 <a id="nestedatt--data--change_log"></a>
 ### Nested Schema for `data.change_log`
