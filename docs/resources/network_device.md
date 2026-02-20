@@ -1045,6 +1045,304 @@ resource "equinix_network_device" "ARUBA-EDGECONNECT-AM" {
 }
 ```
 
+```terraform
+# Create C8000V HA - BYOL device with connectivity PRIVATE with DHCP IP address type
+
+data "equinix_network_account" "sv" {
+  metro_code = "SV"
+  name       = "account-name"
+}
+
+resource "equinix_network_device" "c8000v-byol" {
+  name            = "tf-c8000v-byol"
+  metro_code      = data.equinix_network_account.sv.metro_code
+  type_code       = "C8000V"
+  self_managed    = true
+  byol            = true
+  package_code    = "network-essentials"
+  connectivity    = "PRIVATE"
+  notifications   = ["john@equinix.com", "marry@equinix.com", "fred@equinix.com"]
+  term_length     = 12
+  account_number  = data.equinix_network_account.sv.number
+  version         = "17.11.01a"
+  interface_count = 10
+  core_count      = 2
+  tier            = 1
+  ssh_key {
+    username = "test"
+    key_name = "test-key"
+  }
+  vendor_configuration = { restApiSupportRequirement = "true", ipAddressType = "DHCP", managementInterfaceId= "6" }
+  secondary_device {
+    name                 = "tf-c8000v-byol-secondary"
+    metro_code           = data.equinix_network_account.sv.metro_code
+    hostname             = "c8000v-s"
+    notifications        = ["john@equinix.com", "marry@equinix.com"]
+    account_number       = data.equinix_network_account.sv.number
+    vendor_configuration = { restApiSupportRequirement = "true", ipAddressType = "DHCP", managementInterfaceId= "6" }
+  }
+}
+```
+
+```terraform
+# Create C8000V HA - BYOL device with connectivity PRIVATE with NO IP address type
+
+data "equinix_network_account" "sv" {
+  metro_code = "SV"
+  name       = "account-name"
+}
+
+resource "equinix_network_device" "c8000v-byol" {
+  name            = "tf-c8000v-byol"
+  metro_code      = data.equinix_network_account.sv.metro_code
+  type_code       = "C8000V"
+  self_managed    = true
+  byol            = true
+  package_code    = "network-essentials"
+  connectivity    = "PRIVATE"
+  notifications   = ["john@equinix.com", "marry@equinix.com", "fred@equinix.com"]
+  term_length     = 12
+  account_number  = data.equinix_network_account.sv.number
+  version         = "17.11.01a"
+  interface_count = 10
+  core_count      = 2
+  tier            = 1
+  ssh_key {
+    username = "test"
+    key_name = "test-key"
+  }
+  vendor_configuration = { restApiSupportRequirement = "true", ipAddressType = "NO_IP_ADDRESS" }
+  secondary_device {
+    name                 = "tf-c8000v-byol-secondary"
+    metro_code           = data.equinix_network_account.sv.metro_code
+    hostname             = "csr8000v-s"
+    notifications        = ["john@equinix.com", "marry@equinix.com"]
+    account_number       = data.equinix_network_account.sv.number
+    vendor_configuration = { restApiSupportRequirement = "true", ipAddressType = "NO_IP_ADDRESS" }
+  }
+}
+```
+
+```terraform
+# Create C8000V HA - BYOL device with connectivity PRIVATE with static IP address type
+
+data "equinix_network_account" "sv" {
+  metro_code = "SV"
+  name       = "account-name"
+}
+
+resource "equinix_network_device" "c8000v-byol" {
+  name            = "tf-c8000v-byol"
+  metro_code      = data.equinix_network_account.sv.metro_code
+  type_code       = "C8000V"
+  self_managed    = true
+  byol            = true
+  package_code    = "network-essentials"
+  connectivity    = "PRIVATE"
+  notifications   = ["john@equinix.com", "marry@equinix.com", "fred@equinix.com"]
+  term_length     = 12
+  account_number  = data.equinix_network_account.sv.number
+  version         = "17.11.01a"
+  interface_count = 10
+  core_count      = 2
+  tier            = 1
+  ssh_key {
+    username = "test"
+    key_name = "test-key"
+  }
+  vendor_configuration = {
+    restApiSupportRequirement = "true", ipAddressType = "STATIC", ipAddress = "x.x.x.x", gatewayIp = "x.x.x.x",
+    subnetMaskIp              = "x.x.x.x", managementInterfaceId= "6"
+  }
+  secondary_device {
+    name                 = "tf-c8000v-byol-secondary"
+    metro_code           = data.equinix_network_account.sv.metro_code
+    hostname             = "csr8000v-s"
+    notifications        = ["john@equinix.com", "marry@equinix.com"]
+    account_number       = data.equinix_network_account.sv.number
+    vendor_configuration = {
+      restApiSupportRequirement = "true", ipAddressType = "STATIC", ipAddress = "x.x.x.x", gatewayIp = "x.x.x.x",
+      subnetMaskIp              = "x.x.x.x", managementInterfaceId= "6"
+    }
+  }
+}
+```
+
+```terraform
+# Create FG VM Cluster with connectivity PRIVATE and IP Address Type as STATIC
+
+data "equinix_network_account" "sv" {
+  metro_code = "SV"
+  name       = "account-name"
+}
+
+resource "equinix_network_device" "FGVM-SV" {
+  name            = "tf-fgvm-cluster-static-znpd"
+  metro_code      = "DC"
+  type_code       = "FG-VM"
+  project_id      = "xxxxxxx"
+  self_managed    = true
+  connectivity    = "PRIVATE"
+  byol            = true
+  package_code    = "VM02"
+  notifications   = ["john@equinix.com", "marry@equinix.com", "fred@equinix.com"]
+  term_length     = 12
+  account_number  = xxxxxx
+  version         = "7.6.2"
+  interface_count = 10
+  core_count      = 2
+  ssh_key {
+    username = "sanity1"
+    key_name = ""
+  }
+  cluster_details {
+    cluster_name = "tf-fgvm--cluster"
+    node0 {
+      vendor_configuration {
+        ip_address              = "x.x.x.x"
+        subnet_mask_ip          = "x.x.x.x"
+        gateway_ip              = "x.x.x.x"
+        management_interface_id = "5"
+        hostname                = "test"
+        ip_address_type         = "STATIC"
+      }
+    }
+    node1 {
+      vendor_configuration {
+        ip_address              = "x.x.x.x"
+        subnet_mask_ip          = "x.x.x.x"
+        gateway_ip              = "x.x.x.x"
+        management_interface_id = "5"
+        hostname                = "test"
+        ip_address_type         = "STATIC"
+      }
+    }
+  }
+}
+```
+
+```terraform
+# Create Fortinet VM firewall ha device with connectivity PRIVATE and IP Address Type as DHCP
+
+data "equinix_network_account" "sv" {
+  metro_code = "SV"
+  name       = "account-name"
+}
+
+resource "equinix_network_device" "FTNT-FIREWALL-SV" {
+  name                 = "TF_FTNT-FIREWALL"
+  project_id           = "XXXXXXXXXX"
+  metro_code           = data.equinix_network_account.sv.metro_code
+  type_code            = "FG-VM"
+  self_managed         = true
+  byol                 = true
+  interface_count      = 10
+  connectivity         = "PRIVATE"
+  package_code         = "VM02"
+  notifications        = ["test@eq.com"]
+  account_number       = data.equinix_network_account.sv.number
+  version              = "7.6.3"
+  hostname             = "test"
+  core_count           = 2
+  term_length          = 1
+  vendor_configuration = {
+    ipAddressType = "DHCP", managementInterfaceId= "6"
+  }
+  secondary_device {
+    name                 = "TF_FTNT-FIREWALL-secondary"
+    metro_code           = data.equinix_network_account.sv.metro_code
+    hostname             = "fg-vm-znpd"
+    notifications        = ["john@equinix.com", "marry@equinix.com"]
+    account_number       = data.equinix_network_account.sv.number
+    vendor_configuration = { ipAddressType = "DHCP", managementInterfaceId= "6"}
+  }
+}
+```
+
+```terraform
+# Create Fortinet firewall ha device with connectivity PRIVATE and IP Address Type as NO IP Address
+
+data "equinix_network_account" "sv" {
+  metro_code = "SV"
+  name       = "account-name"
+}
+
+resource "equinix_network_device" "FTNT-FIREWALL-SV" {
+  name                 = "TF_FTNT-FIREWALL"
+  project_id           = "XXXXXXXXXX"
+  metro_code           = data.equinix_network_account.sv.metro_code
+  type_code            = "FG-VM"
+  interface_count      = 10
+  self_managed         = true
+  byol                 = true
+  connectivity         = "PRIVATE"
+  package_code         = "VM02"
+  notifications        = ["test@eq.com"]
+  account_number       = data.equinix_network_account.sv.number
+  version              = "7.6.3"
+  hostname             = "test"
+  core_count           = 2
+  term_length          = 1
+  vendor_configuration = {
+    ipAddressType = "NO_IP_ADDRESS"
+  }
+  secondary_device {
+    name                 = "TF_FTNT-FIREWALL-secondary"
+    metro_code           = data.equinix_network_account.sv.metro_code
+    hostname             = "fg-vm-znpd"
+    notifications        = ["john@equinix.com", "marry@equinix.com"]
+    account_number       = data.equinix_network_account.sv.number
+    vendor_configuration = {
+      ipAddressType = "NO_IP_ADDRESS"
+    }
+  }
+}
+```
+
+```terraform
+# Create FG VM ha device with connectivity PRIVATE and IP Address Type as STATIC
+
+data "equinix_network_account" "sv" {
+  metro_code = "SV"
+  name       = "account-name"
+}
+
+resource "equinix_network_device" "FTNT-FIREWALL-SV" {
+  name                 = "TF_FTNT-FIREWALL"
+  project_id           = "XXXXXXXXXX"
+  metro_code           = data.equinix_network_account.sv.metro_code
+  interface_count      = 10
+  type_code            = "FG-VM"
+  self_managed         = true
+  byol                 = true
+  connectivity         = "PRIVATE"
+  package_code         = "VM02"
+  notifications        = ["test@eq.com"]
+  account_number       = data.equinix_network_account.sv.number
+  version              = "7.6.3"
+  hostname             = "test"
+  core_count           = 2
+  term_length          = 1
+  vendor_configuration = {
+    gatewayIp     = "X.X.X.X"
+    ipAddress     = "X.X.X.X"
+    ipAddressType = "STATIC"
+    subnetMaskIp  = "x.x.x.x"
+  }
+  secondary_device {
+    name                 = "TF_FTNT-FIREWALL-secondary"
+    metro_code           = data.equinix_network_account.sv.metro_code
+    hostname             = "fg-vm-znpd"
+    notifications        = ["john@equinix.com", "marry@equinix.com"]
+    account_number       = data.equinix_network_account.sv.number
+    vendor_configuration = {
+      ipAddressType = "STATIC", ipAddress = "x.x.x.x", gatewayIp = "x.x.x.x",
+      subnetMaskIp  = "x.x.x.x", managementInterfaceId = "6"
+    }
+  }
+}
+```
+
 ## Argument Reference
 
 The following arguments are supported:
