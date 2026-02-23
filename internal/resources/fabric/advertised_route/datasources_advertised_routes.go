@@ -62,11 +62,11 @@ func (r *DataSourceAllAdvertisedRoutes) Read(ctx context.Context, request dataso
 		}
 	}
 
-	// propertyValue := fabricv4.RouteFiltersSearchFilterItemProperty(tffilter.Property.ValueString()) ////
+	// propertyValue := fabricv4.RouteFiltersSearchFilterItemProperty(tffilter.Property.ValueString())
 	propertyValue := tffilter.Property.ValueString()
 
 	filterItem := fabricv4.ConnectionRouteEntrySimpleExpression{
-		Property: &propertyValue, ///////
+		Property: &propertyValue,
 	}
 
 	if !tffilter.Operator.IsNull() && !tffilter.Operator.IsUnknown() {

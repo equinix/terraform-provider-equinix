@@ -100,7 +100,6 @@ func (a *dataSourceSearchAdvertisedRoutesModel) parse(ctx context.Context, adver
 		Previous: types.StringValue(responsePagination.GetPrevious()),
 	}
 
-	// a.ID = types.StringValue(data[0].ValueString()) // correct?
 	a.Pagination = fwtypes.NewObjectValueOf[paginationModel](ctx, &pagination)
 	a.Data = fwtypes.NewListNestedObjectValueOfValueSlice[advertisedRoutesBaseModel](ctx, data)
 
@@ -138,7 +137,7 @@ func parseAsPaths(ctx context.Context, asPaths []string) (fwtypes.ListValueOf[ty
 	asPathTypeList := make([]attr.Value, len(asPaths))
 
 	for i, asPath := range asPaths {
-		asPathTypeList[i] = types.StringValue(string(asPath))
+		asPathTypeList[i] = types.StringValue(asPath)
 	}
 	asPathValue, diags := fwtypes.NewListValueOf[types.String](ctx, asPathTypeList)
 

@@ -62,11 +62,11 @@ func (r *DataSourceAllReceivedRoutes) Read(ctx context.Context, request datasour
 		}
 	}
 
-	// propertyValue := fabricv4.RouteFiltersSearchFilterItemProperty(tffilter.Property.ValueString()) ////
+	// propertyValue := fabricv4.RouteFiltersSearchFilterItemProperty(tffilter.Property.ValueString())
 	propertyValue := tffilter.Property.ValueString()
 
 	filterItem := fabricv4.ConnectionRouteEntrySimpleExpression{
-		Property: &propertyValue, /////
+		Property: &propertyValue,
 	}
 
 	if !tffilter.Operator.IsNull() && !tffilter.Operator.IsUnknown() {
@@ -127,7 +127,6 @@ func (r *DataSourceAllReceivedRoutes) Read(ctx context.Context, request datasour
 	receivedRoutes, _, err := client.CloudRoutersApi.SearchConnectionReceivedRoutes(ctx, connectionID).ConnectionRouteSearchRequest(receivedRoutesSearch).Execute()
 
 	if err != nil {
-		response.State.RemoveResource(ctx)
 		response.Diagnostics.AddError("api error retrieving received routes data", equinix_errors.FormatFabricError(err).Error())
 		return
 	}
