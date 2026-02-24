@@ -164,7 +164,7 @@ func getAdvertisedRoutesSchema(ctx context.Context) map[string]schema.Attribute 
 		},
 		"change_log": schema.SingleNestedAttribute{
 			Description: "Change Log of the route table entry",
-			CustomType:  fwtypes.NewObjectTypeOf[connectionModel](ctx),
+			CustomType:  fwtypes.NewObjectTypeOf[changeLogModel](ctx),
 			Attributes: map[string]schema.Attribute{
 				"created_by": schema.StringAttribute{
 					Description: "Created by User Key",

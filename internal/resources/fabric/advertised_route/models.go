@@ -170,7 +170,7 @@ func parseChangelog(ctx context.Context, changeLog fabricv4.Changelog) (fwtypes.
 
 	result := changeLogModel{}
 	if changeLog.CreatedBy != nil {
-		result.CreatedBy = types.StringValue(changeLog.GetCreatedBy()) //Get functon not loading
+		result.CreatedBy = types.StringValue(changeLog.GetCreatedBy())
 	}
 
 	if changeLog.CreatedByFullName != nil {
