@@ -315,8 +315,8 @@ func parseOrder(ctx context.Context, portOrder fabricv4.PortOrder) fwtypes.Objec
 		Amount:       types.StringValue(purchaseOrder.GetAmount()),
 		AttachmentID: types.StringValue(purchaseOrder.GetAttachmentId()),
 		Type:         types.StringValue(string(purchaseOrder.GetType())),
-		StartDate:    types.StringValue(purchaseOrder.GetStartDate()),
-		EndDate:      types.StringValue(purchaseOrder.GetEndDate()),
+		StartDate:    types.StringValue(purchaseOrder.GetStartDate().String()),
+		EndDate:      types.StringValue(purchaseOrder.GetEndDate().String()),
 	})
 
 	signature := portOrder.GetSignature()

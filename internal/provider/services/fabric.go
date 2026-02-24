@@ -2,10 +2,12 @@
 package services
 
 import (
+	advertisedRoutes "github.com/equinix/terraform-provider-equinix/internal/resources/fabric/advertised_route"
 	"github.com/equinix/terraform-provider-equinix/internal/resources/fabric/connectionrouteaggregation"
 	"github.com/equinix/terraform-provider-equinix/internal/resources/fabric/metro"
 	"github.com/equinix/terraform-provider-equinix/internal/resources/fabric/port"
 	precisiontime "github.com/equinix/terraform-provider-equinix/internal/resources/fabric/precision_time"
+	receivedRoutes "github.com/equinix/terraform-provider-equinix/internal/resources/fabric/received_route"
 	"github.com/equinix/terraform-provider-equinix/internal/resources/fabric/routeaggregation"
 	"github.com/equinix/terraform-provider-equinix/internal/resources/fabric/routeaggregationrule"
 	"github.com/equinix/terraform-provider-equinix/internal/resources/fabric/stream"
@@ -53,5 +55,7 @@ func FabricDatasources() []func() datasource.DataSource {
 		streamsubscription.NewDataSourceByIDs,
 		streamalertrule.NewDataSourceAllStreamAlertRules,
 		streamalertrule.NewDataSourceByStreamAlertRuleIDs,
+		advertisedRoutes.NewDataSourceAdvertisedRoutes,
+		receivedRoutes.NewDataSourceReceivedRoutes,
 	}
 }
