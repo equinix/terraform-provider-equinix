@@ -80,7 +80,6 @@ func (a *dataSourceSearchAdvertisedRoutesModel) parse(ctx context.Context, adver
 			"either the connection does not have any advertised routes data to pull or the combination of limit and offset needs to be updated")
 		return diags
 	}
-
 	data := make([]advertisedRoutesBaseModel, len(advertisedRoutesResponse.GetData()))
 	advertisedRoutes := advertisedRoutesResponse.GetData()
 	for i, advertisedRoute := range advertisedRoutes {
