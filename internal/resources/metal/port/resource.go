@@ -10,6 +10,7 @@ import (
 	"slices"
 
 	"github.com/equinix/equinix-sdk-go/services/metalv1"
+	"github.com/equinix/terraform-provider-equinix/internal/deprecations"
 	equinix_schema "github.com/equinix/terraform-provider-equinix/internal/schema"
 
 	"github.com/equinix/terraform-provider-equinix/internal/config"
@@ -32,6 +33,7 @@ var (
 // Resource is the terraform schema resource for a network port on a device.
 func Resource() *schema.Resource {
 	return &schema.Resource{
+		DeprecationMessage: deprecations.MetalDeprecationMessage,
 		Timeouts: &schema.ResourceTimeout{
 			Create: schema.DefaultTimeout(30 * time.Minute),
 			Update: schema.DefaultTimeout(30 * time.Minute),
