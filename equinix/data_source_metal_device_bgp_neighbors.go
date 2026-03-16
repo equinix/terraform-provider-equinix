@@ -4,6 +4,7 @@ import (
 	"context"
 
 	"github.com/equinix/terraform-provider-equinix/internal/config"
+	"github.com/equinix/terraform-provider-equinix/internal/deprecations"
 
 	"github.com/equinix/equinix-sdk-go/services/metalv1"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
@@ -90,7 +91,8 @@ func bgpRouteSchema() *schema.Resource {
 
 func dataSourceMetalDeviceBGPNeighbors() *schema.Resource {
 	return &schema.Resource{
-		ReadContext: dataSourceMetalDeviceBGPNeighborsRead,
+		ReadContext:        dataSourceMetalDeviceBGPNeighborsRead,
+		DeprecationMessage: deprecations.MetalDeprecationMessage,
 		Schema: map[string]*schema.Schema{
 			"device_id": {
 				Type:        schema.TypeString,

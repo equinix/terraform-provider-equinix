@@ -8,6 +8,7 @@ import (
 	"time"
 
 	"github.com/equinix/terraform-provider-equinix/internal/config"
+	"github.com/equinix/terraform-provider-equinix/internal/deprecations"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
@@ -57,6 +58,7 @@ func Provider() *schema.Provider {
 				Optional:    true,
 				DefaultFunc: schema.EnvDefaultFunc(config.MetalAuthTokenEnvVar, ""),
 				Description: "The Equinix Metal API auth key for API operations",
+				Deprecated:  deprecations.MetalDeprecationMessage,
 			},
 			"request_timeout": {
 				Type:         schema.TypeInt,

@@ -13,6 +13,7 @@ import (
 
 	"github.com/equinix/equinix-sdk-go/services/metalv1"
 	"github.com/equinix/terraform-provider-equinix/internal/converters"
+	"github.com/equinix/terraform-provider-equinix/internal/deprecations"
 
 	equinix_errors "github.com/equinix/terraform-provider-equinix/internal/errors"
 
@@ -27,6 +28,7 @@ import (
 // circuit.
 func Resource() *schema.Resource {
 	return &schema.Resource{
+		DeprecationMessage: deprecations.MetalDeprecationMessage,
 		Description: `Use this resource to associate VLAN with a Dedicated Port from [Equinix Fabric - software-defined interconnections](https://docs.equinix.com/metal/interconnections/introduction/#associating-a-vlan-with-a-dedicated-port).
 
 See the [Virtual Routing and Forwarding documentation](https://docs.equinix.com/metal/networking/vrf/) for product details and API reference material.`,

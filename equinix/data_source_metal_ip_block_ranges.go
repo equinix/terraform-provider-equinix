@@ -4,6 +4,7 @@ import (
 	"fmt"
 
 	"github.com/equinix/terraform-provider-equinix/internal/converters"
+	"github.com/equinix/terraform-provider-equinix/internal/deprecations"
 
 	"github.com/equinix/terraform-provider-equinix/internal/config"
 
@@ -13,8 +14,8 @@ import (
 
 func dataSourceMetalIPBlockRanges() *schema.Resource {
 	return &schema.Resource{
-		Read: dataSourceMetalIPBlockRangesRead,
-
+		Read:               dataSourceMetalIPBlockRangesRead,
+		DeprecationMessage: deprecations.MetalDeprecationMessage,
 		Schema: map[string]*schema.Schema{
 			"project_id": {
 				Type:        schema.TypeString,

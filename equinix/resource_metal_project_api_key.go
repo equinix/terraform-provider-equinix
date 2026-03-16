@@ -3,6 +3,7 @@ package equinix
 import (
 	"log"
 
+	"github.com/equinix/terraform-provider-equinix/internal/deprecations"
 	equinix_errors "github.com/equinix/terraform-provider-equinix/internal/errors"
 	equinix_schema "github.com/equinix/terraform-provider-equinix/internal/schema"
 
@@ -44,10 +45,11 @@ func resourceMetalProjectAPIKey() *schema.Resource {
 		Description: "UUID of project which the new API key is scoped to",
 	}
 	return &schema.Resource{
-		Create: resourceMetalAPIKeyCreate,
-		Read:   resourceMetalAPIKeyRead,
-		Delete: resourceMetalAPIKeyDelete,
-		Schema: projectKeySchema,
+		Create:             resourceMetalAPIKeyCreate,
+		Read:               resourceMetalAPIKeyRead,
+		Delete:             resourceMetalAPIKeyDelete,
+		DeprecationMessage: deprecations.MetalDeprecationMessage,
+		Schema:             projectKeySchema,
 	}
 }
 

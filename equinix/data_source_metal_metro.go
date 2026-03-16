@@ -3,6 +3,7 @@ package equinix
 import (
 	"fmt"
 
+	"github.com/equinix/terraform-provider-equinix/internal/deprecations"
 	equinix_schema "github.com/equinix/terraform-provider-equinix/internal/schema"
 
 	"github.com/equinix/terraform-provider-equinix/internal/config"
@@ -13,7 +14,8 @@ import (
 
 func dataSourceMetalMetro() *schema.Resource {
 	return &schema.Resource{
-		Read: dataSourceMetalMetroRead,
+		Read:               dataSourceMetalMetroRead,
+		DeprecationMessage: deprecations.MetalDeprecationMessage,
 		Schema: map[string]*schema.Schema{
 			"id": {
 				Type:        schema.TypeString,

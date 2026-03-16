@@ -5,6 +5,7 @@ import (
 	"strings"
 
 	"github.com/equinix/terraform-provider-equinix/internal/converters"
+	"github.com/equinix/terraform-provider-equinix/internal/deprecations"
 
 	equinix_schema "github.com/equinix/terraform-provider-equinix/internal/schema"
 
@@ -50,7 +51,8 @@ func capacitySchema() *schema.Schema {
 
 func dataSourceMetalFacility() *schema.Resource {
 	return &schema.Resource{
-		Read: dataSourceMetalFacilityRead,
+		Read:               dataSourceMetalFacilityRead,
+		DeprecationMessage: deprecations.MetalDeprecationMessage,
 		Schema: map[string]*schema.Schema{
 			"code": {
 				Type:        schema.TypeString,
@@ -82,7 +84,6 @@ func dataSourceMetalFacility() *schema.Resource {
 			},
 			"capacity": capacitySchema(),
 		},
-		DeprecationMessage: "Use data_source_metal_metro instead.  For more information, read the migration guide: https://registry.terraform.io/providers/equinix/equinix/latest/docs/guides/migration_guide_facilities_to_metros_devices",
 	}
 }
 
