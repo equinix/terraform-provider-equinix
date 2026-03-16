@@ -21,10 +21,10 @@ import (
 func Resource() *schema.Resource {
 	return &schema.Resource{
 		DeprecationMessage: deprecations.MetalDeprecationMessage,
-		CreateContext: resourceMetalPortVlanAttachmentCreate,
-		ReadContext:   resourceMetalPortVlanAttachmentRead,
-		DeleteContext: resourceMetalPortVlanAttachmentDelete,
-		UpdateContext: resourceMetalPortVlanAttachmentUpdate,
+		CreateContext:      resourceMetalPortVlanAttachmentCreate,
+		ReadContext:        resourceMetalPortVlanAttachmentRead,
+		DeleteContext:      resourceMetalPortVlanAttachmentDelete,
+		UpdateContext:      resourceMetalPortVlanAttachmentUpdate,
 		Importer: &schema.ResourceImporter{
 			StateContext: schema.ImportStatePassthroughContext,
 		},

@@ -20,11 +20,11 @@ func resourceMetalDeviceNetworkType() *schema.Resource {
 		Read:               resourceMetalDeviceNetworkTypeRead,
 		Delete:             resourceMetalDeviceNetworkTypeDelete,
 		Update:             resourceMetalDeviceNetworkTypeUpdate,
+		DeprecationMessage: deprecations.MetalDeprecationMessage,
 		Importer: &schema.ResourceImporter{
 			//nolint
 			State: schema.ImportStatePassthrough,
 		},
-		DeprecationMessage: deprecations.MetalDeprecationMessage,
 		Schema: map[string]*schema.Schema{
 			"device_id": {
 				Type:        schema.TypeString,

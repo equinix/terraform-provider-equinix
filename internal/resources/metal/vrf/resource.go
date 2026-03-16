@@ -18,7 +18,7 @@ import (
 
 func Resource() *schema.Resource {
 	return &schema.Resource{
-		DeprecationMessage: deprecations.MetalDeprecationMessage,
+		DeprecationMessage:   deprecations.MetalDeprecationMessage,
 		ReadWithoutTimeout:   resourceMetalVRFRead,
 		CreateWithoutTimeout: resourceMetalVRFCreate,
 		UpdateWithoutTimeout: resourceMetalVRFUpdate,
