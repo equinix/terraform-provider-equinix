@@ -4,7 +4,7 @@ subcategory: "Metal"
 
 # equinix_metal_connection (Resource)
 
-Use this resource to request the creation an Interconnection asset to connect with other parties using [Equinix Fabric - software-defined interconnections](https://metal.equinix.com/developers/docs/networking/fabric/).
+Use this resource to request the creation an Interconnection asset to connect with other parties using [Equinix Fabric - software-defined interconnections](https://docs.equinix.com/metal/networking/fabric/).
 
 ## Example Usage
 
@@ -64,7 +64,7 @@ resource "equinix_fabric_connection" "example" {
 }
 ```
 
--> NOTE: There is an [Equinix Fabric L2 Connection To Equinix Metal Terraform module](https://registry.terraform.io/modules/equinix-labs/fabric-connection-metal/equinix/latest) available with full-fledged examples of connections from Fabric Ports, Network Edge Devices or Service Tokens. Check out the [example for shared connection with Z-side Service Token](https://registry.terraform.io/modules/equinix-labs/fabric-connection-metal/equinix/0.2.0/examples/fabric-port-connection-with-zside-token).
+-> NOTE: There is an [Equinix Fabric Connection To Equinix Metal Terraform module](https://registry.terraform.io/modules/equinix/fabric/equinix/latest) available with full-fledged examples of connections from Fabric Ports, Network Edge Devices or Service Tokens. Check out the [example for shared connection with Z-side Service Token](https://registry.terraform.io/modules/equinix/fabric/equinix/latest/examples/service-token-for-zside-port).
 
 ### Fabric Billed Shared Virtual Connection - Non-redundant connection from your own Network Edge device to Equinix Metal
 
@@ -247,7 +247,7 @@ resource "equinix_fabric_connection" "example_secondary" {
 }
 ```
 
--> NOTE: There are multiple [Equinix Fabric L2 Connection Terraform modules](https://registry.terraform.io/search/modules?namespace=equinix-labs&q=fabric-connection) available with full-fledged examples of connections from Fabric Ports, Network Edge Devices or Service Token to most popular Cloud Service Providers. Check out the examples for Equinix Metal shared connection with A-side Service Token included in each of them: [AWS](https://registry.terraform.io/modules/equinix-labs/fabric-connection-aws/equinix/latest/examples/service-token-metal-to-aws-connection), [Azure](https://registry.terraform.io/modules/equinix-labs/fabric-connection-azure/equinix/latest/examples/service-token-metal-to-azure-connection), [Google Cloud](https://registry.terraform.io/modules/equinix-labs/fabric-connection-gcp/equinix/latest/examples/service-token-metal-to-gcp-connection), [IBM Cloud](https://registry.terraform.io/modules/equinix-labs/fabric-connection-ibm/equinix/latest/examples/service-token-metal-to-ibm-connection), [Oracle Cloud](https://registry.terraform.io/modules/equinix-labs/fabric-connection-oci/equinix/latest/examples/service-token-metal-to-oci-connection), [Alibaba Cloud](https://registry.terraform.io/modules/equinix-labs/fabric-connection-alibaba/equinix/latest/examples/service-token-metal-to-alibaba-connection).
+-> NOTE: There are multiple [Equinix Fabric Connection Terraform modules](https://registry.terraform.io/modules/equinix/fabric/equinix/latest) available with full-fledged examples of connections from Fabric Ports, Network Edge Devices or Service Token to most popular Cloud Service Providers. Check out the examples for Equinix Metal connections included in them: [AWS](https://registry.terraform.io/modules/equinix/fabric/equinix/latest/examples/metal-nimf-2-aws-connection), [Azure](https://registry.terraform.io/modules/equinix/fabric/equinix/latest/examples/metal-nimf-2-azure-connection), [Google Cloud](https://registry.terraform.io/modules/equinix/fabric/equinix/latest/examples/metal-nimf-2-google-connection), [IBM Cloud](https://registry.terraform.io/modules/equinix/fabric/equinix/latest/examples/metal-nimf-2-ibm2-connection), [Oracle Cloud](https://registry.terraform.io/modules/equinix/fabric/equinix/latest/examples/metal-nimf-2-oracle-connection).
 
 ### Metal Billed Shared Virtual Connection - Non-Redundant connection from Equinix Metal to your own Equinix Fabric Port
 
@@ -332,9 +332,9 @@ resource "equinix_fabric_connection" "example" {
 - `authorization_code` (String) Only used with Fabric Shared connection. Fabric uses this token to be able to give more detailed information about the Metal end of the network, when viewing resources from within Fabric.
 - `id` (String) The unique identifier of the resource
 - `ports` (List of Object) List of connection ports - primary (`ports[0]`) and secondary (`ports[1]`) (see [below for nested schema](#nestedatt--ports))
-- `service_tokens` (List of Object) Only used with shared connection. List of service tokens required to continue the setup process with [equinix_fabric_connection](https://registry.terraform.io/providers/equinix/equinix/latest/docs/resources/fabric_connection) or from the [Equinix Fabric Portal](https://fabric.equinix.com/dashboard) (see [below for nested schema](#nestedatt--service_tokens))
+- `service_tokens` (List of Object) Only used with shared connection. List of service tokens required to continue the setup process with [equinix_fabric_connection](https://registry.terraform.io/providers/equinix/equinix/latest/docs/resources/fabric_connection) or from the [Equinix Fabric Portal](https://fabric.equinix.com) (see [below for nested schema](#nestedatt--service_tokens))
 - `status` (String) Status of the connection resource
-- `token` (String, Deprecated) Only used with shared connection. Fabric Token required to continue the setup process with [equinix_fabric_connection](https://registry.terraform.io/providers/equinix/equinix/latest/docs/resources/fabric_connection) or from the [Equinix Fabric Portal](https://fabric.equinix.com/dashboard)
+- `token` (String, Deprecated) Only used with shared connection. Fabric Token required to continue the setup process with [equinix_fabric_connection](https://registry.terraform.io/providers/equinix/equinix/latest/docs/resources/fabric_connection) or from the [Equinix Fabric Portal](https://fabric.equinix.com)
 
 <a id="nestedatt--ports"></a>
 ### Nested Schema for `ports`

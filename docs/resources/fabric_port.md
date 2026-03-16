@@ -8,7 +8,7 @@ Fabric V4 API compatible resource allows creation and management of Equinix Fabr
 
 Additional Documentation:
 * Getting Started: https://docs.equinix.com/en-us/Content/Interconnection/Fabric/ports/fabric-order-port.htm
-* API: https://developer.equinix.com/catalog/fabricv4#operation/createPort
+* API: https://docs.equinix.com/api-catalog/fabricv4#operation/createPort
 
 ~> ** NOTE:** This resource is in beta and is subject to change. Please use with caution. Experimental resource may contain bugs and is not recommended for production use.
 * There are no guarantees that a Port Reservation will occur after creating a port order through Terraform

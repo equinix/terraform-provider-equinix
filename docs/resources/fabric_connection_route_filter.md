@@ -8,7 +8,7 @@ Fabric V4 API compatible resource allows attachment of Route Filter Polices to F
 
 Additional Documentation:
 * Getting Started: https://docs.equinix.com/en-us/Content/Interconnection/FCR/FCR-route-filters.htm
-* API: https://developer.equinix.com/dev-docs/fabric/api-reference/fabric-v4-apis#route-filters
+* API: https://docs.equinix.com/api-catalog/fabricv4/#tag/Route-Filters
 
 ## Example Usage
 

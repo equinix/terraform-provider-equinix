@@ -1488,7 +1488,7 @@ Each interface attribute has below fields:
 
 ## Timeouts
 
-This resource provides the following [Timeouts configuration](https://www.terraform.io/language/resources/syntax#operation-timeouts) options:
+This resource provides the following [Timeouts configuration](https://developer.hashicorp.com/terraform/language/resources/syntax#operation-timeouts) options:
 
 * create - Default is 90 minutes
 * update - Default is 90 minutes

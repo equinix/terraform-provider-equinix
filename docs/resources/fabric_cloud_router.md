@@ -8,7 +8,7 @@ Fabric V4 API compatible resource allows creation and management of [Equinix Fab
 
 Additional documentation:
 * Getting Started: https://docs.equinix.com/en-us/Content/Interconnection/FCR/FCR-intro.htm#HowItWorks
-* API: https://developer.equinix.com/dev-docs/fabric/api-reference/fabric-v4-apis#fabric-cloud-routers
+* API: https://docs.equinix.com/api-catalog/fabricv4/#tag/Cloud-Routers
 
 ## Example Usage
 
