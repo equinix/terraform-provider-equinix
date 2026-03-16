@@ -494,8 +494,10 @@ func buildOrder(ctx context.Context, orderObject fwtypes.ObjectValueOf[orderMode
 	portPurchaseOrder.SetAmount(purchaseOrder.Amount.ValueString())
 	portPurchaseOrder.SetAttachmentId(purchaseOrder.AttachmentID.ValueString())
 	portPurchaseOrder.SetNumber(purchaseOrder.Number.ValueString())
-	portPurchaseOrder.SetStartDate(purchaseOrder.StartDate.ValueString())
-	portPurchaseOrder.SetEndDate(purchaseOrder.EndDate.ValueString())
+	startTime, _ := time.Parse(time.RFC3339Nano, purchaseOrder.StartDate.ValueString())
+	endTime, _ := time.Parse(time.RFC3339Nano, purchaseOrder.EndDate.ValueString())
+	portPurchaseOrder.SetStartDate(startTime)
+	portPurchaseOrder.SetEndDate(endTime)
 
 	portOrder.SetPurchaseOrder(portPurchaseOrder)
 

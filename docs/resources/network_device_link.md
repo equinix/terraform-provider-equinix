@@ -43,7 +43,7 @@ The following arguments are supported:
 * `subnet` - (Optional) device link subnet in CIDR format. Not required for link between self configured devices.
 * `device` - (Required) definition of one or more devices belonging to the device link. See [Device](#device) section below for more details.
 * `link` - (Deprecated) definition of one or more, inter metro, connections belonging to the device link. See [Link](#link) section below for more details.
-* `metro_link` - (Optional) definition of one or more, inter metro, connections belonging to the device link. See [Metro Link](#Metro_Link) section below for more details.
+* `metro_link` - (Optional) definition of one or more, inter metro, connections belonging to the device link. See [Metro Link](#metro_link) section below for more details.
 * `redundancy_type` - (Optional) Whether the connection should be created through Fabric's primary or secondary port. Supported values: `PRIMARY` (Default), `SECONDARY`, `HYBRID`
 * `project_id` - (Optional) Unique Identifier for the project resource where the device link is scoped to.If you leave it out, the device link will be created under the default project id of your organization.
 

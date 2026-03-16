@@ -11,8 +11,8 @@ For more details, see the Equinix Metal documentation on [Network Configuration 
 
 This Terraform provider offers two ways to define the network type.
 
-* [`equinix_metal_port`](#Metal-Port)
-* [`equinix_metal_device_network_type`](#Metal-Device-Network-Type)
+* [`equinix_metal_port`](#metal-port)
+* [`equinix_metal_device_network_type`](#metal-device-network-type)
 
 ## Metal Port
 

@@ -114,7 +114,7 @@ var neDeviceDescriptions = map[string]string{
 	"IsSelfManaged":             "Boolean value that determines device management mode: self-managed or subscription (default)",
 	"WanInterfaceId":            "device interface id picked for WAN",
 	"Interfaces":                "List of device interfaces",
-	"VendorConfiguration":       "Map of vendor specific configuration parameters for a device (controller1, activationKey, managementType, siteId, systemIpAddress)",
+	"VendorConfiguration":       "Map of vendor specific configuration parameters for a device (controller1, activationKey, managementType, siteId, systemIpAddress, managementInterfaceId, ipAddressType)",
 	"UserPublicKey":             "Definition of SSH key that will be provisioned on a device",
 	"ASN":                       "Autonomous system number",
 	"ZoneCode":                  "Device location zone code",
@@ -194,44 +194,48 @@ var neDeviceClusterNodeDescriptions = map[string]string{
 }
 
 var neDeviceVendorConfigSchemaNames = map[string]string{
-	"Hostname":          "hostname",
-	"AdminPassword":     "admin_password",
-	"Controller1":       "controller1",
-	"ActivationKey":     "activation_key",
-	"ControllerFqdn":    "controller_fqdn",
-	"RootPassword":      "root_password",
-	"PrivateAddress":    "private_address",
-	"PrivateCIDRMask":   "private_cidr_mask",
-	"PrivateGateway":    "private_gateway",
-	"LicenseKey":        "license_key",
-	"LicenseID":         "license_id",
-	"PanoramaIPAddress": "panorama_ip_address",
-	"PanoramaAuthKey":   "panorama_auth_key",
-	"ManagementType":    "management_type",
-	"IPAddress":         "ip_address",
-	"SubnetMaskIP":      "subnet_mask_ip",
-	"GatewayIP":         "gateway_ip",
+	"Hostname":              "hostname",
+	"AdminPassword":         "admin_password",
+	"Controller1":           "controller1",
+	"ActivationKey":         "activation_key",
+	"ControllerFqdn":        "controller_fqdn",
+	"RootPassword":          "root_password",
+	"PrivateAddress":        "private_address",
+	"PrivateCIDRMask":       "private_cidr_mask",
+	"PrivateGateway":        "private_gateway",
+	"LicenseKey":            "license_key",
+	"LicenseID":             "license_id",
+	"PanoramaIPAddress":     "panorama_ip_address",
+	"PanoramaAuthKey":       "panorama_auth_key",
+	"ManagementType":        "management_type",
+	"ManagementInterfaceId": "management_interface_id",
+	"IpAddressType":         "ip_address_type",
+	"IPAddress":             "ip_address",
+	"SubnetMaskIP":          "subnet_mask_ip",
+	"GatewayIP":             "gateway_ip",
 }
 
 var neDeviceVendorConfigDescriptions = map[string]string{
-	"Hostname":          "Hostname. This is necessary for Palo Alto, Juniper, and Fortinet clusters",
-	"AdminPassword":     "The administrative password of the device. You can use it to log in to the console. This field is not available for all device types",
-	"Controller1":       "System IP Address. Mandatory for the Fortinet SDWAN cluster device",
-	"ActivationKey":     "Activation key. This is required for Velocloud clusters",
-	"ControllerFqdn":    "Controller fqdn. This is required for Velocloud clusters",
-	"RootPassword":      "The CLI password of the device. This field is relevant only for the Velocloud SDWAN cluster",
-	"PrimaryDeviceUUID": "Primary Device UUID",
-	"PrivateAddress":    "Private address. This field is relevant only for the BlueCat DNS and DHCP Server",
-	"PrivateCIDRMask":   "Private CIDR Mask. This field is relevant only for the BlueCat DNS and DHCP Server",
-	"PrivateGateway":    "Private gateway. This field is relevant only for the BlueCat DNS and DHCP Server",
-	"LicenseKey":        "License key. This field is relevant only for the BlueCat DNS and DHCP Server",
-	"LicenseID":         "License id. This field is relevant only for the BlueCat DNS and DHCP Server",
-	"PanoramaIPAddress": "Panorama Server IP Address. This field is relevant only for Palo Alto Networks Firewall devices",
-	"PanoramaAuthKey":   "Panorama Server Auth Key. This field is relevant only for Palo Alto Networks Firewall devices",
-	"ManagementType":    "Management Type. This field is relevant only for Cisco FTD Firewall devices",
-	"IPAddress":         "LAN1 Private Network. This field is relevant only for Infoblox Grid Member devices",
-	"SubnetMaskIP":      "LAN1 Subnet Mask. This field is relevant only for Infoblox Grid Member devices",
-	"GatewayIP":         "LAN1 Gateway. This field is relevant only for Infoblox Grid Member devices",
+	"Hostname":              "Hostname. This is necessary for Palo Alto, Juniper, and Fortinet clusters",
+	"AdminPassword":         "The administrative password of the device. You can use it to log in to the console. This field is not available for all device types",
+	"Controller1":           "System IP Address. Mandatory for the Fortinet SDWAN cluster device",
+	"ActivationKey":         "Activation key. This is required for Velocloud clusters",
+	"ControllerFqdn":        "Controller fqdn. This is required for Velocloud clusters",
+	"RootPassword":          "The CLI password of the device. This field is relevant only for the Velocloud SDWAN cluster",
+	"PrimaryDeviceUUID":     "Primary Device UUID",
+	"PrivateAddress":        "Private address. This field is relevant only for the BlueCat DNS and DHCP Server",
+	"PrivateCIDRMask":       "Private CIDR Mask. This field is relevant only for the BlueCat DNS and DHCP Server",
+	"PrivateGateway":        "Private gateway. This field is relevant only for the BlueCat DNS and DHCP Server",
+	"LicenseKey":            "License key. This field is relevant only for the BlueCat DNS and DHCP Server",
+	"LicenseID":             "License id. This field is relevant only for the BlueCat DNS and DHCP Server",
+	"PanoramaIPAddress":     "Panorama Server IP Address. This field is relevant only for Palo Alto Networks Firewall devices",
+	"PanoramaAuthKey":       "Panorama Server Auth Key. This field is relevant only for Palo Alto Networks Firewall devices",
+	"ManagementType":        "Management Type. This field is relevant only for Cisco FTD Firewall devices",
+	"ManagementInterfaceId": "Management Interface ID. This field is relevant only for FG VM Firewall clusters with connectivity PRIVATE option",
+	"IpAddressType":         "Ip Address Type. This field is relevant only for FG VM Firewall clusters with connectivity PRIVATE option",
+	"IPAddress":             "LAN1 Private Network. This field is relevant only for Infoblox Grid Member devices",
+	"SubnetMaskIP":          "LAN1 Subnet Mask. This field is relevant only for Infoblox Grid Member devices",
+	"GatewayIP":             "LAN1 Gateway. This field is relevant only for Infoblox Grid Member devices",
 }
 
 func resourceNetworkDevice() *schema.Resource {
@@ -1065,6 +1069,19 @@ func createVendorConfigurationSchema() map[string]*schema.Schema {
 			Description:  neDeviceVendorConfigDescriptions["ManagementType"],
 			ValidateFunc: validation.StringInSlice([]string{"FMC", "FDM", "CDO"}, false),
 		},
+		neDeviceVendorConfigSchemaNames["ManagementInterfaceId"]: {
+			Type:        schema.TypeString,
+			Optional:    true,
+			ForceNew:    true,
+			Description: neDeviceVendorConfigDescriptions["ManagementInterfaceId"],
+		},
+		neDeviceVendorConfigSchemaNames["IpAddressType"]: {
+			Type:         schema.TypeString,
+			Optional:     true,
+			ForceNew:     true,
+			Description:  neDeviceVendorConfigDescriptions["IpAddressType"],
+			ValidateFunc: validation.StringInSlice([]string{"DHCP", "NO_IP_ADDRESS", "STATIC"}, false),
+		},
 	}
 }
 
@@ -1748,6 +1765,12 @@ func flattenVendorConfiguration(vendorConfig map[string]string) interface{} {
 	if v, ok := vendorConfig["managementType"]; ok {
 		transformed[neDeviceVendorConfigSchemaNames["ManagementType"]] = v
 	}
+	if v, ok := vendorConfig["managementInterfaceId"]; ok {
+		transformed[neDeviceVendorConfigSchemaNames["ManagementInterfaceId"]] = v
+	}
+	if v, ok := vendorConfig["ipAddressType"]; ok {
+		transformed[neDeviceVendorConfigSchemaNames["IpAddressType"]] = v
+	}
 	return []interface{}{transformed}
 }
 
@@ -1837,6 +1860,12 @@ func expandVendorConfiguration(vendorConfigs []interface{}) map[string]string {
 	}
 	if v, ok := vendorConfig[neDeviceVendorConfigSchemaNames["ManagementType"]]; ok && !isEmpty(v) {
 		transformed["managementType"] = v.(string)
+	}
+	if v, ok := vendorConfig[neDeviceVendorConfigSchemaNames["IpAddressType"]]; ok && !isEmpty(v) {
+		transformed["ipAddressType"] = v.(string)
+	}
+	if v, ok := vendorConfig[neDeviceVendorConfigSchemaNames["ManagementInterfaceId"]]; ok && !isEmpty(v) {
+		transformed["managementInterfaceId"] = v.(string)
 	}
 	if v, ok := vendorConfig[neDeviceVendorConfigSchemaNames["IPAddress"]]; ok && !isEmpty(v) {
 		transformed["ipAddress"] = v.(string)
