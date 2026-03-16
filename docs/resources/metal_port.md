@@ -9,7 +9,7 @@ subcategory: "Metal"
 
 Use this resource to configure network ports on an Equinix Metal device. This resource can control both physical and bond ports.
 
-This Terraform resource doesn't create an API resource in Equinix Metal, but rather provides finer control for [Layer 2 networking](https://metal.equinix.com/developers/docs/layer2-networking/).
+This Terraform resource doesn't create an API resource in Equinix Metal, but rather provides finer control for [Layer 2 networking](https://docs.equinix.com/metal/layer2-networking/).
 
 The port resource referred is created together with device and accessible either via the device resource or over `/port/<uuid>` API path.
 
@@ -29,7 +29,7 @@ The following arguments are supported:
 
 ### Timeouts
 
-The `timeouts` block allows you to specify [timeouts](https://www.terraform.io/configuration/resources#operation-timeouts) for certain actions:
+The `timeouts` block allows you to specify [timeouts](https://developer.hashicorp.com/terraform/language/resources/syntax#operation-timeouts) for certain actions:
 
 These timeout includes the time to disbond, convert to L2/L3, bond and update native vLAN.
 

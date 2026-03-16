@@ -7,7 +7,7 @@ subcategory: "Metal"
 
 # equinix_metal_connection (Data Source)
 
-Use this data source to retrieve a [connection resource](https://metal.equinix.com/developers/docs/networking/fabric/)
+Use this data source to retrieve a [connection resource](https://docs.equinix.com/metal/networking/fabric/)
 
 ~> Equinix Metal connection with with Service Token A-side / Z-side (service_token_type) is not generally available and may not be enabled yet for your organization.
 
@@ -45,7 +45,7 @@ In addition to all arguments above, the following attributes are exported:
 * `organization_id` - ID of the organization where the connection is scoped to.
 * `status` - Status of the connection resource.
 * `service_tokens` - List of connection service tokens with attributes
-  * `id` - UUID of the service token required to configure the connection in Equinix Fabric with the [equinix_fabric_connection](../resources/fabric_connection.md) resource or from the [Equinix Fabric Portal](https://fabric.equinix.com/dashboard).
+  * `id` - UUID of the service token required to configure the connection in Equinix Fabric with the [equinix_fabric_connection](../resources/fabric_connection.md) resource or from the [Equinix Fabric Portal](https://fabric.equinix.com).
   * `expires_at` - Expiration date of the service token.
   * `max_allowed_speed` - Maximum allowed speed for the service token, string like in the `speed` attribute.
   * `type` - Token type, `a_side` or `z_side`.
@@ -58,5 +58,5 @@ In addition to all arguments above, the following attributes are exported:
   * `status` - Port status.
   * `link_status` - Port link status.
   * `virtual_circuit_ids` - List of IDs of virtual cicruits attached to this port.
-* `token` - (Deprecated) Fabric Token required to configure the connection in Equinix Fabric with the [equinix_fabric_connection](../resources/fabric_connection.md) resource or from the [Equinix Fabric Portal](https://fabric.equinix.com/dashboard). If your organization already has connection service tokens enabled, use `service_tokens` instead.
-* `authorization_code` - Fabric Authorization Code to configure the Metal-Fabric Integration connection in Equinix Fabric with the [equinix_fabric_connection](../resources/fabric_connection.md) resource or from the [Equinix Fabric Portal](https://fabric.equinix.com/dashboard).
+* `token` - (Deprecated) Fabric Token required to configure the connection in Equinix Fabric with the [equinix_fabric_connection](../resources/fabric_connection.md) resource or from the [Equinix Fabric Portal](https://fabric.equinix.com). If your organization already has connection service tokens enabled, use `service_tokens` instead.
+* `authorization_code` - Fabric Authorization Code to configure the Metal-Fabric Integration connection in Equinix Fabric with the [equinix_fabric_connection](../resources/fabric_connection.md) resource or from the [Equinix Fabric Portal](https://fabric.equinix.com).

@@ -7,7 +7,7 @@ subcategory: "Fabric"
 Fabric V4 API compatible data resource that allow user to fetch Equinix Fabric Route Aggregations with pagination details
 Additional Documentation:
 * Getting Started: https://docs.equinix.com/en-us/Content/KnowledgeCenter/Fabric/GettingStarted/Integrating-with-Fabric-V4-APIs/IntegrateWithSink.htm
-* API: https://developer.equinix.com/catalog/fabricv4#tag/Streams
+* API: https://docs.equinix.com/api-catalog/fabricv4#tag/Streams
 
 ## Example Usage
 

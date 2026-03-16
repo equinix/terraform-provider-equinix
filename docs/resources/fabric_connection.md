@@ -11,8 +11,8 @@ description: |-
 Fabric V4 API compatible resource allows creation and management of Equinix Fabric connection
 
 Additional documentation:
-* Getting Started: https://docs.equinix.com/en-us/Content/Interconnection/Fabric/IMPLEMENTATION/fabric-connections-implement.htm
-* API: https://developer.equinix.com/dev-docs/fabric/api-reference/fabric-v4-apis#connections
+* Getting Started: https://docs.equinix.com/fabric/fabric-api/
+* API: https://docs.equinix.com/api-catalog/fabricv4/#tag/Connections
 
 ## Supporting Modules
 

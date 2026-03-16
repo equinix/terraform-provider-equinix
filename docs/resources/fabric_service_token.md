@@ -4,11 +4,11 @@ subcategory: "Fabric"
 
 # equinix_fabric_service_token (Resource)
 
-Fabric V4 API compatible resource allows creation and management of [Equinix Fabric Service Token](https://docs.equinix.com/en-us/Content/Interconnection/Fabric/service%20tokens/Fabric-Service-Tokens.htm).
+Fabric V4 API compatible resource allows creation and management of [Equinix Fabric Service Token](https://docs.equinix.com/fabric/service-tokens/create-z-side-token).
 
 Additional documentation:
-* Getting Started: https://docs.equinix.com/en-us/Content/Interconnection/Fabric/service%20tokens/Fabric-Service-Tokens.htm
-* API: https://docs.equinix.com/en-us/Content/KnowledgeCenter/Fabric/GettingStarted/Integrating-with-Fabric-V4-APIs/ConnectUsingServiceToken.htm
+* Getting Started: https://docs.equinix.com/fabric/service-tokens/create-z-side-token
+* API: https://docs.equinix.com/fabric/fabric-api/connect-using-service-token
 
 ## Example Usage
 
