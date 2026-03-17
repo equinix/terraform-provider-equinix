@@ -74,7 +74,7 @@ Token's can be generated for the API Client using the OAuth2 Token features desc
 
 API tokens can be provided using the `token` provider argument, or the `EQUINIX_API_TOKEN` evironment variable. The `client_id` and `client_secret` arguments will be ignored in the presence of a `token` argument.
 
-When testing against the [Equinix Sandbox API](https://docs.equinix.com), tokens must be used.
+See the [Equinix API Testing](https://docs.equinix.com/equinix-api/testing) guide for details on recommended testing practices.
 
 ```terraform
 provider "equinix" {
