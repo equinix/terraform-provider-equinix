@@ -65,7 +65,7 @@ The following arguments are supported:
 * `organization_id` - (Required) The UUID of organization under which you want to create the project. If you leave it out, the project will be created under your the default organization of your account.
 * `payment_method_id` - The UUID of payment method for this project. The payment method and the project need to belong to the same organization (passed with `organization_id`, or default).
 * `backend_transfer` - Enable or disable [Backend Transfer](https://docs.equinix.com/metal/networking/backend-transfer/), default is `false`.
-* `bgp_config` - Optional BGP settings. Refer to [Equinix Metal guide for BGP](https://docs.equinix.com/metal/networking/local-global-bgp/).
+* `bgp_config` - Optional BGP settings. Refer to [Equinix Metal guide for BGP](https://docs.equinix.com/metal/bgp/bgp-on-equinix-metal/).
 
 -> **NOTE:** Once you set the BGP config in a project, it can't be removed (due to a limitation in the Equinix Metal API). It can be updated.
 

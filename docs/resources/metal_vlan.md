@@ -8,8 +8,7 @@ Provides a resource to allow users to manage Virtual Networks in their projects.
 
 To learn more about Layer 2 networking in Equinix Metal, refer to
 
-* https://docs.equinix.com/metal/networking/layer2/
-* https://docs.equinix.com/metal/networking/layer2-configs/
+* https://docs.equinix.com/metal/layer2-networking/overview/
 
 ## Example Usage
 

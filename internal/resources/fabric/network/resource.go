@@ -36,8 +36,8 @@ func Resource() *schema.Resource {
 		Description: `Fabric V4 API compatible resource allows creation and management of Equinix Fabric Network
 
 Additional documentation:
-* Getting Started: https://docs.equinix.com/en-us/Content/Interconnection/Fabric/IMPLEMENTATION/fabric-networks-implement.htm
-* API: https://developer.equinix.com/dev-docs/fabric/api-reference/fabric-v4-apis#fabric-networks`,
+* Getting Started: https://docs.equinix.com/fabric/multipoint-connections/multipoint-networks/
+* API: https://docs.equinix.com/api-catalog/fabricv4/#tag/Networks`,
 	}
 }
 

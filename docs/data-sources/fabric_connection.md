@@ -7,7 +7,7 @@ subcategory: "Fabric"
 Fabric V4 API compatible data resource that allow user to fetch connection for a given UUID 
 
 Additional documentation:
-* Getting Started: https://docs.equinix.com/fabric/fabric-api/
+* Getting Started: https://docs.equinix.com/api-catalog/fabricv4/
 * API: https://docs.equinix.com/api-catalog/fabricv4/#tag/Connections
 
 ## Example Usage

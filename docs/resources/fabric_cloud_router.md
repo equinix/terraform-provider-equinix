@@ -4,10 +4,10 @@ subcategory: "Fabric"
 
 # equinix_fabric_cloud_router (Resource)
 
-Fabric V4 API compatible resource allows creation and management of [Equinix Fabric Cloud Router](https://docs.equinix.com/en-us/Content/Interconnection/FCR/FCR-intro.htm#HowItWorks).
+Fabric V4 API compatible resource allows creation and management of [Equinix Fabric Cloud Router](https://docs.equinix.com/fabric-cloud-router/).
 
 Additional documentation:
-* Getting Started: https://docs.equinix.com/en-us/Content/Interconnection/FCR/FCR-intro.htm#HowItWorks
+* Getting Started: https://docs.equinix.com/fabric-cloud-router/
 * API: https://docs.equinix.com/api-catalog/fabricv4/#tag/Cloud-Routers
 
 ## Example Usage

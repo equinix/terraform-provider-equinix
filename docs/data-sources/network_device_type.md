@@ -4,7 +4,7 @@ subcategory: "Network Edge"
 
 # equinix_network_device_type (Data Source)
 
-Use this data source to get Equinix Network Edge device type details. For further details, check supported [Network Edge Vendors and Devices](https://docs.equinix.com/en-us/Content/Interconnection/NE/user-guide/NE-vendors-devices.htm).
+Use this data source to get Equinix Network Edge device type details. For further details, check supported [Network Edge Vendors and Devices](https://docs.equinix.com/network-edge/create-devices/ne-vendor-device-index/).
 
 ## Example Usage
 

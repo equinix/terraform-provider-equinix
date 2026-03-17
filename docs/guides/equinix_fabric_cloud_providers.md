@@ -4,7 +4,7 @@ page_title: "Connecting to the cloud with Equinix Fabric via Terraform"
 
 # Connecting to the cloud with Equinix Fabric via Terraform
 
--> **NOTE:** See the [Equinix Fabric](https://docs.equinix.com/en-us/Content/Interconnection/Fabric/Fabric-landing-main.htm)
+-> **NOTE:** See the [Equinix Fabric](https://docs.equinix.com/fabric/)
 documentation for more details.
 
 Equinix Fabric™ is a software-defined interconnection service that allows any business to connect
@@ -50,10 +50,10 @@ resource "azurerm_express_route_circuit" "example" {
 ```
 
 **2.** Request an Equinix Fabric connection - From an
-[Equinix Fabric Port](https://docs.equinix.com/en-us/Content/Interconnection/Fabric/ports/Fabric-port-details.htm) /
-[Network Edge Device](https://docs.equinix.com/en-us/Content/Interconnection/NE/landing-pages/NE-landing-main.htm) /
+[Equinix Fabric Port](https://docs.equinix.com/fabric/ports/managing-fabric-ports/) /
+[Network Edge Device](https://docs.equinix.com/network-edge/) /
 [Equinix Service Token](https://docs.equinix.com/fabric/service-tokens/create-z-side-token) /
-[Equinix Fabric Cloud Router](https://docs.equinix.com/en-us/Content/Interconnection/FCR/FCR-intro.htm)
+[Equinix Fabric Cloud Router](https://docs.equinix.com/fabric-cloud-router/)
 to the cloud virtual interconnection asset.
 
 In this example, we will establish a connection from a Cloud Router

@@ -10,7 +10,7 @@ For information about obtaining API key and secret required for Equinix Fabric a
 
 Equinix Fabric also supports authentication using a [Workload Identity Token](https://developer.hashicorp.com/terraform/cloud-docs/workspaces/dynamic-provider-credentials/workload-identity-tokens), which can be used in place of the `client_id` and `client_secret` arguments. Requires an authorization scope and OIDC token from an IdP trusted by Equinix STS. Please note that this is an alpha feature not available for all users. Using workload identity tokens will override client ID/secret, you must use [provider aliases](https://developer.hashicorp.com/terraform/language/providers/configuration#alias-multiple-provider-configurations) to manage both workload identity tokens and client ID/secret in a single Terraform configuration.
 
-Interacting with Equinix Metal requires an API auth token that can be generated at [Project-level](https://docs.equinix.com/metal/accounts/projects/#api-keys) or [User-level](https://docs.equinix.com/metal/accounts/users/#api-keys) tokens can be used.
+Interacting with Equinix Metal requires an API auth token that can be generated at [Project-level](https://docs.equinix.com/metal/identity-access-management/api-keys/) or [User-level](https://docs.equinix.com/metal/identity-access-management/api-keys/) tokens can be used.
 
 If you are only using Equinix Metal resources, you may omit the Client ID and Client Secret provider configuration parameters needed to access other Equinix resource types (Network Edge, Fabric, etc).
 
@@ -18,7 +18,7 @@ Use the navigation to the left to read about the available resources.
 
 ## Example Usage
 
-Example HCL with [provider configuration](https://developer.hashicorp.com/terraform/language/providers/configuration) and a [required providers definition](https://developer.hashicorp.com/terraform/language/settings#specifying-a-required-terraform-version):
+Example HCL with [provider configuration](https://developer.hashicorp.com/terraform/language/providers/configuration) and a [required providers definition](https://developer.hashicorp.com/terraform/language/providers/requirements):
 
 ```terraform
 terraform {

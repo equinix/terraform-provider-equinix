@@ -8,7 +8,7 @@ For example, the {{ .SchemaMarkdown }} template can be used to replace manual sc
 
 # equinix_metal_connection (Resource)
 
-Use this resource to request the creation an Interconnection asset to connect with other parties using [Equinix Fabric - software-defined interconnections](https://metal.equinix.com/developers/docs/networking/fabric/).
+Use this resource to request the creation an Interconnection asset to connect with other parties using [Equinix Fabric - software-defined interconnections](https://docs.equinix.com/metal/interconnections/introduction/).
 
 ## Example Usage
 
@@ -16,7 +16,7 @@ Use this resource to request the creation an Interconnection asset to connect wi
 
 {{tffile "examples/resources/equinix_metal_connection/fabric_billed_metal_from_fabric_port.tf"}}
 
--> NOTE: There is an [Equinix Fabric L2 Connection To Equinix Metal Terraform module](https://registry.terraform.io/modules/equinix-labs/fabric-connection-metal/equinix/latest) available with full-fledged examples of connections from Fabric Ports, Network Edge Devices or Service Tokens. Check out the [example for shared connection with Z-side Service Token](https://registry.terraform.io/modules/equinix-labs/fabric-connection-metal/equinix/0.2.0/examples/fabric-port-connection-with-zside-token).
+-> NOTE: There is an [Equinix Fabric L2 Connection To Equinix Metal Terraform module](https://registry.terraform.io/modules/equinix/fabric/equinix/latest) available with full-fledged examples of connections from Fabric Ports, Network Edge Devices or Service Tokens. Check out the [example for shared connection with Z-side Service Token](https://registry.terraform.io/modules/equinix/fabric/equinix/latest/examples/service-token-for-zside-port).
 
 ### Fabric Billed Shared Virtual Connection - Non-redundant connection from your own Network Edge device to Equinix Metal
 
@@ -30,7 +30,7 @@ Use this resource to request the creation an Interconnection asset to connect wi
 
 {{tffile "examples/resources/equinix_metal_connection/metal_billed_metal_to_csp.tf"}}
 
--> NOTE: There are multiple [Equinix Fabric L2 Connection Terraform modules](https://registry.terraform.io/search/modules?namespace=equinix-labs&q=fabric-connection) available with full-fledged examples of connections from Fabric Ports, Network Edge Devices or Service Token to most popular Cloud Service Providers. Check out the examples for Equinix Metal shared connection with A-side Service Token included in each of them: [AWS](https://registry.terraform.io/modules/equinix-labs/fabric-connection-aws/equinix/latest/examples/service-token-metal-to-aws-connection), [Azure](https://registry.terraform.io/modules/equinix-labs/fabric-connection-azure/equinix/latest/examples/service-token-metal-to-azure-connection), [Google Cloud](https://registry.terraform.io/modules/equinix-labs/fabric-connection-gcp/equinix/latest/examples/service-token-metal-to-gcp-connection), [IBM Cloud](https://registry.terraform.io/modules/equinix-labs/fabric-connection-ibm/equinix/latest/examples/service-token-metal-to-ibm-connection), [Oracle Cloud](https://registry.terraform.io/modules/equinix-labs/fabric-connection-oci/equinix/latest/examples/service-token-metal-to-oci-connection), [Alibaba Cloud](https://registry.terraform.io/modules/equinix-labs/fabric-connection-alibaba/equinix/latest/examples/service-token-metal-to-alibaba-connection).
+-> NOTE: There are multiple [Equinix Fabric L2 Connection Terraform modules](https://registry.terraform.io/modules/equinix/fabric/equinix/latest) available with full-fledged examples of connections from Fabric Ports, Network Edge Devices or Service Token to most popular Cloud Service Providers. Check out the examples for Equinix Metal shared connection with A-side Service Token included in each of them: [AWS](https://registry.terraform.io/modules/equinix/fabric/equinix/latest/examples/metal-nimf-2-aws-connection), [Azure](https://registry.terraform.io/modules/equinix/fabric/equinix/latest/examples/metal-nimf-2-azure-connection), [Google Cloud](https://registry.terraform.io/modules/equinix/fabric/equinix/latest/examples/metal-nimf-2-google-connection), [IBM Cloud](https://registry.terraform.io/modules/equinix/fabric/equinix/latest/examples/metal-nimf-2-ibm2-connection), [Oracle Cloud](https://registry.terraform.io/modules/equinix/fabric/equinix/latest/examples/metal-nimf-2-oracle-connection), [Alibaba Cloud](https://registry.terraform.io/modules/equinix/fabric/equinix/latest).
 
 ### Metal Billed Shared Virtual Connection - Non-Redundant connection from Equinix Metal to your own Equinix Fabric Port
 

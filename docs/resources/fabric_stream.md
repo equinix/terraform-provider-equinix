@@ -7,8 +7,8 @@ subcategory: "Fabric"
 Fabric V4 API compatible resource allows creation and management of Equinix Fabric Stream
 
 Additional Documentation:
-* Getting Started: https://docs.equinix.com/en-us/Content/KnowledgeCenter/Fabric/GettingStarted/Integrating-with-Fabric-V4-APIs/IntegrateWithSink.htm
-* API: https://docs.equinix.com/api-catalog/fabricv4#tag/Streams
+* Getting Started: https://docs.equinix.com/observability/streaming-data/integratewithsink/
+* API: https://docs.equinix.com/api-catalog/fabricv4/#tag/Streams
 
 ## Example Usage
 
