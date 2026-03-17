@@ -7,7 +7,7 @@ subcategory: "Fabric"
 Fabric V4 API compatible resource allows attachment of Route Filter Polices to Fabric Connections
 
 Additional Documentation:
-* Getting Started: https://docs.equinix.com/en-us/Content/Interconnection/FCR/FCR-route-filters.htm
+* Getting Started: https://docs.equinix.com/fabric-cloud-router/bgp/fcr-route-filters/
 * API: https://docs.equinix.com/api-catalog/fabricv4/#tag/Route-Filters
 
 ## Example Usage

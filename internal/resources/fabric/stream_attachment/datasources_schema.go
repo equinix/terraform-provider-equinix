@@ -15,8 +15,8 @@ func dataSourceAllStreamAttachmentsSchema(ctx context.Context) schema.Schema {
 		Description: `Fabric V4 API compatible data resource that allow user to fetch Equinix Fabric Stream Attached Assets with filters and pagination details
 
 Additional Documentation:
-* Getting Started: https://docs.equinix.com/en-us/Content/KnowledgeCenter/Fabric/GettingStarted/Integrating-with-Fabric-V4-APIs/IntegrateWithSink.htm
-* API: https://developer.equinix.com/catalog/fabricv4#tag/Streams`,
+* Getting Started: https://docs.equinix.com/observability/streaming-data/integratewithsink/
+* API: https://docs.equinix.com/api-catalog/fabricv4/#tag/Streams`,
 		Attributes: map[string]schema.Attribute{
 			"id": framework.IDAttributeDefaultDescription(),
 			"filters": schema.ListNestedAttribute{
@@ -124,8 +124,8 @@ func dataSourceByIDsSchema(ctx context.Context) schema.Schema {
 		Description: `Fabric V4 API compatible data resource that allow user to fetch Equinix Fabric Stream Asset Attachment by IDs
 
 Additional Documentation:
-* Getting Started: https://docs.equinix.com/en-us/Content/KnowledgeCenter/Fabric/GettingStarted/Integrating-with-Fabric-V4-APIs/IntegrateWithSink.htm
-* API: https://developer.equinix.com/catalog/fabricv4#tag/Streams`,
+* Getting Started: https://docs.equinix.com/observability/streaming-data/integratewithsink/
+* API: https://docs.equinix.com/api-catalog/fabricv4/#tag/Streams`,
 		Attributes: baseStreamSchema,
 	}
 }

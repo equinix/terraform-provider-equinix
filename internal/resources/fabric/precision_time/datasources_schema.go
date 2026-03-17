@@ -19,7 +19,7 @@ func dataSourceAllEptServicesSchema(ctx context.Context) schema.Schema {
 	return schema.Schema{
 		Description: `Fabric V4 API compatible data resource that allow user to fetch Equinix Fabric Precision Time Services with pagination details
 Additional Documentation:
-* API: https://docs.equinix.com/en-us/Content/KnowledgeCenter/Fabric/API-Reference/API-Precision-Time.htm`,
+* API: https://docs.equinix.com/api-catalog/fabricv4/#tag/Precision-Time`,
 		Attributes: map[string]schema.Attribute{
 			"id": framework.IDAttributeDefaultDescription(),
 			"data": schema.ListNestedAttribute{
@@ -108,7 +108,7 @@ func dataSourceSingleEptServiceSchema(ctx context.Context) schema.Schema {
 	return schema.Schema{
 		Description: `Fabric V4 API compatible data resource that allow user to fetch Equinix Precision Time Service by UUID
 Additional Documentation:
-* API: https://developer.equinix.com/catalog/fabricv4#tag/Precision-Time`,
+* API: https://docs.equinix.com/api-catalog/fabricv4/#tag/Precision-Time`,
 		Attributes: baseEptServiceSchema,
 	}
 

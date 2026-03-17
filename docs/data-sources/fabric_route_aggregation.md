@@ -6,7 +6,7 @@ subcategory: "Fabric"
 
 Fabric V4 API compatible data resource that allow user to fetch Equinix Fabric Route Aggregation by UUID
 Additional Documentation:
-* API: https://docs.equinix.com/api-catalog/fabricv4#tag/Route-Aggregations
+* API: https://docs.equinix.com/api-catalog/fabricv4/#tag/Route-Aggregations
 
 ## Example Usage
 

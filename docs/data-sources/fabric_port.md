@@ -7,7 +7,7 @@ subcategory: "Fabric"
 Fabric V4 API compatible data resource that allow user to fetch port by uuid
 
 Additional documentation:
-* Getting Started: https://docs.equinix.com/fabric/ports/
+* Getting Started: https://docs.equinix.com/fabric/ports/managing-fabric-ports/
 * API: https://docs.equinix.com/api-catalog/fabricv4/#tag/Ports
 
 ## Example Usage

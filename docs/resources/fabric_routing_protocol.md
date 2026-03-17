@@ -11,7 +11,7 @@ description: |-
 Fabric V4 API compatible resource allows creation and management of Equinix Fabric connection
 
 Additional documentation:
-* Getting Started: https://docs.equinix.com/en-us/Content/Interconnection/FCR/connections/FCR-connect-azureQC.htm#ConfigureRoutingDetailsintheFabricPortal
+* Getting Started: https://docs.equinix.com/fabric-cloud-router/connections/fcr-connect-azureqc/
 * API: https://docs.equinix.com/api-catalog/fabricv4/#tag/Routing-Protocols
 
 ## Example Usage

@@ -7,7 +7,7 @@ subcategory: "Fabric"
 Fabric V4 API compatible data resource that allow user to fetch Service Profile by name filter criteria
 
 Additional documentation:
-* Getting Started: https://docs.equinix.com/fabric/service-providers/
+* Getting Started: https://docs.equinix.com/fabric/service-providers/fabric-spo-intro/
 * API: https://docs.equinix.com/api-catalog/fabricv4/#tag/Service-Profiles
 
 ## Example Usage
