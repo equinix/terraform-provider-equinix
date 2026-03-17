@@ -1,3 +1,4 @@
+// Package servicetoken provides resources and data sources for managing Equinix Fabric service tokens.
 package servicetoken
 
 import (
@@ -10,6 +11,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
+// DataSource returns the schema.Resource for fetching a Fabric service token by UUID.
 func DataSource() *schema.Resource {
 	return &schema.Resource{
 		ReadContext: dataSourceRead,
@@ -28,6 +30,7 @@ func dataSourceRead(ctx context.Context, d *schema.ResourceData, meta interface{
 	return resourceRead(ctx, d, meta)
 }
 
+// DataSourceSearch returns the schema.Resource for searching Fabric service tokens.
 func DataSourceSearch() *schema.Resource {
 	return &schema.Resource{
 		ReadContext: dataSourceSearch,
