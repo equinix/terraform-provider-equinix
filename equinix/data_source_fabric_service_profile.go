@@ -136,7 +136,7 @@ func readFabricServiceProfilesSearchSchema() map[string]*schema.Schema {
 	}
 }
 
-func dataSourceFabricServiceProfileReadByUuid() *schema.Resource {
+func dataSourceFabricServiceProfileReadByUUID() *schema.Resource {
 	return &schema.Resource{
 		ReadContext: dataSourceFabricServiceProfileRead,
 		Schema:      readFabricServiceProfileResourceSchema(),

@@ -1,3 +1,4 @@
+// Package route_filter provides resources and data sources for managing Equinix Fabric route filter policies.
 package route_filter
 
 import (
@@ -11,6 +12,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
+// DataSource returns the schema.Resource for fetching a Fabric route filter policy by UUID.
 func DataSource() *schema.Resource {
 	return &schema.Resource{
 		ReadContext: dataSourceRead,
@@ -29,6 +31,7 @@ func dataSourceRead(ctx context.Context, d *schema.ResourceData, meta interface{
 	return resourceRead(ctx, d, meta)
 }
 
+// DataSourceSearch returns the schema.Resource for searching Fabric route filter policies.
 func DataSourceSearch() *schema.Resource {
 	return &schema.Resource{
 		ReadContext: dataSourceSearch,

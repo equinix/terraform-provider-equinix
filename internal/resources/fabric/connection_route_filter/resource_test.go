@@ -189,7 +189,7 @@ func CheckConnectionRouteFilterDelete(s *terraform.State) error {
 
 		connectionID := rs.Primary.Attributes["connection_id"]
 
-		err := connection_route_filter.WaitForDeletion(connectionID, rs.Primary.ID, acceptance.TestAccProvider.Meta(), &schema.ResourceData{}, ctx, 10*time.Minute)
+		err := connection_route_filter.WaitForDeletion(ctx, connectionID, rs.Primary.ID, acceptance.TestAccProvider.Meta(), &schema.ResourceData{}, 10*time.Minute)
 		if err != nil {
 			return fmt.Errorf("API call failed while waiting for resource deletion")
 		}
