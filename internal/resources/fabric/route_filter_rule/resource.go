@@ -16,6 +16,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
+// Resource returns the schema.Resource for managing Equinix Fabric route filter rules.
 func Resource() *schema.Resource {
 	return &schema.Resource{
 		Timeouts: &schema.ResourceTimeout{
@@ -35,17 +36,17 @@ func Resource() *schema.Resource {
 		Description: `Fabric V4 API compatible resource allows creation and management of Equinix Fabric Route Filter Rule
 
 Additional Documentation:
-* Getting Started: https://docs.equinix.com/en-us/Content/Interconnection/FCR/FCR-route-filters.htm
-* API: https://developer.equinix.com/dev-docs/fabric/api-reference/fabric-v4-apis#route-filter-rules`,
+* Getting Started: https://docs.equinix.com/fabric-cloud-router/bgp/fcr-route-filters/
+* API: https://docs.equinix.com/api-catalog/fabricv4/#tag/Route-Filter-Rules`,
 	}
 }
 
 func resourceRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	client := meta.(*config.Config).NewFabricClientForSDK(ctx, d)
-	routeFilterId := d.Get("route_filter_id").(string)
-	routeFilterRule, _, err := client.RouteFilterRulesApi.GetRouteFilterRuleByUuid(ctx, routeFilterId, d.Id()).Execute()
+	routeFilterID := d.Get("route_filter_id").(string)
+	routeFilterRule, _, err := client.RouteFilterRulesApi.GetRouteFilterRuleByUuid(ctx, routeFilterID, d.Id()).Execute()
 	if err != nil {
-		log.Printf("[WARN] Route Filter Rule %s not found on Route Filter %s, error %s", d.Id(), routeFilterId, err)
+		log.Printf("[WARN] Route Filter Rule %s not found on Route Filter %s, error %s", d.Id(), routeFilterID, err)
 		if !strings.Contains(err.Error(), "500") {
 			d.SetId("")
 		}
@@ -57,23 +58,23 @@ func resourceRead(ctx context.Context, d *schema.ResourceData, meta interface{})
 
 func resourceCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	client := meta.(*config.Config).NewFabricClientForSDK(ctx, d)
-	routeFilterId := d.Get("route_filter_id").(string)
+	routeFilterID := d.Get("route_filter_id").(string)
 	createRequest := buildCreateRequest(d)
 
 	start := time.Now()
-	routeFilter, _, err := client.RouteFilterRulesApi.CreateRouteFilterRule(ctx, routeFilterId).RouteFilterRulesBase(createRequest).Execute()
+	routeFilter, _, err := client.RouteFilterRulesApi.CreateRouteFilterRule(ctx, routeFilterID).RouteFilterRulesBase(createRequest).Execute()
 	if err != nil {
 		return diag.FromErr(equinix_errors.FormatFabricError(err))
 	}
-	err = d.Set("route_filter_id", routeFilterId)
+	err = d.Set("route_filter_id", routeFilterID)
 	if err != nil {
 		return diag.Errorf("error setting route_filter_id to state %s", err)
 	}
 	d.SetId(routeFilter.GetUuid())
 
 	createTimeout := d.Timeout(schema.TimeoutCreate) - 30*time.Second - time.Since(start)
-	if err = waitForStability(routeFilterId, d.Id(), meta, d, ctx, createTimeout); err != nil {
-		return diag.Errorf("error waiting for route filter rule (%s) on route filter (%s) to be created: %s", d.Id(), routeFilterId, err)
+	if err = waitForStability(ctx, routeFilterID, d.Id(), meta, d, createTimeout); err != nil {
+		return diag.Errorf("error waiting for route filter rule (%s) on route filter (%s) to be created: %s", d.Id(), routeFilterID, err)
 	}
 
 	return resourceRead(ctx, d, meta)
@@ -81,18 +82,18 @@ func resourceCreate(ctx context.Context, d *schema.ResourceData, meta interface{
 
 func resourceUpdate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	client := meta.(*config.Config).NewFabricClientForSDK(ctx, d)
-	routeFilterId := d.Get("route_filter_id").(string)
+	routeFilterID := d.Get("route_filter_id").(string)
 	updateRequest := buildUpdateRequest(d)
 
 	start := time.Now()
-	routeFilter, _, err := client.RouteFilterRulesApi.PatchRouteFilterRuleByUuid(ctx, routeFilterId, d.Id()).RouteFilterRulesPatchRequestItem(updateRequest).Execute()
+	routeFilter, _, err := client.RouteFilterRulesApi.PatchRouteFilterRuleByUuid(ctx, routeFilterID, d.Id()).RouteFilterRulesPatchRequestItem(updateRequest).Execute()
 	if err != nil {
 		return diag.FromErr(equinix_errors.FormatFabricError(err))
 	}
 
 	updateTimeout := d.Timeout(schema.TimeoutUpdate) - 30*time.Second - time.Since(start)
-	if err = waitForStability(routeFilterId, d.Id(), meta, d, ctx, updateTimeout); err != nil {
-		return diag.Errorf("error waiting for route filter rule (%s) on route filter (%s) to be updated: %s", d.Id(), routeFilterId, err)
+	if err = waitForStability(ctx, routeFilterID, d.Id(), meta, d, updateTimeout); err != nil {
+		return diag.Errorf("error waiting for route filter rule (%s) on route filter (%s) to be updated: %s", d.Id(), routeFilterID, err)
 	}
 
 	return setRouteFilterRuleMap(d, routeFilter)
@@ -101,10 +102,10 @@ func resourceUpdate(ctx context.Context, d *schema.ResourceData, meta interface{
 func resourceDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	diags := diag.Diagnostics{}
 	client := meta.(*config.Config).NewFabricClientForSDK(ctx, d)
-	routeFilterId := d.Get("route_filter_id").(string)
+	routeFilterID := d.Get("route_filter_id").(string)
 
 	start := time.Now()
-	_, _, err := client.RouteFilterRulesApi.DeleteRouteFilterRuleByUuid(ctx, routeFilterId, d.Id()).Execute()
+	_, _, err := client.RouteFilterRulesApi.DeleteRouteFilterRuleByUuid(ctx, routeFilterID, d.Id()).Execute()
 	if err != nil {
 		if genericError, ok := err.(*fabricv4.GenericOpenAPIError); ok {
 			if fabricErrs, ok := genericError.Model().([]fabricv4.Error); ok {
@@ -118,14 +119,14 @@ func resourceDelete(ctx context.Context, d *schema.ResourceData, meta interface{
 	}
 
 	deleteTimeout := d.Timeout(schema.TimeoutDelete) - 30*time.Second - time.Since(start)
-	if err = WaitForDeletion(routeFilterId, d.Id(), meta, d, ctx, deleteTimeout); err != nil {
-		return diag.Errorf("error waiting for route filter rule (%s) on route filter (%s) to be deleted: %s", d.Id(), routeFilterId, err)
+	if err = WaitForDeletion(ctx, routeFilterID, d.Id(), meta, d, deleteTimeout); err != nil {
+		return diag.Errorf("error waiting for route filter rule (%s) on route filter (%s) to be deleted: %s", d.Id(), routeFilterID, err)
 	}
 	return diags
 }
 
-func waitForStability(routeFilterId, ruleId string, meta interface{}, d *schema.ResourceData, ctx context.Context, timeout time.Duration) error {
-	log.Printf("Waiting for route filter rule %s on route filter %s to be stable", d.Id(), routeFilterId)
+func waitForStability(ctx context.Context, routeFilterID, ruleID string, meta interface{}, d *schema.ResourceData, timeout time.Duration) error {
+	log.Printf("Waiting for route filter rule %s on route filter %s to be stable", d.Id(), routeFilterID)
 	stateConf := &retry.StateChangeConf{
 		Pending: []string{
 			string(fabricv4.ROUTEFILTERRULESTATE_PROVISIONING),
@@ -136,7 +137,7 @@ func waitForStability(routeFilterId, ruleId string, meta interface{}, d *schema.
 		},
 		Refresh: func() (interface{}, string, error) {
 			client := meta.(*config.Config).NewFabricClientForSDK(ctx, d)
-			routeFilterRule, _, err := client.RouteFilterRulesApi.GetRouteFilterRuleByUuid(ctx, routeFilterId, ruleId).Execute()
+			routeFilterRule, _, err := client.RouteFilterRulesApi.GetRouteFilterRuleByUuid(ctx, routeFilterID, ruleID).Execute()
 			if err != nil {
 				return "", "", equinix_errors.FormatFabricError(err)
 			}
@@ -152,8 +153,9 @@ func waitForStability(routeFilterId, ruleId string, meta interface{}, d *schema.
 	return err
 }
 
-func WaitForDeletion(routeFilterId, ruleId string, meta interface{}, d *schema.ResourceData, ctx context.Context, timeout time.Duration) error {
-	log.Printf("Waiting for route filter rule %s on route filter %s to be deleted", d.Id(), routeFilterId)
+// WaitForDeletion waits until the route filter rule is deleted.
+func WaitForDeletion(ctx context.Context, routeFilterID, ruleID string, meta interface{}, d *schema.ResourceData, timeout time.Duration) error {
+	log.Printf("Waiting for route filter rule %s on route filter %s to be deleted", d.Id(), routeFilterID)
 	stateConf := &retry.StateChangeConf{
 		Pending: []string{
 			string(fabricv4.ROUTEFILTERRULESTATE_PROVISIONED),
@@ -164,7 +166,7 @@ func WaitForDeletion(routeFilterId, ruleId string, meta interface{}, d *schema.R
 		},
 		Refresh: func() (interface{}, string, error) {
 			client := meta.(*config.Config).NewFabricClientForSDK(ctx, d)
-			routeFilterRule, body, err := client.RouteFilterRulesApi.GetRouteFilterRuleByUuid(ctx, routeFilterId, ruleId).Execute()
+			routeFilterRule, body, err := client.RouteFilterRulesApi.GetRouteFilterRuleByUuid(ctx, routeFilterID, ruleID).Execute()
 			if err != nil {
 				if body != nil && body.StatusCode >= 400 && body.StatusCode <= 499 {
 					// Already deleted resource

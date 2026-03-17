@@ -1,3 +1,4 @@
+// Package connection provides resources and data sources for managing Equinix Fabric connections.
 package connection
 
 import (
@@ -14,6 +15,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
+// DataSource returns the schema.Resource for fetching a Fabric connection by UUID.
 func DataSource() *schema.Resource {
 	return &schema.Resource{
 		ReadContext: dataSourceFabricConnectionRead,
@@ -21,8 +23,8 @@ func DataSource() *schema.Resource {
 		Description: `Fabric V4 API compatible data resource that allow user to fetch connection for a given UUID 
 
 Additional documentation:
-* Getting Started: https://docs.equinix.com/en-us/Content/Interconnection/Fabric/IMPLEMENTATION/fabric-connections-implement.htm
-* API: https://developer.equinix.com/dev-docs/fabric/api-reference/fabric-v4-apis#connections`,
+* Getting Started: https://docs.equinix.com/api-catalog/fabricv4/
+* API: https://docs.equinix.com/api-catalog/fabricv4/#tag/Connections`,
 	}
 }
 
@@ -32,6 +34,7 @@ func dataSourceFabricConnectionRead(ctx context.Context, d *schema.ResourceData,
 	return resourceFabricConnectionRead(ctx, d, meta)
 }
 
+// DataSourceSearch returns the schema.Resource for searching Fabric connections.
 func DataSourceSearch() *schema.Resource {
 	return &schema.Resource{
 		ReadContext: dataSourceFabricConnectionSearch,
@@ -39,8 +42,8 @@ func DataSourceSearch() *schema.Resource {
 		Description: `Fabric V4 API compatible data resource that allow user to fetch connection for a given UUID
 
 Additional documentation:
-* Getting Started: https://docs.equinix.com/en-us/Content/Interconnection/Fabric/IMPLEMENTATION/fabric-connections-implement.htm
-* API: https://developer.equinix.com/dev-docs/fabric/api-reference/fabric-v4-apis#connections`,
+* Getting Started: https://docs.equinix.com/api-catalog/fabricv4/
+* API: https://docs.equinix.com/api-catalog/fabricv4/#tag/Connections`,
 	}
 }
 
@@ -161,9 +164,10 @@ func connectionFiltersTerraformToGo(filters []interface{}, outerOperator string)
 		expressions = append(expressions, value)
 	}
 
-	if outerOperator == "AND" {
+	switch outerOperator {
+	case "AND":
 		outerExpression.SetAnd(expressions)
-	} else if outerOperator == "OR" {
+	case "OR":
 		outerExpression.SetOr(expressions)
 	}
 

@@ -17,8 +17,8 @@ func dataSourceAllRouteAggregationsSchema(ctx context.Context) schema.Schema {
 	return schema.Schema{
 		Description: `Fabric V4 API compatible data resource that allow user to fetch Equinix Fabric Route Aggregations with pagination details
 Additional Documentation:
-* Getting Started: https://docs.equinix.com/en-us/Content/KnowledgeCenter/Fabric/GettingStarted/Integrating-with-Fabric-V4-APIs/IntegrateWithSink.htm
-* API: https://developer.equinix.com/catalog/fabricv4#tag/Streams`,
+* Getting Started: https://docs.equinix.com/observability/streaming-data/integratewithsink/
+* API: https://docs.equinix.com/api-catalog/fabricv4/#tag/Streams`,
 		Attributes: map[string]schema.Attribute{
 			"id": framework.IDAttributeDefaultDescription(),
 			"data": schema.ListNestedAttribute{
@@ -108,7 +108,7 @@ func dataSourceSingleRouteAggregationSchema(ctx context.Context) schema.Schema {
 	return schema.Schema{
 		Description: `Fabric V4 API compatible data resource that allow user to fetch Equinix Fabric Route Aggregation by UUID
 Additional Documentation:
-* API: https://developer.equinix.com/catalog/fabricv4#tag/Route-Aggregations`,
+* API: https://docs.equinix.com/api-catalog/fabricv4/#tag/Route-Aggregations`,
 		Attributes: baseRouteAggregationSchema,
 	}
 

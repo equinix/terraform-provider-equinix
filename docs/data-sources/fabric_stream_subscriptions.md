@@ -7,8 +7,8 @@ subcategory: "Fabric"
 Fabric V4 API compatible data source that allows user to fetch Equinix Fabric Stream Subscriptions with pagination
 
 Additional Documentation:
-* Getting Started: https://docs.equinix.com/en-us/Content/KnowledgeCenter/Fabric/GettingStarted/Integrating-with-Fabric-V4-APIs/IntegrateWithSink.htm
-* API: https://developer.equinix.com/catalog/fabricv4#tag/Stream-Subscriptions
+* Getting Started: https://docs.equinix.com/observability/streaming-data/integratewithsink/
+* API: https://docs.equinix.com/api-catalog/fabricv4/#tag/Stream-Subscriptions
 
 ## Example Usage
 
