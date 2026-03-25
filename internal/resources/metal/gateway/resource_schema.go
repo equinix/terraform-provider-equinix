@@ -3,6 +3,7 @@ package gateway
 import (
 	"context"
 
+	"github.com/equinix/terraform-provider-equinix/internal/deprecations"
 	"github.com/hashicorp/terraform-plugin-framework-validators/int64validator"
 	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
 	"github.com/hashicorp/terraform-plugin-framework/path"
@@ -17,6 +18,7 @@ var subnetSizes = []int64{8, 16, 32, 64, 128}
 
 func resourceSchema(_ context.Context) schema.Schema {
 	return schema.Schema{
+		DeprecationMessage: deprecations.MetalDeprecationMessage,
 		Attributes: map[string]schema.Attribute{
 			"id": schema.StringAttribute{
 				Description: "The unique identifier for this Metal Gateway",
