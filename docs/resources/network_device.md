@@ -1370,7 +1370,7 @@ The following arguments are supported:
 * `throughput_unit` - (Optional) License throughput unit. One of `Mbps` or `Gbps`.
 * `account_number` - (Required) Billing account number for a device.
 * `notifications` - (Required) List of email addresses that will receive device status notifications.
-* `purchase_order_number` - (Optional) Purchase order number associated with a device order.
+* `purchase_order_number` - (Optional) Purchase order number associated with a device order. For PO bearing billing accounts, this field is required.
 * `order_reference` - (Optional) Name/number used to identify device order on the invoice.
 * `acl_template_id` - (Optional) Identifier of a WAN interface ACL template that will be applied on the device.
 * `mgmt_acl_template_uuid` - (Optional) Identifier of an MGMT interface ACL template that will be applied on the device.
