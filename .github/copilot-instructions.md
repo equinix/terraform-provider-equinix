@@ -94,7 +94,7 @@ make docs
 make docs-check
 ```
 
-**NOTE:** `make docs-check` may fail in offline/restricted network environments due to Terraform CLI download. This is expected in sandboxed environments.
+**NOTE:** `make docs-check` runs `go generate ./...` (via GNUmakefile), which invokes `tfplugindocs` and may require network access for Go module downloads and for `tfplugindocs` to contact HashiCorp services (e.g., checkpoint). It may fail in offline or restricted environments for these reasons; it does not download a Terraform CLI binary.
 
 ### Complete Pre-Commit Checklist
 ```bash
