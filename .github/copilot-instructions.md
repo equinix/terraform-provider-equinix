@@ -136,8 +136,8 @@ All PRs trigger these checks automatically:
    - Runs `make docs-check` to ensure docs are generated
    
 3. **golangci-lint.yml** - Code Quality
-   - Runs golangci-lint with `--whole-files` flag
-   - Only checks changed files (`--new-from-rev=origin/main`)
+   - Runs golangci-lint via `golangci/golangci-lint-action` with the `--whole-files` flag and `only-new-issues: true`
+   - Reports only new issues introduced by the PR (CI does not pass `--new-from-rev=origin/main`; that flag is used only by local `make lint`)
    
 4. **fabric_acctest.yml** & **metal_acctest.yml** - Acceptance Tests
    - Run only when specific paths change (fabric/** or metal/**)
