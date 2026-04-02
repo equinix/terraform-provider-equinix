@@ -256,6 +256,9 @@ All resource/data source changes MUST include documentation:
 - `EQUINIX_API_ENDPOINT` - API endpoint (default: https://api.equinix.com)
 - `EQUINIX_API_CLIENTID` - API client ID
 - `EQUINIX_API_CLIENTSECRET` - API client secret
+- `EQUINIX_API_TOKEN` - Equinix API access token used by acceptance tests
+- `METAL_AUTH_TOKEN` - Equinix Metal API token used by acceptance tests and sweepers
+- Optional STS token-exchange environment variables (for short-lived credentials; see DEVELOPMENT.md)
 - Various `TF_ACC_*` variables for test parametrization (see DEVELOPMENT.md)
 
 ### File Naming Conventions
