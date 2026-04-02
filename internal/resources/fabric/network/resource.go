@@ -16,6 +16,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
+// Resource returns the schema.Resource for managing Equinix Fabric networks.
 func Resource() *schema.Resource {
 	return &schema.Resource{
 		Timeouts: &schema.ResourceTimeout{
@@ -36,8 +37,8 @@ func Resource() *schema.Resource {
 		Description: `Fabric V4 API compatible resource allows creation and management of Equinix Fabric Network
 
 Additional documentation:
-* Getting Started: https://docs.equinix.com/en-us/Content/Interconnection/Fabric/IMPLEMENTATION/fabric-networks-implement.htm
-* API: https://developer.equinix.com/dev-docs/fabric/api-reference/fabric-v4-apis#fabric-networks`,
+* Getting Started: https://docs.equinix.com/fabric/multipoint-connections/multipoint-networks/
+* API: https://docs.equinix.com/api-catalog/fabricv4/#tag/Networks`,
 	}
 }
 
@@ -73,7 +74,7 @@ func resourceFabricNetworkCreate(ctx context.Context, d *schema.ResourceData, me
 	d.SetId(fabricNetwork.Uuid)
 
 	createTimeout := d.Timeout(schema.TimeoutCreate) - 30*time.Second - time.Since(start)
-	if _, err = waitUntilFabricNetworkIsProvisioned(d.Id(), meta, d, ctx, createTimeout); err != nil {
+	if _, err = waitUntilFabricNetworkIsProvisioned(ctx, d.Id(), meta, d, createTimeout); err != nil {
 		return diag.Errorf("error waiting for Network (%s) to be created: %s", d.Id(), err)
 	}
 
@@ -94,7 +95,7 @@ func resourceFabricNetworkUpdate(ctx context.Context, d *schema.ResourceData, me
 	client := meta.(*config.Config).NewFabricClientForSDK(ctx, d)
 	start := time.Now()
 	updateTimeout := d.Timeout(schema.TimeoutUpdate) - 30*time.Second - time.Since(start)
-	dbConn, waitUntilNetworkProvisionedErr := waitUntilFabricNetworkIsProvisioned(d.Id(), meta, d, ctx, updateTimeout)
+	dbConn, waitUntilNetworkProvisionedErr := waitUntilFabricNetworkIsProvisioned(ctx, d.Id(), meta, d, updateTimeout)
 	if waitUntilNetworkProvisionedErr != nil {
 		return diag.Errorf("either timed out or errored out while fetching Fabric Network for uuid %s and error %v", d.Id(), waitUntilNetworkProvisionedErr)
 	}
@@ -109,7 +110,7 @@ func resourceFabricNetworkUpdate(ctx context.Context, d *schema.ResourceData, me
 	}
 
 	updateTimeout = d.Timeout(schema.TimeoutUpdate) - 30*time.Second - time.Since(start)
-	updateNetwork, waitForNetworkUpdateCompletionErr := waitForFabricNetworkUpdateCompletion(d.Id(), meta, d, ctx, updateTimeout)
+	updateNetwork, waitForNetworkUpdateCompletionErr := waitForFabricNetworkUpdateCompletion(ctx, d.Id(), meta, d, updateTimeout)
 
 	if waitForNetworkUpdateCompletionErr != nil {
 		return diag.Errorf("errored while waiting for successful Fabric Network update error %v", waitForNetworkUpdateCompletionErr)
@@ -119,7 +120,7 @@ func resourceFabricNetworkUpdate(ctx context.Context, d *schema.ResourceData, me
 	return setFabricNetworkMap(d, updateNetwork)
 }
 
-func waitForFabricNetworkUpdateCompletion(uuid string, meta interface{}, d *schema.ResourceData, ctx context.Context, timeout time.Duration) (*fabricv4.Network, error) {
+func waitForFabricNetworkUpdateCompletion(ctx context.Context, uuid string, meta interface{}, d *schema.ResourceData, timeout time.Duration) (*fabricv4.Network, error) {
 	log.Printf("Waiting for Network update to complete, uuid %s", uuid)
 	stateConf := &retry.StateChangeConf{
 		Target: []string{string(fabricv4.NETWORKEQUINIXSTATUS_PROVISIONED)},
@@ -145,7 +146,7 @@ func waitForFabricNetworkUpdateCompletion(uuid string, meta interface{}, d *sche
 	return dbConn, err
 }
 
-func waitUntilFabricNetworkIsProvisioned(uuid string, meta interface{}, d *schema.ResourceData, ctx context.Context, timeout time.Duration) (*fabricv4.Network, error) {
+func waitUntilFabricNetworkIsProvisioned(ctx context.Context, uuid string, meta interface{}, d *schema.ResourceData, timeout time.Duration) (*fabricv4.Network, error) {
 	log.Printf("Waiting for Fabric Network to be provisioned, uuid %s", uuid)
 	stateConf := &retry.StateChangeConf{
 		Pending: []string{
@@ -194,14 +195,15 @@ func resourceFabricNetworkDelete(ctx context.Context, d *schema.ResourceData, me
 	}
 
 	deleteTimeout := d.Timeout(schema.TimeoutDelete) - 30*time.Second - time.Since(start)
-	err = WaitUntilFabricNetworkDeprovisioned(d.Id(), meta, d, ctx, deleteTimeout)
+	err = WaitUntilFabricNetworkDeprovisioned(ctx, d.Id(), meta, d, deleteTimeout)
 	if err != nil {
 		return diag.Errorf("API call failed while waiting for resource deletion. Error %v", err)
 	}
 	return diags
 }
 
-func WaitUntilFabricNetworkDeprovisioned(uuid string, meta interface{}, d *schema.ResourceData, ctx context.Context, timeout time.Duration) error {
+// WaitUntilFabricNetworkDeprovisioned waits until the Fabric network is deprovisioned.
+func WaitUntilFabricNetworkDeprovisioned(ctx context.Context, uuid string, meta interface{}, d *schema.ResourceData, timeout time.Duration) error {
 	log.Printf("Waiting for Fabric Network to be deprovisioned, uuid %s", uuid)
 	stateConf := &retry.StateChangeConf{
 		Pending: []string{

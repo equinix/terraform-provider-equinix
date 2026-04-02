@@ -12,7 +12,7 @@ func dataSourceAllRouteAggregationRulesSchema(ctx context.Context) schema.Schema
 	return schema.Schema{
 		Description: `Fabric V4 API compatible data resource that allow user to fetch Equinix Fabric Route Aggregation Rules with pagination details
 Additional Documentation:
-* API: https://developer.equinix.com/catalog/fabricv4#tag/Route-Aggregations`,
+* API: https://docs.equinix.com/api-catalog/fabricv4/#tag/Route-Aggregations`,
 		Attributes: map[string]schema.Attribute{
 			"id": framework.IDAttributeDefaultDescription(),
 			"route_aggregation_id": schema.StringAttribute{
@@ -74,7 +74,7 @@ func dataSourceSingleRouteAggregationRuleSchema(ctx context.Context) schema.Sche
 	return schema.Schema{
 		Description: `Fabric V4 API compatible data resource that allow user to fetch Equinix Fabric Route Aggregation Rule by UUID
 Additional Documentation:
-* API: https://developer.equinix.com/catalog/fabricv4#tag/Route-Aggregations`,
+* API: https://docs.equinix.com/api-catalog/fabricv4/#tag/Route-Aggregations`,
 		Attributes: baseRouteAggregationRuleSchema,
 	}
 

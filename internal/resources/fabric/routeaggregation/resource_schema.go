@@ -16,7 +16,7 @@ func resourceSchema(ctx context.Context) schema.Schema {
 		Description: `Fabric V4 API compatible resource allows creation and management of Equinix Fabric Route Aggregation
 
 Additional Documentation:
-* API: https://developer.equinix.com/catalog/fabricv4#tag/Route-Aggregations`,
+* API: https://docs.equinix.com/api-catalog/fabricv4/#tag/Route-Aggregations`,
 		Attributes: map[string]schema.Attribute{
 			"id": framework.IDAttributeDefaultDescription(),
 			"timeouts": timeouts.Attributes(ctx, timeouts.Opts{

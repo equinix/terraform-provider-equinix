@@ -553,8 +553,8 @@ func resourceFabricServiceProfile() *schema.Resource {
 		Description: `Fabric V4 API compatible resource allows creation and management of Equinix Fabric Service Profile
 
 Additional documentation:
-* Getting Started: https://docs.equinix.com/en-us/Content/Interconnection/Fabric/IMPLEMENTATION/fabric-Sprofiles-implement.htm
-* API: https://developer.equinix.com/dev-docs/fabric/api-reference/fabric-v4-apis#service-profiles`,
+* Getting Started: https://docs.equinix.com/fabric/service-providers/fabric-spo-intro/
+* API: https://docs.equinix.com/api-catalog/fabricv4/#tag/Service-Profiles`,
 	}
 }
 
