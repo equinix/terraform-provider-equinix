@@ -10,5 +10,4 @@ terraform {
 provider "equinix" {
   client_id     = "someEquinixAPIClientID"
   client_secret = "someEquinixAPIClientSecret"
-  auth_token    = "someEquinixMetalToken"
 }

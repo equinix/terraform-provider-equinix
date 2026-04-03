@@ -29,25 +29,6 @@ linters:
       linters:
         - revive
       text: "don't use an underscore in package name"
-    # Ignore linter errors in Metal files (deprecated code to be removed in v5.0.0)
-    - path: equinix/data_source_metal_.*\.go
-      linters:
-        - errcheck
-        - revive
-        - staticcheck
-        - unused
-    - path: equinix/resource_metal_.*\.go
-      linters:
-        - errcheck
-        - revive
-        - staticcheck
-        - unused
-    - path: internal/resources/metal/.*\.go
-      linters:
-        - errcheck
-        - revive
-        - staticcheck
-        - unused
 formatters:
   enable:
     - goimports

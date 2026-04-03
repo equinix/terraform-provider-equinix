@@ -7,7 +7,6 @@ import (
 	"fmt"
 
 	"github.com/equinix/terraform-provider-equinix/internal/config"
-	"github.com/equinix/terraform-provider-equinix/internal/deprecations"
 	"github.com/equinix/terraform-provider-equinix/internal/provider/services"
 	equinix_validation "github.com/equinix/terraform-provider-equinix/internal/validation"
 	"github.com/hashicorp/terraform-plugin-framework-validators/int64validator"
@@ -67,11 +66,6 @@ func (p *FrameworkProvider) Schema(
 			"token": schema.StringAttribute{
 				Optional:    true,
 				Description: "API tokens are generated from API Consumer clients using the [OAuth2 API](https://docs.equinix.com/equinix-api/api-authentication/). This argument can also be specified with the `EQUINIX_API_TOKEN` shell environment variable.",
-			},
-			"auth_token": schema.StringAttribute{
-				Optional:           true,
-				Description:        "The Equinix Metal API auth key for API operations",
-				DeprecationMessage: deprecations.MetalDeprecationMessage,
 			},
 			"request_timeout": schema.Int64Attribute{
 				Optional:    true,
@@ -137,7 +131,6 @@ func (p *FrameworkProvider) MetaSchema(
 func (p *FrameworkProvider) Resources(_ context.Context) []func() resource.Resource {
 	resources := []func() resource.Resource{}
 	resources = append(resources, services.FabricResources()...)
-	resources = append(resources, services.MetalResources()...)
 	resources = append(resources, services.NetworkEdgeResources()...)
 
 	return resources
@@ -147,7 +140,6 @@ func (p *FrameworkProvider) Resources(_ context.Context) []func() resource.Resou
 func (p *FrameworkProvider) DataSources(_ context.Context) []func() datasource.DataSource {
 	datasources := []func() datasource.DataSource{}
 	datasources = append(datasources, services.FabricDatasources()...)
-	datasources = append(datasources, services.MetalDatasources()...)
 	datasources = append(datasources, services.NetworkEdgeDatasources()...)
 
 	return datasources

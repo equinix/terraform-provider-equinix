@@ -20,7 +20,6 @@ type FrameworkProviderConfig struct {
 	ClientID                        types.String `tfsdk:"client_id"`
 	ClientSecret                    types.String `tfsdk:"client_secret"`
 	Token                           types.String `tfsdk:"token"`
-	AuthToken                       types.String `tfsdk:"auth_token"`
 	RequestTimeout                  types.Int64  `tfsdk:"request_timeout"`
 	PageSize                        types.Int64  `tfsdk:"response_max_page_size"`
 	MaxRetries                      types.Int64  `tfsdk:"max_retries"`
@@ -34,7 +33,6 @@ type FrameworkProviderConfig struct {
 func (c *FrameworkProviderConfig) toOldStyleConfig() *config.Config {
 	// this immitates func configureProvider in proivder.go
 	return &config.Config{
-		AuthToken:                       c.AuthToken.ValueString(),
 		BaseURL:                         c.BaseURL.ValueString(),
 		ClientID:                        c.ClientID.ValueString(),
 		ClientSecret:                    c.ClientSecret.ValueString(),
@@ -82,9 +80,6 @@ func (fp *FrameworkProvider) Configure(
 
 	fwconfig.Token = determineStrConfValue(
 		fwconfig.Token, config.ClientTokenEnvVar, "")
-
-	fwconfig.AuthToken = determineStrConfValue(
-		fwconfig.AuthToken, config.MetalAuthTokenEnvVar, "")
 
 	fwconfig.RequestTimeout = determineIntConfValue(
 		fwconfig.RequestTimeout, config.ClientTimeoutEnvVar, int64(config.DefaultTimeout), &resp.Diagnostics)
