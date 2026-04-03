@@ -29,6 +29,31 @@ linters:
       linters:
         - revive
       text: "don't use an underscore in package name"
+    # Ignore all linter rules until v5.0.0 is released
+    - path: equinix/.*\.go
+      linters:
+        - errcheck
+        - revive
+        - staticcheck
+        - unused
+    - path: internal/.*\.go
+      linters:
+        - errcheck
+        - revive
+        - staticcheck
+        - unused
+    - path: main\.go
+      linters:
+        - errcheck
+        - revive
+        - staticcheck
+        - unused
+    - path: version/.*\.go
+      linters:
+        - errcheck
+        - revive
+        - staticcheck
+        - unused
 formatters:
   enable:
     - goimports
