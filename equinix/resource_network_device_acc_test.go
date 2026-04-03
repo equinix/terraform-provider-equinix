@@ -963,7 +963,7 @@ func testAccNeDevicePairExists(resourceName string, primary, secondary *ne.Devic
 
 func testAccNeDeviceAttributes(device *ne.Device, ctx map[string]interface{}) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
-		if v, ok := ctx["device-name"]; ok && !(ne.StringValue(device.Name) == v.(string) || ne.StringValue(device.Name) == v.(string)+"-Node0") {
+		if v, ok := ctx["device-name"]; ok && (ne.StringValue(device.Name) != v.(string) && ne.StringValue(device.Name) != v.(string)+"-Node0") {
 			return fmt.Errorf("name does not match %v - %v", ne.StringValue(device.Name), v)
 		}
 		if v, ok := ctx["device-self_managed"]; ok && ne.BoolValue(device.IsSelfManaged) != v.(bool) {

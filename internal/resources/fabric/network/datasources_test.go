@@ -1,7 +1,6 @@
 package network_test
 
 import (
-	"fmt"
 	"testing"
 
 	"github.com/equinix/terraform-provider-equinix/internal/acceptance"
@@ -53,7 +52,7 @@ func TestAccDataSourceFabricNetwork_PFCR(t *testing.T) {
 }
 
 func configCreateNetworkResource_PFCR() string {
-	return fmt.Sprintf(`
+	return `
 	resource "equinix_fabric_network" "example" {
 		type = "EVPLAN"
 		name = "Test_Network_PFCR"
@@ -87,5 +86,5 @@ func configCreateNetworkResource_PFCR() string {
 			values   = [equinix_fabric_network.example.id]
 		}
 	}
-`)
+`
 }

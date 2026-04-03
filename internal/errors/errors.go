@@ -19,7 +19,7 @@ func FriendlyError(err error) error {
 		resp := e.Response
 		errors := Errors(e.Errors)
 
-		if 0 == len(errors) {
+		if len(errors) == 0 {
 			errors = Errors{e.SingleError}
 		}
 
