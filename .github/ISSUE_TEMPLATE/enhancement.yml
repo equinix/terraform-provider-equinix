@@ -16,7 +16,7 @@ body:
       label: New or Affected Terraform Resources
       description: What resources will this create or change?
       placeholder: |
-        equinix_metal_vlan
+        equinix_fabric_loom
         equinix_ibx_liquid_cooling
   - type: textarea
     id: config

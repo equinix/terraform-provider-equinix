@@ -176,13 +176,9 @@ func testAccPreCheck(t *testing.T) {
 		}
 	}
 
-	if err == nil {
-		_, err = getFromEnv(config.MetalAuthTokenEnvVar)
-	}
-
 	if err != nil {
-		t.Fatalf("To run acceptance tests, one of '%s' or pair '%s' - '%s' must be set for Equinix Fabric and Network Edge, and '%s' for Equinix Metal",
-			config.ClientTokenEnvVar, config.ClientIDEnvVar, config.ClientSecretEnvVar, config.MetalAuthTokenEnvVar)
+		t.Fatalf("To run acceptance tests, one of '%s' or pair '%s' - '%s' must be set for Equinix Fabric and Network Edge",
+			config.ClientTokenEnvVar, config.ClientIDEnvVar, config.ClientSecretEnvVar)
 	}
 }
 
@@ -212,7 +208,7 @@ func nprintf(format string, params map[string]interface{}) string {
 		default:
 			strVal = fmt.Sprintf("%v", val)
 		}
-		format = strings.Replace(format, "%{"+key+"}", strVal, -1)
+		format = strings.ReplaceAll(format, "%{"+key+"}", strVal)
 	}
 	return format
 }

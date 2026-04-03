@@ -10,10 +10,6 @@ For information about obtaining API key and secret required for Equinix Fabric a
 
 Equinix Fabric also supports authentication using a [Workload Identity Token](https://developer.hashicorp.com/terraform/cloud-docs/workspaces/dynamic-provider-credentials/workload-identity-tokens), which can be used in place of the `client_id` and `client_secret` arguments. Requires an authorization scope and OIDC token from an IdP trusted by Equinix STS. Please note that this is an alpha feature not available for all users. Using workload identity tokens will override client ID/secret, you must use [provider aliases](https://developer.hashicorp.com/terraform/language/providers/configuration#alias-multiple-provider-configurations) to manage both workload identity tokens and client ID/secret in a single Terraform configuration.
 
-Interacting with Equinix Metal requires an API auth token that can be generated at [Project-level](https://docs.equinix.com/metal/identity-access-management/api-keys/) or [User-level](https://docs.equinix.com/metal/identity-access-management/api-keys/) tokens can be used.
-
-If you are only using Equinix Metal resources, you may omit the Client ID and Client Secret provider configuration parameters needed to access other Equinix resource types (Network Edge, Fabric, etc).
-
 Use the navigation to the left to read about the available resources.
 
 ## Example Usage
@@ -33,16 +29,6 @@ terraform {
 provider "equinix" {
   client_id     = "someEquinixAPIClientID"
   client_secret = "someEquinixAPIClientSecret"
-  auth_token    = "someEquinixMetalToken"
-}
-```
-
-Client ID and Client Secret can be omitted when the only Equinix resources consumed are Equinix Metal resources.
-
-```terraform
-# Credentials for only Equinix Metal resources
-provider "equinix" {
-  auth_token    = "someEquinixMetalToken"
 }
 ```
 
@@ -65,7 +51,6 @@ Example provider configuration using `environment variables`:
 ```sh
 export EQUINIX_API_CLIENTID=someEquinixAPIClientID
 export EQUINIX_API_CLIENTSECRET=someEquinixAPIClientSecret
-export METAL_AUTH_TOKEN=someEquinixMetalToken
 ```
 
 ### Token Authentication
@@ -84,7 +69,7 @@ provider "equinix" {
 
 ## Argument Reference
 
-The Equinix provider requires a few basic parameters. While the authentication arguments are individually optionally, either `token` or `client_id` and `client_secret` must be defined through arguments or environment settings to interact with Equinix Fabric and Network Edge services, and `auth_token` to interact with Equinix Metal.
+The Equinix provider requires a few basic parameters. While the authentication arguments are individually optionally, either `token` or `client_id` and `client_secret` must be defined through arguments or environment settings to interact with Equinix Fabric and Network Edge services.
 
 These parameters can be provided in [Terraform variable files](https://developer.hashicorp.com/terraform/language/values/variables#variable-definitions-tfvars-files) or as environment variables. Nevertheless, please note that it is [not recommended to keep sensitive data in plain text files](https://developer.hashicorp.com/terraform/language/state/sensitive-data).
 
@@ -93,7 +78,6 @@ These parameters can be provided in [Terraform variable files](https://developer
 
 ### Optional
 
-- `auth_token` (String, Deprecated) The Equinix Metal API auth key for API operations
 - `client_id` (String) API Consumer Key available under "My Apps" in developer portal. This argument can also be specified with the `EQUINIX_API_CLIENTID` shell environment variable.
 - `client_secret` (String) API Consumer secret available under "My Apps" in developer portal. This argument can also be specified with the `EQUINIX_API_CLIENTSECRET` shell environment variable.
 - `endpoint` (String) The Equinix API base URL to point out desired environment. This argument can also be specified with the `EQUINIX_API_ENDPOINT` shell environment variable. (Defaults to `https://api.equinix.com`)

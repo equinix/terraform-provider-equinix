@@ -1,1 +1,0 @@
-terraform import equinix_metal_virtual_circuit {existing_id}

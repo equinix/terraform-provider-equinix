@@ -170,10 +170,11 @@ func resourceFabricConnectionUpdate(ctx context.Context, d *schema.ResourceData,
 		}
 
 		var waitFunction func(uuid string, meta interface{}, d *schema.ResourceData, ctx context.Context, timeout time.Duration) (*fabricv4.Connection, error)
-		if update[0].Op == "replace" {
+		switch update[0].Op {
+		case "replace":
 			// Update type is either name or bandwidth
 			waitFunction = waitForConnectionUpdateCompletion
-		} else if update[0].Op == "add" {
+		case "add":
 			// Update type is aws secret additionalInfo
 			waitFunction = waitForConnectionProviderStatusChange
 		}

@@ -119,7 +119,7 @@ tfproviderlint-fix:
 
 tfproviderdocs-check:
 	@echo "==> Check provider docs with bflad/tfproviderdocs..."
-	@docker run -v $(PWD):/src bflad/tfproviderdocs check -provider-name=metal || (echo; \
+	@docker run -v $(PWD):/src bflad/tfproviderdocs check -provider-name=equinix || (echo; \
 		echo "Unexpected issues found in code with bflad/tfproviderdocs."; \
 		exit 1)
 

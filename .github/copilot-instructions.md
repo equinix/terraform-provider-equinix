@@ -2,7 +2,7 @@
 
 ## Repository Overview
 
-This is the official Terraform provider for Equinix Platform, enabling lifecycle management of Equinix resources through Terraform. The codebase is approximately 64,000 lines of Go code across 789 files, implementing a Terraform plugin that supports both Equinix Metal and Fabric services.
+This is the official Terraform provider for Equinix Platform, enabling lifecycle management of Equinix resources through Terraform. The codebase is approximately 64,000 lines of Go code across 789 files, implementing a Terraform plugin that supports both Equinix Fabric and Network Edge services.
 
 **Key Technologies:**
 - Language: Go 1.23.0+
@@ -18,7 +18,7 @@ This is the official Terraform provider for Equinix Platform, enabling lifecycle
 - `equinix/` - Legacy SDKv2 provider code (avoid adding new files here per validation workflow)
 - `internal/` - Main implementation code
   - `internal/provider/` - Framework-based provider setup
-  - `internal/resources/` - Resource implementations (metal, fabric subdirectories)
+  - `internal/resources/` - Resource implementations (fabric subdirectories)
   - `internal/config/` - Provider configuration and client setup
   - `internal/fabric/`, `internal/network/` - Service-specific helpers
   - `internal/acceptance/` - Acceptance test helpers
@@ -116,7 +116,7 @@ export EQUINIX_API_CLIENTSECRET=<your-client-secret>
 make testacc  # Takes 180+ minutes, runs all acceptance tests
 
 # Run specific acceptance test:
-TF_ACC=1 go test -v -timeout=20m ./... -run=TestAccMetalDevice_Basic
+TF_ACC=1 go test -v -timeout=20m ./... -run=TestAccFabricCreateCloudRouter2PortConnection_PFCR
 ```
 
 **WARNING:** Acceptance tests are expensive and create real resources. Only run locally if necessary.
@@ -139,8 +139,8 @@ All PRs trigger these checks automatically:
    - Runs golangci-lint via `golangci/golangci-lint-action` with the `--whole-files` flag and `only-new-issues: true`
    - Reports only new issues introduced by the PR (CI does not pass `--new-from-rev=origin/main`; that flag is used only by local `make lint`)
    
-4. **fabric_acctest.yml** & **metal_acctest.yml** - Acceptance Tests
-   - Run only when specific paths change (fabric/** or metal/**)
+4. **fabric_acctest.yml** - Acceptance Tests
+   - Run only when specific paths change (fabric/**)
    - Require approval for external contributors
 
 ### Common CI Failures & Fixes
@@ -149,7 +149,7 @@ All PRs trigger these checks automatically:
 - **Fix:** Start PR title with: `feat:`, `fix:`, `docs:`, `test:`, `refactor:`, `chore:`, etc.
 
 **Problem:** "New files added to equinix package"
-- **Fix:** Move new .go files to appropriate `internal/` subdirectory (e.g., `internal/resources/metal/` or `internal/resources/fabric/`)
+- **Fix:** Move new .go files to appropriate `internal/` subdirectory (e.g., `internal/resources/fabric/`)
 
 **Problem:** "Uncommitted doc changes"
 - **Fix:** Run `make docs` and commit the generated files in `docs/`
@@ -162,7 +162,7 @@ All PRs trigger these checks automatically:
 ### Making Code Changes
 
 1. **For New Resources/Data Sources:**
-   - Add implementation to `internal/resources/{metal|fabric}/resource_name/`
+   - Add implementation to `internal/resources/{fabric}/resource_name/`
    - Add examples to `examples/resources/equinix_resource_name/`
    - Add template (if needed) to `templates/resources/`
    - Run `make docs` to generate documentation
@@ -228,7 +228,7 @@ All resource/data source changes MUST include documentation:
 
 2. **Test Specific Provider Code:**
    ```bash
-   TF_ACC=1 TF_LOG=DEBUG go test -v ./internal/resources/metal/device -run=TestAccMetalDevice_Basic
+   TF_ACC=1 TF_LOG=DEBUG go test -v ./internal/resources/fabric/connection -run=TestAccFabricCreateCloudRouter2PortConnection_PFCR
    ```
 
 3. **Check Provider Registration:**
@@ -257,7 +257,6 @@ All resource/data source changes MUST include documentation:
 - `EQUINIX_API_CLIENTID` - API client ID
 - `EQUINIX_API_CLIENTSECRET` - API client secret
 - `EQUINIX_API_TOKEN` - Equinix API access token used by acceptance tests
-- `METAL_AUTH_TOKEN` - Equinix Metal API token used by acceptance tests and sweepers
 - Optional STS token-exchange environment variables (for short-lived credentials; see DEVELOPMENT.md)
 - Various `TF_ACC_*` variables for test parametrization (see DEVELOPMENT.md)
 

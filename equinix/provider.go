@@ -8,7 +8,6 @@ import (
 	"time"
 
 	"github.com/equinix/terraform-provider-equinix/internal/config"
-	"github.com/equinix/terraform-provider-equinix/internal/deprecations"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
@@ -18,12 +17,10 @@ import (
 func Provider() *schema.Provider {
 	datasources := make(map[string]*schema.Resource)
 	maps.Copy(datasources, fabricDatasources())
-	maps.Copy(datasources, metalDatasources())
 	maps.Copy(datasources, networkEdgeDatasources())
 
 	resources := make(map[string]*schema.Resource)
 	maps.Copy(resources, fabricResources())
-	maps.Copy(resources, metalResources())
 	maps.Copy(resources, networkEdgeResources())
 
 	provider := &schema.Provider{
@@ -52,13 +49,6 @@ func Provider() *schema.Provider {
 				Optional:    true,
 				DefaultFunc: schema.EnvDefaultFunc(config.ClientTokenEnvVar, ""),
 				Description: "API tokens are generated from API Consumer clients using the [OAuth2 API](https://docs.equinix.com/equinix-api/api-authentication/). This argument can also be specified with the `EQUINIX_API_TOKEN` shell environment variable.",
-			},
-			"auth_token": {
-				Type:        schema.TypeString,
-				Optional:    true,
-				DefaultFunc: schema.EnvDefaultFunc(config.MetalAuthTokenEnvVar, ""),
-				Description: "The Equinix Metal API auth key for API operations",
-				Deprecated:  deprecations.MetalDeprecationMessage,
 			},
 			"request_timeout": {
 				Type:         schema.TypeInt,
@@ -136,7 +126,6 @@ func configureProvider(ctx context.Context, d *schema.ResourceData, p *schema.Pr
 	rt := d.Get("request_timeout").(int)
 
 	config := config.Config{
-		AuthToken:                       d.Get("auth_token").(string),
 		BaseURL:                         d.Get("endpoint").(string),
 		ClientID:                        d.Get("client_id").(string),
 		ClientSecret:                    d.Get("client_secret").(string),
