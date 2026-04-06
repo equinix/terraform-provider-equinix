@@ -27,17 +27,6 @@ func TestNetworkDeviceLink_createFromResourceData(t *testing.T) {
 				InterfaceID: ne.Int(10),
 			},
 		},
-		Links: []ne.DeviceLinkGroupLink{
-			{
-				AccountNumber:        ne.String(""),
-				Throughput:           ne.String("1"),
-				ThroughputUnit:       ne.String("Gbps"),
-				SourceMetroCode:      ne.String("LD"),
-				DestinationMetroCode: ne.String("AM"),
-				SourceZoneCode:       ne.String(""),
-				DestinationZoneCode:  ne.String(""),
-			},
-		},
 		MetroLinks: []ne.DeviceLinkGroupMetroLink{
 			{
 				AccountNumber:  ne.String(""),
@@ -61,9 +50,12 @@ func TestNetworkDeviceLink_createFromResourceData(t *testing.T) {
 		networkDeviceLinkSchemaNames["RedundancyType"]: ne.StringValue(expected.RedundancyType),
 	}
 	d := schema.TestResourceDataRaw(t, createNetworkDeviceLinkResourceSchema(), rawData)
-	d.Set(networkDeviceLinkSchemaNames["Devices"], flattenNetworkDeviceLinkDevices(nil, expected.Devices))
-	d.Set(networkDeviceLinkSchemaNames["Links"], flattenNetworkDeviceLinkConnections(nil, expected.Links))
-	d.Set(networkDeviceLinkSchemaNames["MetroLinks"], flattenNetworkDeviceLinkMetroLinks(nil, expected.MetroLinks))
+	if err := d.Set(networkDeviceLinkSchemaNames["Devices"], flattenNetworkDeviceLinkDevices(nil, expected.Devices)); err != nil {
+		t.Fatal(err)
+	}
+	if err := d.Set(networkDeviceLinkSchemaNames["MetroLinks"], flattenNetworkDeviceLinkMetroLinks(nil, expected.MetroLinks)); err != nil {
+		t.Fatal(err)
+	}
 	// when
 	result := createNetworkDeviceLink(d)
 	// then
@@ -88,17 +80,6 @@ func TestNetworkDeviceLink_updateResourceData(t *testing.T) {
 				DeviceID:    ne.String("7c737fe8-3a9e-4ab9-afcc-c06d01db326d"),
 				ASN:         ne.Int(0),
 				InterfaceID: ne.Int(10),
-			},
-		},
-		Links: []ne.DeviceLinkGroupLink{
-			{
-				AccountNumber:        ne.String(""),
-				Throughput:           ne.String("1"),
-				ThroughputUnit:       ne.String("Gbps"),
-				SourceMetroCode:      ne.String("LD"),
-				DestinationMetroCode: ne.String("AM"),
-				SourceZoneCode:       ne.String(""),
-				DestinationZoneCode:  ne.String(""),
 			},
 		},
 		MetroLinks: []ne.DeviceLinkGroupMetroLink{
@@ -126,5 +107,4 @@ func TestNetworkDeviceLink_updateResourceData(t *testing.T) {
 	assert.Equal(t, ne.StringValue(input.Subnet), d.Get(networkDeviceLinkSchemaNames["Subnet"]), "Subnet matches")
 	assert.Equal(t, ne.StringValue(input.Status), d.Get(networkDeviceLinkSchemaNames["Status"]), "Status matches")
 	assert.Equal(t, input.Devices, expandNetworkDeviceLinkDevices(d.Get(networkDeviceLinkSchemaNames["Devices"]).(*schema.Set)), "Device matches")
-	assert.Equal(t, input.Links, expandNetworkDeviceLinkConnections(d.Get(networkDeviceLinkSchemaNames["Links"]).(*schema.Set)), "Links matches")
 }
