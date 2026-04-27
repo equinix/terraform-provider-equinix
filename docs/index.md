@@ -6,11 +6,11 @@ page_title: "Equinix Provider"
 
 The Equinix provider is used to interact with the resources provided by Equinix Platform. The provider needs to be configured with the proper credentials before it can be used.
 
-For information about obtaining API key and secret required for Equinix Fabric and Network Edge refer to [Generating Client ID and Client Secret key](https://developer.equinix.com/dev-docs/fabric/getting-started/getting-access-token#generating-client-id-and-client-secret) from [Equinix Developer Platform portal](https://developer.equinix.com).
+For information about obtaining API key and secret required for Equinix Fabric and Network Edge refer to [Generating Client ID and Client Secret key](https://docs.equinix.com/equinix-api/api-authentication/) from [Equinix Developer Platform portal](https://docs.equinix.com).
 
 Equinix Fabric also supports authentication using a [Workload Identity Token](https://developer.hashicorp.com/terraform/cloud-docs/workspaces/dynamic-provider-credentials/workload-identity-tokens), which can be used in place of the `client_id` and `client_secret` arguments. Requires an authorization scope and OIDC token from an IdP trusted by Equinix STS. Please note that this is an alpha feature not available for all users. Using workload identity tokens will override client ID/secret, you must use [provider aliases](https://developer.hashicorp.com/terraform/language/providers/configuration#alias-multiple-provider-configurations) to manage both workload identity tokens and client ID/secret in a single Terraform configuration.
 
-Interacting with Equinix Metal requires an API auth token that can be generated at [Project-level](https://metal.equinix.com/developers/docs/accounts/projects/#api-keys) or [User-level](https://metal.equinix.com/developers/docs/accounts/users/#api-keys) tokens can be used.
+Interacting with Equinix Metal requires an API auth token that can be generated at [Project-level](https://docs.equinix.com/metal/identity-access-management/api-keys/) or [User-level](https://docs.equinix.com/metal/identity-access-management/api-keys/) tokens can be used.
 
 If you are only using Equinix Metal resources, you may omit the Client ID and Client Secret provider configuration parameters needed to access other Equinix resource types (Network Edge, Fabric, etc).
 
@@ -18,7 +18,7 @@ Use the navigation to the left to read about the available resources.
 
 ## Example Usage
 
-Example HCL with [provider configuration](https://www.terraform.io/docs/configuration/providers.html) and a [required providers definition](https://www.terraform.io/language/settings#specifying-a-required-terraform-version):
+Example HCL with [provider configuration](https://developer.hashicorp.com/terraform/language/providers/configuration) and a [required providers definition](https://developer.hashicorp.com/terraform/language/providers/requirements):
 
 ```terraform
 terraform {
@@ -70,11 +70,11 @@ export METAL_AUTH_TOKEN=someEquinixMetalToken
 
 ### Token Authentication
 
-Token's can be generated for the API Client using the OAuth2 Token features described in the [OAuth2 API](https://developer.equinix.com/catalog/accesstokenv1#operation/GetOAuth2AccessToken) documentation.
+Token's can be generated for the API Client using the OAuth2 Token features described in the [OAuth2 API](https://docs.equinix.com/api-catalog/accesstokenv1#operation/GetOAuth2AccessToken) documentation.
 
 API tokens can be provided using the `token` provider argument, or the `EQUINIX_API_TOKEN` evironment variable. The `client_id` and `client_secret` arguments will be ignored in the presence of a `token` argument.
 
-When testing against the [Equinix Sandbox API](https://developer.equinix.com/environment/sandbox), tokens must be used.
+See the [Equinix API Testing](https://docs.equinix.com/equinix-api/testing) guide for details on recommended testing practices.
 
 ```terraform
 provider "equinix" {
@@ -86,7 +86,7 @@ provider "equinix" {
 
 The Equinix provider requires a few basic parameters. While the authentication arguments are individually optionally, either `token` or `client_id` and `client_secret` must be defined through arguments or environment settings to interact with Equinix Fabric and Network Edge services, and `auth_token` to interact with Equinix Metal.
 
-These parameters can be provided in [Terraform variable files](https://www.terraform.io/docs/configuration/variables.html#variable-definitions-tfvars-files) or as environment variables. Nevertheless, please note that it is [not recommended to keep sensitive data in plain text files](https://www.terraform.io/docs/state/sensitive-data.html).
+These parameters can be provided in [Terraform variable files](https://developer.hashicorp.com/terraform/language/values/variables#variable-definitions-tfvars-files) or as environment variables. Nevertheless, please note that it is [not recommended to keep sensitive data in plain text files](https://developer.hashicorp.com/terraform/language/state/sensitive-data).
 
 <!-- schema generated by tfplugindocs -->
 ## Schema
@@ -102,7 +102,7 @@ These parameters can be provided in [Terraform variable files](https://www.terra
 - `request_timeout` (Number) The duration of time, in seconds, that the Equinix Platform API Client should wait before canceling an API request. Canceled requests may still result in provisioned resources. (Defaults to `30`)
 - `response_max_page_size` (Number) The maximum number of records in a single response for REST queries that produce paginated responses. (Default is client specific)
 - `sts_endpoint` (String) The STS API base URL to point to the desired environment. This argument can also be specified with the `EQUINIX_STS_ENDPOINT` shell environment variable. (Defaults to `https://sts.eqix.equinix.com`). Please note that STS is an alpha feature and not available for all users.
-- `token` (String) API tokens are generated from API Consumer clients using the [OAuth2 API](https://developer.equinix.com/dev-docs/fabric/getting-started/getting-access-token#request-access-and-refresh-tokens). This argument can also be specified with the `EQUINIX_API_TOKEN` shell environment variable.
+- `token` (String) API tokens are generated from API Consumer clients using the [OAuth2 API](https://docs.equinix.com/equinix-api/api-authentication/). This argument can also be specified with the `EQUINIX_API_TOKEN` shell environment variable.
 - `token_exchange_scope` (String) The scope of the authentication token. Must be an access policy ERN or a string of the form `roleassignments:<org_id>`. This argument can also be specified with the `EQUINIX_TOKEN_EXCHANGE_SCOPE` shell environment variable. Please note that token exchange is an alpha feature and not available for all users.
 - `token_exchange_subject_token` (String) The subject token to use for token exchange authentication. Must be an OIDC ID token issued by an OIDC provider trusted by Equinix STS. If not set, the provider will use the environment variable specified in `token_exchange_subject_token_env_var`. Please note that token exchange is an alpha feature and not available for all users.
 - `token_exchange_subject_token_env_var` (String) The name of the environment variable containing the subject token for token exchange. This argument can also be specified with the `EQUINIX_TOKEN_EXCHANGE_SUBJECT_TOKEN_ENV_VAR` shell environment variable. (Defaults to `EQUINIX_TOKEN_EXCHANGE_SUBJECT_TOKEN`). Please note that token exchange is an alpha feature and not available for all users.

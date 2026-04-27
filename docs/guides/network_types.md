@@ -38,7 +38,7 @@ resource "equinix_metal_port" "eth1" {
 
 ### Layer 2 Unbonded Port
 
-This example configures an Equinix Metal server with a [pure layer 2 unbonded](https://docs.equinix.com/metal/layer2-networking/layer2-mode/#:~:text=Layer%202%20Unbonded%20Mode) network configuration and adds two VLANs to its `eth1` port; one of them set as the [native VLAN](https://docs.equinix.com/metal/layer2-networking/native-vlan/). Notice the `depends_on` meta-argument in the `equinix_metal_port.eth1` resource and the `reset_on_delete` attribute in both ports’ configuration. The `reset_on_delete` will set the port to the default settings (layer3 bonded without VLANs attached) before the terraform resource delete/destroy. It is recommended to use the `depends_on` argument here to ensure that the port resources with attached VLANs are reset first, since all VLANs must be detached before re-bonding the ports.
+This example configures an Equinix Metal server with a [pure layer 2 unbonded](https://docs.equinix.com/metal/layer2-networking/layer2-unbonded-mode/) network configuration and adds two VLANs to its `eth1` port; one of them set as the [native VLAN](https://docs.equinix.com/metal/layer2-networking/native-vlan/). Notice the `depends_on` meta-argument in the `equinix_metal_port.eth1` resource and the `reset_on_delete` attribute in both ports’ configuration. The `reset_on_delete` will set the port to the default settings (layer3 bonded without VLANs attached) before the terraform resource delete/destroy. It is recommended to use the `depends_on` argument here to ensure that the port resources with attached VLANs are reset first, since all VLANs must be detached before re-bonding the ports.
 
 ```hcl
 resource "equinix_metal_port" "bond0" {
@@ -110,7 +110,7 @@ resource "equinix_metal_vlan" "test" {
 
 ### Accessing Port IDs
 
-The port ID value can be obtained from a `equinix_metal_device` using a [`for` expression](https://www.terraform.io/docs/language/expressions/for.html).
+The port ID value can be obtained from a `equinix_metal_device` using a [`for` expression](https://developer.hashicorp.com/terraform/language/expressions/for).
 
 Assuming a `equinix_metal_device` exists with the resource name `test`:
 
@@ -134,7 +134,7 @@ When using this resource, keep in mind:
 
 ### Hybrid (Unbonded) Device
 
-This example create one c3.small device and puts it into [hybrid (unbonded) network mode](https://metal.equinix.com/developers/docs/layer2-networking/hybrid-unbonded-mode/).
+This example create one c3.small device and puts it into [hybrid (unbonded) network mode](https://docs.equinix.com/metal/layer2-networking/hybrid-unbonded-mode/).
 
 ```hcl
 resource "equinix_metal_device" "test" {
@@ -154,7 +154,7 @@ resource "equinix_metal_device_network_type" "test" {
 
 ### Hybrid (Unbonded) Device with a VLAN
 
-This example create two devices in [hybrid (unbonded) mode](https://metal.equinix.com/developers/docs/layer2-networking/hybrid-unbonded-mode/) and adds a VLAN to their eth1 ports.
+This example create two devices in [hybrid (unbonded) mode](https://docs.equinix.com/metal/layer2-networking/hybrid-unbonded-mode/) and adds a VLAN to their eth1 ports.
 
 ```hcl
 locals {
@@ -195,7 +195,7 @@ resource "equinix_metal_port_vlan_attachment" "test" {
 
 ### Hybrid (Bonded) Device
 
-This example create one c3.small device and puts it into [hybrid-bonded network mode](https://metal.equinix.com/developers/docs/layer2-networking/hybrid-bonded-mode/). Notice, the default network type of `layer3` can be used with VLAN attachments without reconfiguring the device ports.
+This example create one c3.small device and puts it into [hybrid-bonded network mode](https://docs.equinix.com/metal/layer2-networking/hybrid-bonded-mode/). Notice, the default network type of `layer3` can be used with VLAN attachments without reconfiguring the device ports.
 
 ```hcl
 resource "equinix_metal_device" "test" {

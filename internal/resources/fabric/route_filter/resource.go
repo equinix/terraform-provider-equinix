@@ -16,6 +16,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
+// Resource returns the schema.Resource for managing Equinix Fabric route filter policies.
 func Resource() *schema.Resource {
 	return &schema.Resource{
 		Timeouts: &schema.ResourceTimeout{
@@ -35,8 +36,8 @@ func Resource() *schema.Resource {
 		Description: `Fabric V4 API compatible resource allows creation and management of Equinix Fabric Route Filter Policy
 
 Additional Documentation:
-* Getting Started: https://docs.equinix.com/en-us/Content/Interconnection/FCR/FCR-route-filters.htm
-* API: https://developer.equinix.com/dev-docs/fabric/api-reference/fabric-v4-apis#route-filters`,
+* Getting Started: https://docs.equinix.com/fabric-cloud-router/bgp/fcr-route-filters/
+* API: https://docs.equinix.com/api-catalog/fabricv4/#tag/Route-Filters`,
 	}
 }
 
@@ -66,7 +67,7 @@ func resourceCreate(ctx context.Context, d *schema.ResourceData, meta interface{
 	d.SetId(routeFilter.GetUuid())
 
 	createTimeout := d.Timeout(schema.TimeoutCreate) - 30*time.Second - time.Since(start)
-	if err = waitForStability(d.Id(), meta, d, ctx, createTimeout); err != nil {
+	if err = waitForStability(ctx, d.Id(), meta, d, createTimeout); err != nil {
 		return diag.Errorf("error waiting for route filter (%s) to be created: %s", d.Id(), err)
 	}
 
@@ -84,7 +85,7 @@ func resourceUpdate(ctx context.Context, d *schema.ResourceData, meta interface{
 	}
 
 	updateTimeout := d.Timeout(schema.TimeoutUpdate) - 30*time.Second - time.Since(start)
-	if err = waitForStability(d.Id(), meta, d, ctx, updateTimeout); err != nil {
+	if err = waitForStability(ctx, d.Id(), meta, d, updateTimeout); err != nil {
 		return diag.Errorf("error waiting for route filter (%s) to be updated: %s", d.Id(), err)
 	}
 
@@ -110,13 +111,13 @@ func resourceDelete(ctx context.Context, d *schema.ResourceData, meta interface{
 	}
 
 	deleteTimeout := d.Timeout(schema.TimeoutDelete) - 30*time.Second - time.Since(start)
-	if err = WaitForDeletion(d.Id(), meta, d, ctx, deleteTimeout); err != nil {
+	if err = WaitForDeletion(ctx, d.Id(), meta, d, deleteTimeout); err != nil {
 		return diag.Errorf("error waiting for route filter (%s) to be deleted: %s", d.Id(), err)
 	}
 	return diags
 }
 
-func waitForStability(uuid string, meta interface{}, d *schema.ResourceData, ctx context.Context, timeout time.Duration) error {
+func waitForStability(ctx context.Context, uuid string, meta interface{}, d *schema.ResourceData, timeout time.Duration) error {
 	log.Printf("Waiting for route filter to be stable, uuid %s", uuid)
 	stateConf := &retry.StateChangeConf{
 		Pending: []string{
@@ -144,7 +145,8 @@ func waitForStability(uuid string, meta interface{}, d *schema.ResourceData, ctx
 	return err
 }
 
-func WaitForDeletion(uuid string, meta interface{}, d *schema.ResourceData, ctx context.Context, timeout time.Duration) error {
+// WaitForDeletion waits until the route filter policy is deleted.
+func WaitForDeletion(ctx context.Context, uuid string, meta interface{}, d *schema.ResourceData, timeout time.Duration) error {
 	log.Printf("Waiting for route filter to be deleted, uuid %s", uuid)
 	stateConf := &retry.StateChangeConf{
 		Pending: []string{

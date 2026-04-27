@@ -1,3 +1,4 @@
+// Package servicetoken provides resources and data sources for managing Equinix Fabric service tokens.
 package servicetoken
 
 import (
@@ -10,6 +11,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
+// DataSource returns the schema.Resource for fetching a Fabric service token by UUID.
 func DataSource() *schema.Resource {
 	return &schema.Resource{
 		ReadContext: dataSourceRead,
@@ -17,8 +19,8 @@ func DataSource() *schema.Resource {
 		Description: `Fabric V4 API compatible data resource that allow user to fetch service token for a given UUID
 
 Additional documentation:
-* Getting Started: https://docs.equinix.com/en-us/Content/Interconnection/Fabric/service%20tokens/Fabric-Service-Tokens.htm
-* API: https://docs.equinix.com/en-us/Content/KnowledgeCenter/Fabric/GettingStarted/Integrating-with-Fabric-V4-APIs/ConnectUsingServiceToken.htm`,
+* Getting Started: https://docs.equinix.com/fabric/service-tokens/create-z-side-token
+* API: https://docs.equinix.com/fabric/fabric-api/connect-using-service-token`,
 	}
 }
 
@@ -28,6 +30,7 @@ func dataSourceRead(ctx context.Context, d *schema.ResourceData, meta interface{
 	return resourceRead(ctx, d, meta)
 }
 
+// DataSourceSearch returns the schema.Resource for searching Fabric service tokens.
 func DataSourceSearch() *schema.Resource {
 	return &schema.Resource{
 		ReadContext: dataSourceSearch,
@@ -35,8 +38,8 @@ func DataSourceSearch() *schema.Resource {
 		Description: `Fabric V4 API compatible data resource that allow user to fetch service token for a given search data set
 
 Additional documentation:
-* Getting Started: https://docs.equinix.com/en-us/Content/Interconnection/Fabric/service%20tokens/Fabric-Service-Tokens.htm
-* API: https://docs.equinix.com/en-us/Content/KnowledgeCenter/Fabric/GettingStarted/Integrating-with-Fabric-V4-APIs/ConnectUsingServiceToken.htm`,
+* Getting Started: https://docs.equinix.com/fabric/service-tokens/create-z-side-token
+* API: https://docs.equinix.com/fabric/fabric-api/connect-using-service-token`,
 	}
 }
 

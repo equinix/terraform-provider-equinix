@@ -1,3 +1,4 @@
+// Package route_filter_rule provides resources and data sources for managing Equinix Fabric route filter rules.
 package route_filter_rule
 
 import (
@@ -11,6 +12,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
+// DataSource returns the schema.Resource for fetching a Fabric route filter rule by UUID.
 func DataSource() *schema.Resource {
 	return &schema.Resource{
 		ReadContext: dataSourceRead,
@@ -18,8 +20,8 @@ func DataSource() *schema.Resource {
 		Description: `Fabric V4 API compatible data resource that allow user to fetch route filter for a given UUID
 
 Additional Documentation:
-* Getting Started: https://docs.equinix.com/en-us/Content/Interconnection/FCR/FCR-route-filters.htm
-* API: https://developer.equinix.com/dev-docs/fabric/api-reference/fabric-v4-apis#route-filter-rules`,
+* Getting Started: https://docs.equinix.com/fabric-cloud-router/bgp/fcr-route-filters/
+* API: https://docs.equinix.com/api-catalog/fabricv4/#tag/Route-Filter-Rules`,
 	}
 }
 
@@ -29,6 +31,7 @@ func dataSourceRead(ctx context.Context, d *schema.ResourceData, meta interface{
 	return resourceRead(ctx, d, meta)
 }
 
+// DataSourceGetAllRules returns the schema.Resource for fetching all route filter rules for a given route filter.
 func DataSourceGetAllRules() *schema.Resource {
 	return &schema.Resource{
 		ReadContext: dataSourceGetAllRules,
@@ -36,15 +39,15 @@ func DataSourceGetAllRules() *schema.Resource {
 		Description: `Fabric V4 API compatible data resource that allow user to fetch route filter for a given search data set
 
 Additional Documentation:
-* Getting Started: https://docs.equinix.com/en-us/Content/Interconnection/FCR/FCR-route-filters.htm
-* API: https://developer.equinix.com/dev-docs/fabric/api-reference/fabric-v4-apis#route-filter-rules`,
+* Getting Started: https://docs.equinix.com/fabric-cloud-router/bgp/fcr-route-filters/
+* API: https://docs.equinix.com/api-catalog/fabricv4/#tag/Route-Filter-Rules`,
 	}
 }
 
 func dataSourceGetAllRules(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	client := meta.(*config.Config).NewFabricClientForSDK(ctx, d)
-	routeFilterId := d.Get("route_filter_id").(string)
-	getRouteFilterRulesRequest := client.RouteFilterRulesApi.GetRouteFilterRules(ctx, routeFilterId)
+	routeFilterID := d.Get("route_filter_id").(string)
+	getRouteFilterRulesRequest := client.RouteFilterRulesApi.GetRouteFilterRules(ctx, routeFilterID)
 
 	limit := d.Get("limit").(int)
 	if limit != 0 {
@@ -69,11 +72,11 @@ func dataSourceGetAllRules(ctx context.Context, d *schema.ResourceData, meta int
 	}
 
 	if len(routeFilterRules.Data) < 1 {
-		return diag.FromErr(fmt.Errorf("no records are found for the route filter (%s) - %d , please change the search criteria", routeFilterId, len(routeFilterRules.Data)))
+		return diag.FromErr(fmt.Errorf("no records are found for the route filter (%s) - %d , please change the search criteria", routeFilterID, len(routeFilterRules.Data)))
 	}
 
-	d.SetId(routeFilterId)
-	err = d.Set("route_filter_id", routeFilterId)
+	d.SetId(routeFilterID)
+	err = d.Set("route_filter_id", routeFilterID)
 	if err != nil {
 		return diag.Errorf("error setting route_filter_id to state %s", err)
 	}

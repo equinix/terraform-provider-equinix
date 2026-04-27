@@ -30,7 +30,7 @@ func fabricDatasources() map[string]*schema.Resource {
 		"equinix_fabric_route_filters":             fabric_route_filter.DataSourceSearch(),
 		"equinix_fabric_route_filter_rule":         fabric_route_filter_rule.DataSource(),
 		"equinix_fabric_route_filter_rules":        fabric_route_filter_rule.DataSourceGetAllRules(),
-		"equinix_fabric_service_profile":           dataSourceFabricServiceProfileReadByUuid(),
+		"equinix_fabric_service_profile":           dataSourceFabricServiceProfileReadByUUID(),
 		"equinix_fabric_service_profiles":          dataSourceFabricSearchServiceProfilesByName(),
 		"equinix_fabric_service_token":             fabric_service_token.DataSource(),
 		"equinix_fabric_service_tokens":            fabric_service_token.DataSourceSearch(),

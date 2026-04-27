@@ -1,3 +1,4 @@
+// Package network provides resources and data sources for managing Equinix Fabric networks.
 package network
 
 import (
@@ -16,6 +17,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
+// DataSource returns the schema.Resource for fetching a Fabric network by UUID.
 func DataSource() *schema.Resource {
 	return &schema.Resource{
 		ReadContext: dataSourceFabricNetworkRead,
@@ -23,8 +25,8 @@ func DataSource() *schema.Resource {
 		Description: `Fabric V4 API compatible data resource that allow user to fetch Fabric Network for a given UUID
 
 Additional documentation:
-* Getting Started: https://docs.equinix.com/en-us/Content/Interconnection/Fabric/IMPLEMENTATION/fabric-networks-implement.htm
-* API: https://developer.equinix.com/dev-docs/fabric/api-reference/fabric-v4-apis#fabric-networks`,
+* Getting Started: https://docs.equinix.com/fabric/multipoint-connections/multipoint-networks/
+* API: https://docs.equinix.com/api-catalog/fabricv4/#tag/Networks`,
 	}
 }
 
@@ -34,6 +36,7 @@ func dataSourceFabricNetworkRead(ctx context.Context, d *schema.ResourceData, me
 	return resourceFabricNetworkRead(ctx, d, meta)
 }
 
+// DataSourceSearch returns the schema.Resource for searching Fabric networks.
 func DataSourceSearch() *schema.Resource {
 	return &schema.Resource{
 		ReadContext: dataSourceFabricNetworkSearch,
@@ -41,8 +44,8 @@ func DataSourceSearch() *schema.Resource {
 		Description: `Fabric V4 API compatible data resource that allow user to fetch Fabric Network for a given UUID
 
 Additional documentation:
-* Getting Started: https://docs.equinix.com/en-us/Content/Interconnection/Fabric/IMPLEMENTATION/fabric-networks-implement.htm
-* API: https://developer.equinix.com/dev-docs/fabric/api-reference/fabric-v4-apis#fabric-networks`,
+* Getting Started: https://docs.equinix.com/fabric/multipoint-connections/multipoint-networks/
+* API: https://docs.equinix.com/api-catalog/fabricv4/#tag/Networks`,
 	}
 }
 
@@ -163,9 +166,10 @@ func networkFiltersTerraformToGo(filters []interface{}, outerOperator string) (f
 		networkFilters = append(networkFilters, value)
 	}
 
-	if outerOperator == "AND" {
+	switch outerOperator {
+	case "AND":
 		outerNetworkFilter.SetAnd(networkFilters)
-	} else if outerOperator == "OR" {
+	case "OR":
 		outerNetworkFilter.SetOr(networkFilters)
 	}
 

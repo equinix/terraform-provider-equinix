@@ -21,8 +21,8 @@ func resourceSchema(ctx context.Context) schema.Schema {
 ~> Note Equinix Fabric v4 Stream Alert Rule resource is currently in Beta. The interfaces related to equinix_fabric_stream_alert_rule may change ahead of general availability. Please, do not hesitate to report any problems that you experience by opening a new issue https://github.com/equinix/terraform-provider-equinix/issues/new?template=bug.md
 
 Additional Documentation:
-* Getting Started: https://docs.equinix.com/en-us/Content/KnowledgeCenter/Fabric/GettingStarted/Integrating-with-Fabric-V4-APIs/IntegrateWithSink.htm
-* API: https://developer.equinix.com/catalog/fabricv4#tag/Stream-Alert-Rules`,
+* Getting Started: https://docs.equinix.com/observability/streaming-data/integratewithsink/
+* API: https://docs.equinix.com/api-catalog/fabricv4/#tag/Stream-Alert-Rules`,
 		Attributes: map[string]schema.Attribute{
 			"id": framework.IDAttributeDefaultDescription(),
 			"timeouts": timeouts.Attributes(ctx, timeouts.Opts{

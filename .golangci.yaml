@@ -23,6 +23,12 @@ linters:
       linters:
         - stylecheck
       text: "^ST1003"
+    # Allow underscores in package names for existing packages whose directory
+    # names use underscores (connection_route_filter, route_filter, route_filter_rule)
+    - path: "(connection_route_filter|route_filter|route_filter_rule)/"
+      linters:
+        - revive
+      text: "don't use an underscore in package name"
     # Ignore linter errors in Metal files (deprecated code to be removed in v5.0.0)
     - path: equinix/data_source_metal_.*\.go
       linters:
