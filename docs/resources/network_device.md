@@ -1364,7 +1364,7 @@ resource "equinix_network_device" "INFOBLOX-SV" {
   byol            = true
   package_code    = "STD"
   notifications   = ["test@eq.com"]
-  account_number  = 1234
+  account_number  = data.equinix_network_account.sv.name.number
   version         = "4.0"
   core_count      = 3
   interface_count = 5
@@ -1376,7 +1376,7 @@ resource "equinix_network_device" "INFOBLOX-SV" {
   secondary_device {
     name           = "TF_INFOBLOX-NIOS-X-Sec"
     metro_code     = data.equinix_network_account.sv.metro_code
-    account_number = 1234
+    account_number = data.equinix_network_account.sv.name.number
     notifications  = ["test@eq.com"]
     vendor_configuration = {
       hostname = "test"
@@ -1443,7 +1443,7 @@ The `secondary_device` block supports the following arguments:
 * `account_number` - (Required) Billing account number for secondary device.
 * `notifications` - (Required) List of email addresses that will receive notifications about secondary device.
 * `additional_bandwidth` - (Optional) Additional Internet bandwidth, in Mbps, for a secondary device.
-* `vendor_configuration` - (Optional) Key/Value pairs of vendor specific configuration parameters for a secondary device. Key values are `controller1`, `activationKey`, `managementType`, `siteId`, `systemIpAddress`, `privateAddress`, `privateCidrMask`, `privateGateway`, `licenseKey`, `licenseId`, `panoramaAuthKey`, `panoramaIpAddress`, `ipAddress`, `subnetMaskIp`, `gatewayIp`.
+* `vendor_configuration` - (Optional) Key/Value pairs of vendor specific configuration parameters for a secondary device. Key values are `controller1`, `activationKey`, `managementType`, `siteId`, `systemIpAddress`, `privateAddress`, `privateCidrMask`, `privateGateway`, `licenseKey`, `licenseId`, `panoramaAuthKey`, `panoramaIpAddress`, `ipAddress`, `subnetMaskIp`, `gatewayIp`, `token`.
 * `acl_template_id` - (Optional) Identifier of a WAN interface ACL template that will be applied on a secondary device.
 * `mgmt_acl_template_uuid` - (Optional) Identifier of an MGMT interface ACL template that will be applied on a secondary device.
 * `ssh-key` - (Optional) Up to one definition of SSH key that will be provisioned on a secondary device.
