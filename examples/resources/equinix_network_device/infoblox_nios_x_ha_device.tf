@@ -1,11 +1,3 @@
-terraform {
-  required_providers {
-    equinix = {
-      source  = "equinix/equinix"
-      version = "4.15.0"
-    }
-  }
-}
 # Create Infoblox NIOS-X HA device
 
 data "equinix_network_account" "sv" {

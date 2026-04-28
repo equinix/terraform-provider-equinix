@@ -1348,14 +1348,6 @@ resource "equinix_network_device" "FTNT-FIREWALL-SV" {
 ```
 
 ```terraform
-terraform {
-  required_providers {
-    equinix = {
-      source  = "equinix/equinix"
-      version = "4.15.0"
-    }
-  }
-}
 # Create Infoblox NIOS-X HA device
 
 data "equinix_network_account" "sv" {
@@ -1424,7 +1416,7 @@ The following arguments are supported:
 * `additional_bandwidth` - (Optional) Additional Internet bandwidth, in Mbps, that will be allocated to the device (in addition to default 15Mbps).
 * `interface_count` - (Optional) Number of network interfaces on a device. If not specified, default number for a given device type will be used.
 * `wan_interafce_id` - (Optional) Specify the WAN/SSH interface id. If not specified, default WAN/SSH interface for a given device type will be used.
-* `vendor_configuration` - (Optional) Map of vendor specific configuration parameters for a device (controller1, activationKey, managementType, siteId, systemIpAddress, privateAddress, privateCidrMask, privateGateway, licenseKey, licenseId, panoramaAuthKey, panoramaIpAddress, provisioningKey, ipAddress(applicable for infoblox only), subnetMaskIp(applicable for infoblox only), gatewayIp(applicable for infoblox only))
+* `vendor_configuration` - (Optional) Map of vendor specific configuration parameters for a device (controller1, activationKey, managementType, siteId, systemIpAddress, privateAddress, privateCidrMask, privateGateway, licenseKey, licenseId, panoramaAuthKey, panoramaIpAddress, provisioningKey, ipAddress(applicable for infoblox only), subnetMaskIp(applicable for infoblox only), gatewayIp(applicable for infoblox only), token(applicable and mandatory for only Infoblox NIOS-X device type))
 * `ssh-key` - (Optional) Definition of SSH key that will be provisioned on a device (max one key). See [SSH Key](#ssh-key) below for more details.
 * `secondary_device` - (Optional) Definition of secondary device for redundant device configurations. See [Secondary Device](#secondary-device) below for more details.
 * `cluster_details` - (Optional) An object that has the cluster details. See [Cluster Details](#cluster-details) below for more details.
