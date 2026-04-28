@@ -1347,6 +1347,45 @@ resource "equinix_network_device" "FTNT-FIREWALL-SV" {
 }
 ```
 
+```terraform
+# Create Infoblox Grid Member HA device
+
+data "equinix_network_account" "sv" {
+  metro_code = "SV"
+}
+
+resource "equinix_network_device" "INFOBLOX-SV" {
+  name            = "TF_INFOBLOX-NIOS-X"
+  project_id      = "xxxxxxx"
+  metro_code      = data.equinix_network_account.sv.metro_code
+  type_code       = "INFOBLOX-NIOSX"
+  self_managed    = true
+  connectivity    = "INTERNET-ACCESS"
+  byol            = true
+  package_code    = "STD"
+  notifications   = ["test@eq.com"]
+  account_number  = data.equinix_network_account.sv.name.number
+  version         = "4.0"
+  core_count      = 3
+  interface_count = 5
+  term_length     = 1
+  vendor_configuration = {
+    hostname = "test"
+    token    = "xxxxx"
+  }
+  secondary_device {
+    name           = "TF_INFOBLOX-NIOS-X-Sec"
+    metro_code     = data.equinix_network_account.sv.metro_code
+    account_number = data.equinix_network_account.sv.name.number
+    notifications  = ["test@eq.com"]
+    vendor_configuration = {
+      hostname = "test"
+      token    = "xxxxx"
+    }
+  }
+}
+```
+
 ## Argument Reference
 
 The following arguments are supported:
@@ -1377,7 +1416,7 @@ The following arguments are supported:
 * `additional_bandwidth` - (Optional) Additional Internet bandwidth, in Mbps, that will be allocated to the device (in addition to default 15Mbps).
 * `interface_count` - (Optional) Number of network interfaces on a device. If not specified, default number for a given device type will be used.
 * `wan_interafce_id` - (Optional) Specify the WAN/SSH interface id. If not specified, default WAN/SSH interface for a given device type will be used.
-* `vendor_configuration` - (Optional) Map of vendor specific configuration parameters for a device (controller1, activationKey, managementType, siteId, systemIpAddress, privateAddress, privateCidrMask, privateGateway, licenseKey, licenseId, panoramaAuthKey, panoramaIpAddress, provisioningKey, ipAddress(applicable for infoblox only), subnetMaskIp(applicable for infoblox only), gatewayIp(applicable for infoblox only))
+* `vendor_configuration` - (Optional) Map of vendor specific configuration parameters for a device (controller1, activationKey, managementType, siteId, systemIpAddress, privateAddress, privateCidrMask, privateGateway, licenseKey, licenseId, panoramaAuthKey, panoramaIpAddress, provisioningKey, ipAddress(applicable for infoblox only), subnetMaskIp(applicable for infoblox only), gatewayIp(applicable for infoblox only), token(applicable and mandatory for only Infoblox NIOSX device type))
 * `ssh-key` - (Optional) Definition of SSH key that will be provisioned on a device (max one key). See [SSH Key](#ssh-key) below for more details.
 * `secondary_device` - (Optional) Definition of secondary device for redundant device configurations. See [Secondary Device](#secondary-device) below for more details.
 * `cluster_details` - (Optional) An object that has the cluster details. See [Cluster Details](#cluster-details) below for more details.
