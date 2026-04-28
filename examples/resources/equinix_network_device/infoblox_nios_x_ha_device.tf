@@ -13,7 +13,7 @@ data "equinix_network_account" "sv" {
 }
 
 resource "equinix_network_device" "INFOBLOX-SV" {
-  name            = "TF_INFOBLOX-NIOX-X"
+  name            = "TF_INFOBLOX-NIOS-X"
   project_id      = "xxxxxxx"
   metro_code      = data.equinix_network_account.sv.metro_code
   type_code       = "INFOBLOX-NIOSX"
@@ -32,7 +32,7 @@ resource "equinix_network_device" "INFOBLOX-SV" {
     token    = "xxxxx"
   }
   secondary_device {
-    name           = "TF_INFOBLOX-NIOX-X-Sec"
+    name           = "TF_INFOBLOX-NIOS-X-Sec"
     metro_code     = data.equinix_network_account.sv.metro_code
     account_number = 1234
     notifications  = ["test@eq.com"]
