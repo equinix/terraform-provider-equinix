@@ -150,7 +150,7 @@ func createNetworkDeviceLinkResourceSchema() map[string]*schema.Schema {
 				Schema: createNetworkDeviceLinkDeviceResourceSchema(),
 			},
 			Set:         networkDeviceLinkDeviceHash,
-			Description: networkDeviceLinkDescriptions["Device"],
+			Description: networkDeviceLinkDescriptions["Devices"],
 		},
 		networkDeviceLinkSchemaNames["MetroLinks"]: {
 			Type:     schema.TypeSet,
