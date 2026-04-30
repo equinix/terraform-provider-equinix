@@ -84,13 +84,13 @@ func TestNetworkDeviceLink_updateResourceData(t *testing.T) {
 		},
 		MetroLinks: []ne.DeviceLinkGroupMetroLink{
 			{
-				AccountNumber:  ne.String("592205"),
+				AccountNumber:  ne.String(""),
 				MetroCode:      ne.String("MX"),
 				Throughput:     ne.String("10"),
 				ThroughputUnit: ne.String("Mbps"),
 			},
 			{
-				AccountNumber:  ne.String("606828"),
+				AccountNumber:  ne.String(""),
 				MetroCode:      ne.String("LD"),
 				Throughput:     ne.String("10"),
 				ThroughputUnit: ne.String("Mbps"),
@@ -107,11 +107,5 @@ func TestNetworkDeviceLink_updateResourceData(t *testing.T) {
 	assert.Equal(t, ne.StringValue(input.Subnet), d.Get(networkDeviceLinkSchemaNames["Subnet"]), "Subnet matches")
 	assert.Equal(t, ne.StringValue(input.Status), d.Get(networkDeviceLinkSchemaNames["Status"]), "Status matches")
 	assert.Equal(t, input.Devices, expandNetworkDeviceLinkDevices(d.Get(networkDeviceLinkSchemaNames["Devices"]).(*schema.Set)), "Device matches")
-	expandedMetroLinks := expandNetworkDeviceLinkMetroLinks(d.Get(networkDeviceLinkSchemaNames["MetroLinks"]).(*schema.Set))
-	// AccountNumber is write-only (not returned by the API), so it is empty after flatten from empty state
-	expectedMetroLinks := []ne.DeviceLinkGroupMetroLink{
-		{AccountNumber: ne.String(""), MetroCode: input.MetroLinks[0].MetroCode, Throughput: input.MetroLinks[0].Throughput, ThroughputUnit: input.MetroLinks[0].ThroughputUnit},
-		{AccountNumber: ne.String(""), MetroCode: input.MetroLinks[1].MetroCode, Throughput: input.MetroLinks[1].Throughput, ThroughputUnit: input.MetroLinks[1].ThroughputUnit},
-	}
-	assert.ElementsMatch(t, expectedMetroLinks, expandedMetroLinks, "MetroLinks matches")
+	assert.ElementsMatch(t, input.MetroLinks, expandNetworkDeviceLinkMetroLinks(d.Get(networkDeviceLinkSchemaNames["MetroLinks"]).(*schema.Set)), "MetroLinks matches")
 }
