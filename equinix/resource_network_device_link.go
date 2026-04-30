@@ -374,7 +374,7 @@ func updateNetworkDeviceLinkResource(link *ne.DeviceLinkGroup, d *schema.Resourc
 	if err := d.Set(networkDeviceLinkSchemaNames["Devices"], flattenNetworkDeviceLinkDevices(d.Get(networkDeviceLinkSchemaNames["Devices"]).(*schema.Set), link.Devices)); err != nil {
 		return fmt.Errorf("error setting Devices: %s", err)
 	}
-	if err := d.Set(networkDeviceLinkSchemaNames["MetroLinks"], flattenNetworkDeviceLinkMetroLinks(d.Get(networkDeviceLinkSchemaNames["Devices"]).(*schema.Set), link.MetroLinks)); err != nil {
+	if err := d.Set(networkDeviceLinkSchemaNames["MetroLinks"], flattenNetworkDeviceLinkMetroLinks(d.Get(networkDeviceLinkSchemaNames["MetroLinks"]).(*schema.Set), link.MetroLinks)); err != nil {
 		return fmt.Errorf("error setting Metro Links: %s", err)
 	}
 	if err := d.Set(networkDeviceLinkSchemaNames["ProjectID"], link.ProjectID); err != nil {
