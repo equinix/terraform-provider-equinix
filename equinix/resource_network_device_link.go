@@ -59,14 +59,6 @@ var networkDeviceLinkDeviceDescriptions = map[string]string{
 	"IPAddress":   "Assigned IP address from device link subnet",
 }
 
-var networkDeviceLinkConnectionSchemaNames = map[string]string{
-	"AccountNumber":        "account_number",
-	"Throughput":           "throughput",
-	"ThroughputUnit":       "throughput_unit",
-	"SourceMetroCode":      "src_metro_code",
-	"DestinationMetroCode": "dst_metro_code",
-}
-
 var networkDeviceLinkMetroSchemaNames = map[string]string{
 	"AccountNumber":  "account_number",
 	"MetroCode":      "metro_code",
@@ -521,9 +513,9 @@ func networkDeviceLinkMetroLinkKey(v interface{}) string {
 	}
 	if v, ok := v.(map[string]interface{}); ok {
 		return fmt.Sprintf("%s-%s-%s",
-			v[networkDeviceLinkConnectionSchemaNames["MetroCode"]],
-			v[networkDeviceLinkConnectionSchemaNames["Throughput"]],
-			v[networkDeviceLinkConnectionSchemaNames["ThroughputUnit"]])
+			v[networkDeviceLinkMetroSchemaNames["MetroCode"]],
+			v[networkDeviceLinkMetroSchemaNames["Throughput"]],
+			v[networkDeviceLinkMetroSchemaNames["ThroughputUnit"]])
 	}
 	return fmt.Sprintf("%v", v)
 }
