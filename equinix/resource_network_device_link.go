@@ -76,7 +76,7 @@ var networkDeviceLinkMetroSchemaNames = map[string]string{
 
 var networkDeviceLinkMetroDescriptions = map[string]string{
 	"AccountNumber":  "Billing account number to be used for connection charges",
-	"metroCode":      "Connection source metro code",
+	"MetroCode":      "Connection source metro code",
 	"Throughput":     "Connection throughput",
 	"ThroughputUnit": "Connection throughput unit",
 }
