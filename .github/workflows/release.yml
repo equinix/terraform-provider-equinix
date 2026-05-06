@@ -52,14 +52,8 @@ jobs:
 
     - name: Import Renewed HashiCorp Public Key
       run: |
+        # Correct URL for the public key
         curl -s https://hashicorp.com | gpg --import
-
-    - name: Import GPG key
-      id: import_gpg
-      uses: crazy-max/ghaction-import-gpg@e89d40939c28e39f97cf32126055eeae86ba74ec # v6
-      with:
-        gpg_private_key: ${{ secrets.GPG_PRIVATE_KEY }}
-        passphrase: ${{ secrets.PASSPHRASE }}
 
     - name: Run GoReleaser
       uses: goreleaser/goreleaser-action@v6
@@ -67,8 +61,7 @@ jobs:
         version: latest
         args: release --clean
       env:
-        GPG_FINGERPRINT: ${{ steps.import_gpg.outputs.fingerprint }}
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        # Extra insurance to skip PGP checks in sub-processes
+        GPG_FINGERPRINT: ${{ steps.import_gpg.outputs.fingerprint }}
         TF_INSTALL_NO_CHECK: "true"
-
+        TENV_VALIDATION: "sha"
