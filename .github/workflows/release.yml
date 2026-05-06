@@ -58,11 +58,15 @@ jobs:
         passphrase: ${{ secrets.PASSPHRASE }}
 
     - name: Run GoReleaser
-      uses: goreleaser/goreleaser-action@e435ccd777264be153ace6237001ef4d979d3a7a # v6
+      uses: goreleaser/goreleaser-action@v6
       with:
         version: latest
         args: release --clean
       env:
         GPG_FINGERPRINT: ${{ steps.import_gpg.outputs.fingerprint }}
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        TF_INSTALL_NO_CHECK: "true"
+        # This tells the installer to skip the expired GPG check
+        TF_INSTALL_NO_CHECK: "true" 
+        # This tells Go to find the tools correctly
+        GO111MODULE: "on"
+        

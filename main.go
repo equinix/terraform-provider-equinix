@@ -16,7 +16,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-mux/tf6muxserver"
 )
 
-//go:generate go run ://github.com --rendered-provider-name=Equinix --tf-version terraform
+//go:generate go run ://github.com --rendered-provider-name=Equinix
 func main() {
 
 	ctx := context.Background()
