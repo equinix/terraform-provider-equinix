@@ -82,7 +82,7 @@ test-compile:
 .PHONY: docs docs-check
 
 docs:
-	go generate ./...
+	TF_INSTALL_NO_CHECK=true go generate ./...
 
 docs-check: docs
 	if git status --porcelain | grep docs; then \
