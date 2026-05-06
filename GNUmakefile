@@ -14,8 +14,6 @@ PKG_NAME            =equinix
 GOLANGCI_LINT_VERSION=v2.3.0
 GOLANGCI_LINT=go run github.com/golangci/golangci-lint/v2/cmd/golangci-lint@${GOLANGCI_LINT_VERSION}
 LINT_BASE_REF=origin/main
-export TF_INSTALL_NO_CHECK=true
-export TENV_VALIDATION=sha
 
 ifneq ($(origin TESTS_REGEXP), undefined)
 	TESTARGS = -run='$(TESTS_REGEXP)'
@@ -84,7 +82,7 @@ test-compile:
 .PHONY: docs docs-check
 
 docs:
-	export TF_INSTALL_NO_CHECK=true; export TENV_VALIDATION=sha; go generate ./...
+	go generate ./...
 
 docs-check: docs
 	if git status --porcelain | grep docs; then \
