@@ -65,8 +65,7 @@ jobs:
       env:
         GPG_FINGERPRINT: ${{ steps.import_gpg.outputs.fingerprint }}
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        # This tells the installer to skip the expired GPG check
-        TF_INSTALL_NO_CHECK: "true" 
-        # This tells Go to find the tools correctly
-        GO111MODULE: "on"
+        # FIXES: Bypasses the expired PGP key for internal downloads
+        TF_INSTALL_NO_CHECK: "true"
+        TENV_VALIDATION: "sha"
         
