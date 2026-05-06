@@ -44,6 +44,12 @@ jobs:
         go-version-file: './go.mod'
       id: go
 
+    - name: Setup Terraform
+      uses: hashicorp/setup-terraform@v3
+      with:
+        terraform_version: 1.10.0 # Use a version released after April 2026
+        terraform_wrapper: false
+        
     - name: Import GPG key
       id: import_gpg
       uses: crazy-max/ghaction-import-gpg@e89d40939c28e39f97cf32126055eeae86ba74ec # v6
