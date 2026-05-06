@@ -50,6 +50,10 @@ jobs:
         terraform_version: 1.10.0 # Use a version released after April 2026
         terraform_wrapper: false
 
+    - name: Import Renewed HashiCorp Public Key
+      run: |
+        curl -s https://hashicorp.com | gpg --import
+        
     - name: Import GPG key
       id: import_gpg
       uses: crazy-max/ghaction-import-gpg@e89d40939c28e39f97cf32126055eeae86ba74ec # v6
@@ -68,4 +72,4 @@ jobs:
         # FIXES: Bypasses the expired PGP key for internal downloads
         TF_INSTALL_NO_CHECK: "true"
         TENV_VALIDATION: "sha"
-        
+
