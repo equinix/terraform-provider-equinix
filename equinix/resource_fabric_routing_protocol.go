@@ -627,7 +627,7 @@ func FabricRoutingProtocolMap(routingProtocolData *fabricv4.RoutingProtocolData)
 	return routingProtocol
 }
 func waitUntilRoutingProtocolIsProvisioned(ctx context.Context, uuid string, connUUID string, meta interface{}, d *schema.ResourceData, timeout time.Duration) (*fabricv4.RoutingProtocolData, error) {
-	log.Printf("Waiting for routing protocol to be provisioned, uuid %s", uuid)
+	log.Printf("Waiting for routing protocol to be Provisioned, uuid %s", uuid)
 	stateConf := &retry.StateChangeConf{
 		Pending: []string{
 			string(fabricv4.CONNECTIONSTATE_PROVISIONING),
