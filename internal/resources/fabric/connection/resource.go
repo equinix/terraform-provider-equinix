@@ -61,6 +61,11 @@ func resourceFabricConnectionCreate(ctx context.Context, d *schema.ResourceData,
 	bandwidth := d.Get("bandwidth").(int)
 	createConnectionRequest.SetBandwidth(int32(bandwidth))
 
+	geoScope := d.Get("geo_scope").(string)
+	if geoScope != "" {
+		createConnectionRequest.SetGeoScope(fabricv4.GeoScopeType(geoScope))
+	}
+
 	if schemaRedundancy, ok := d.GetOk("redundancy"); ok {
 		redundancy := connectionRedundancyTerraformToGo(schemaRedundancy.(*schema.Set).List())
 		createConnectionRequest.SetRedundancy(redundancy)
