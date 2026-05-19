@@ -1389,6 +1389,72 @@ resource "equinix_network_device" "six-wind-vsr" {
 }
 ```
 
+## Example: Add a Secondary Device to a Primary Network Device
+
+Use the `secondary_device` block inside `equinix_network_device` to define the secondary node for a redundant pair.
+The primary device is configured with top-level arguments, and the secondary device is configured inside `secondary_device {}`.
+
+### How it works
+
+1. Reference the target Network account with `equinix_network_account`.
+2. Define the primary device in `resource "equinix_network_device"` and create a single device
+3. Add a `secondary_device` block with the secondary-specific fields.
+
+### Example
+
+```terraform
+# add_secondary_device example for C8000V with self-configured BYOL
+data "equinix_network_account" "am" {
+  name       = "YOUR_ACCOUNT_NAME"
+  metro_code = "AM"
+  project_id = "YOUR_PROJECT_ID"
+}
+
+resource "equinix_network_device" "c8kv_primary" {
+  name                      = "C8000V-primary"
+  project_id                = "YOUR_PROJECT_ID"
+  metro_code                = data.equinix_network_account.am.metro_code
+  license_token             = "YOUR_LICENSE_TOKEN"
+  type_code                 = "C8000V"
+  self_managed              = true
+  byol                      = true
+  tier                      = 1
+  package_code              = "network-advantage"
+  generate_default_password = true
+  notifications             = ["you@example.com"]
+  account_number            = data.equinix_network_account.am.number
+  version                   = "17.11.01a"
+  hostname                  = "c8kv-primary"
+  core_count                = 2
+  term_length               = 1
+  additional_bandwidth      = 5
+  interface_count           = 10
+  connectivity              = "INTERNET-ACCESS"
+  acl_template_id           = "YOUR_ACL_TEMPLATE_ID"
+
+  ssh_key {
+    username = "YOUR_SSH_USERNAME"
+    key_name = "YOUR_SSH_KEY_NAME"
+  }
+
+  secondary_device {
+    name                 = "C8000V-secondary"
+    metro_code           = data.equinix_network_account.am.metro_code
+    acl_template_id      = "YOUR_ACL_TEMPLATE_ID"
+    notifications        = ["you@example.com"]
+    hostname             = "c8kv-secondary"
+    additional_bandwidth = 5
+    account_number       = data.equinix_network_account.am.number
+    license_token        = "YOUR_LICENSE_TOKEN"
+    vendor_configuration = { hostNamePrefix = "C8KV-secondary" }
+    ssh_key {
+      username = "YOUR_SSH_USERNAME"
+      key_name = "YOUR_SSH_KEY_NAME"
+    }
+  }
+}
+```
+
 ## Argument Reference
 
 The following arguments are supported:
