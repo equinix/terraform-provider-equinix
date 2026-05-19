@@ -43,12 +43,13 @@ func fabricConnectionResourceSchema() map[string]*schema.Schema {
 			Required:    true,
 			Description: "Connection bandwidth in Mbps",
 		},
-		//"geo_scope": {
-		//	Type:         schema.TypeString,
-		//	Optional:     true,
-		//	ValidateFunc: validation.StringInSlice([]string{"CANADA", "CONUS"}, false),
-		//	Description:  "Geographic boundary types",
-		//},
+		"geo_scope": {
+			Type:         schema.TypeString,
+			Optional:     true,
+			ForceNew:     true,
+			ValidateFunc: validation.StringInSlice([]string{"CANADA", "CONUS", "JAPAN", "UK", "AUSTRALIA", "BRAZIL", "SWITZERLAND"}, false),
+			Description:  "Geographic boundary types",
+		},
 		"redundancy": {
 			Type:        schema.TypeSet,
 			Optional:    true,

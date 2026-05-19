@@ -170,6 +170,7 @@ Read-Only:
 - `change_log` (Set of Object) (see [below for nested schema](#nestedobjatt--data--change_log))
 - `description` (String)
 - `direction` (String)
+- `geo_scope` (String)
 - `href` (String)
 - `is_remote` (Boolean)
 - `name` (String)

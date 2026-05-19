@@ -110,6 +110,7 @@ output "access_point_provider_connection_id" {
 - `change_log` (Set of Object) Captures connection lifecycle change information (see [below for nested schema](#nestedatt--change_log))
 - `description` (String) Customer-provided connection description
 - `direction` (String) Connection directionality from the requester point of view
+- `geo_scope` (String) Geographic boundary types
 - `href` (String) Connection URI information
 - `id` (String) The ID of this resource.
 - `is_remote` (Boolean) Connection property derived from access point locations

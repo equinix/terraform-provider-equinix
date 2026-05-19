@@ -17,6 +17,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
+// Resource returns the schema.Resource for managing Equinix Fabric connections.
 func Resource() *schema.Resource {
 	return &schema.Resource{
 		Timeouts: &schema.ResourceTimeout{
@@ -61,6 +62,11 @@ func resourceFabricConnectionCreate(ctx context.Context, d *schema.ResourceData,
 	bandwidth := d.Get("bandwidth").(int)
 	createConnectionRequest.SetBandwidth(int32(bandwidth))
 
+	geoScope := d.Get("geo_scope").(string)
+	if geoScope != "" {
+		createConnectionRequest.SetGeoScope(fabricv4.GeoScopeType(geoScope))
+	}
+
 	if schemaRedundancy, ok := d.GetOk("redundancy"); ok {
 		redundancy := connectionRedundancyTerraformToGo(schemaRedundancy.(*schema.Set).List())
 		createConnectionRequest.SetRedundancy(redundancy)
@@ -100,7 +106,7 @@ func resourceFabricConnectionCreate(ctx context.Context, d *schema.ResourceData,
 	d.SetId(conn.GetUuid())
 
 	createTimeout := d.Timeout(schema.TimeoutCreate) - 30*time.Second - time.Since(start)
-	if err = waitUntilConnectionIsCreated(d.Id(), meta, d, ctx, createTimeout); err != nil {
+	if err = waitUntilConnectionIsCreated(ctx, d.Id(), meta, d, createTimeout); err != nil {
 		return diag.Errorf("error waiting for connection (%s) to be created: %s", d.Id(), err)
 	}
 
@@ -120,7 +126,7 @@ func resourceFabricConnectionCreate(ctx context.Context, d *schema.ResourceData,
 		}
 
 		createTimeout := d.Timeout(schema.TimeoutCreate) - 30*time.Second - time.Since(start)
-		if _, statusChangeErr := waitForConnectionProviderStatusChange(d.Id(), meta, d, ctx, createTimeout); statusChangeErr != nil {
+		if _, statusChangeErr := waitForConnectionProviderStatusChange(ctx, d.Id(), meta, d, createTimeout); statusChangeErr != nil {
 			return diag.Errorf("error waiting for AWS Approval for connection %s: %v", d.Id(), statusChangeErr)
 		}
 	}
@@ -146,7 +152,7 @@ func resourceFabricConnectionUpdate(ctx context.Context, d *schema.ResourceData,
 	client := meta.(*config.Config).NewFabricClientForSDK(ctx, d)
 	start := time.Now()
 	updateTimeout := d.Timeout(schema.TimeoutUpdate) - 30*time.Second - time.Since(start)
-	dbConn, err := verifyConnectionCreated(d.Id(), meta, d, ctx, updateTimeout)
+	dbConn, err := verifyConnectionCreated(ctx, d.Id(), meta, d, updateTimeout)
 	if err != nil {
 		if !strings.Contains(err.Error(), "500") {
 			d.SetId("")
@@ -169,17 +175,20 @@ func resourceFabricConnectionUpdate(ctx context.Context, d *schema.ResourceData,
 			continue
 		}
 
-		var waitFunction func(uuid string, meta interface{}, d *schema.ResourceData, ctx context.Context, timeout time.Duration) (*fabricv4.Connection, error)
-		if update[0].Op == "replace" {
+		var waitFunction func(ctx context.Context, uuid string, meta interface{}, d *schema.ResourceData, timeout time.Duration) (*fabricv4.Connection, error)
+		switch op := update[0].Op; op {
+		case "replace":
 			// Update type is either name or bandwidth
 			waitFunction = waitForConnectionUpdateCompletion
-		} else if update[0].Op == "add" {
+		case "add":
 			// Update type is aws secret additionalInfo
 			waitFunction = waitForConnectionProviderStatusChange
+		default:
+			continue
 		}
 
 		updateTimeout := d.Timeout(schema.TimeoutUpdate) - 30*time.Second - time.Since(start)
-		conn, err := waitFunction(d.Id(), meta, d, ctx, updateTimeout)
+		conn, err := waitFunction(ctx, d.Id(), meta, d, updateTimeout)
 
 		if err != nil {
 			diags = append(diags, diag.Diagnostic{Severity: 0, Summary: fmt.Sprintf("connection property update completion timeout error: %v [update payload: %v] (other updates will be successful if the payload is not shown)", err, update)})
@@ -192,7 +201,7 @@ func resourceFabricConnectionUpdate(ctx context.Context, d *schema.ResourceData,
 	return append(diags, setFabricMap(d, updatedConn)...)
 }
 
-func waitForConnectionUpdateCompletion(uuid string, meta interface{}, d *schema.ResourceData, ctx context.Context, timeout time.Duration) (*fabricv4.Connection, error) {
+func waitForConnectionUpdateCompletion(ctx context.Context, uuid string, meta interface{}, d *schema.ResourceData, timeout time.Duration) (*fabricv4.Connection, error) {
 	log.Printf("[DEBUG] Waiting for connection update to complete, uuid %s", uuid)
 	stateConf := &retry.StateChangeConf{
 		Target: []string{"COMPLETED", "SUBMITTED_FOR_APPROVAL"},
@@ -224,7 +233,7 @@ func waitForConnectionUpdateCompletion(uuid string, meta interface{}, d *schema.
 	return dbConn, err
 }
 
-func waitUntilConnectionIsCreated(uuid string, meta interface{}, d *schema.ResourceData, ctx context.Context, timeout time.Duration) error {
+func waitUntilConnectionIsCreated(ctx context.Context, uuid string, meta interface{}, d *schema.ResourceData, timeout time.Duration) error {
 	log.Printf("Waiting for connection to be created, uuid %s", uuid)
 	stateConf := &retry.StateChangeConf{
 		Pending: []string{
@@ -253,7 +262,7 @@ func waitUntilConnectionIsCreated(uuid string, meta interface{}, d *schema.Resou
 	return err
 }
 
-func waitForConnectionProviderStatusChange(uuid string, meta interface{}, d *schema.ResourceData, ctx context.Context, timeout time.Duration) (*fabricv4.Connection, error) {
+func waitForConnectionProviderStatusChange(ctx context.Context, uuid string, meta interface{}, d *schema.ResourceData, timeout time.Duration) (*fabricv4.Connection, error) {
 	log.Printf("DEBUG: wating for provider status to update. Connection uuid: %s", uuid)
 	stateConf := &retry.StateChangeConf{
 		Pending: []string{
@@ -287,7 +296,7 @@ func waitForConnectionProviderStatusChange(uuid string, meta interface{}, d *sch
 	return dbConn, err
 }
 
-func verifyConnectionCreated(uuid string, meta interface{}, d *schema.ResourceData, ctx context.Context, timeout time.Duration) (*fabricv4.Connection, error) {
+func verifyConnectionCreated(ctx context.Context, uuid string, meta interface{}, d *schema.ResourceData, timeout time.Duration) (*fabricv4.Connection, error) {
 	log.Printf("Waiting for connection to be in created state, uuid %s", uuid)
 	stateConf := &retry.StateChangeConf{
 		Target: []string{
@@ -335,14 +344,15 @@ func resourceFabricConnectionDelete(ctx context.Context, d *schema.ResourceData,
 	}
 
 	deleteTimeout := d.Timeout(schema.TimeoutDelete) - 30*time.Second - time.Since(start)
-	err = WaitUntilConnectionDeprovisioned(d.Id(), meta, d, ctx, deleteTimeout)
+	err = WaitUntilConnectionDeprovisioned(ctx, d.Id(), meta, d, deleteTimeout)
 	if err != nil {
 		return diag.FromErr(fmt.Errorf("API call failed while waiting for resource deletion. Error %v", err))
 	}
 	return diags
 }
 
-func WaitUntilConnectionDeprovisioned(uuid string, meta interface{}, d *schema.ResourceData, ctx context.Context, timeout time.Duration) error {
+// WaitUntilConnectionDeprovisioned waits until the connection is in DEPROVISIONED state, which indicates that the connection has been deleted successfully. This is required as the API allows deletion of the resource, but the actual resource gets deleted only after it is in DEPROVISIONED state.
+func WaitUntilConnectionDeprovisioned(ctx context.Context, uuid string, meta interface{}, d *schema.ResourceData, timeout time.Duration) error {
 	log.Printf("Waiting for connection to be deprovisioned, uuid %s", uuid)
 	stateConf := &retry.StateChangeConf{
 		Pending: []string{
