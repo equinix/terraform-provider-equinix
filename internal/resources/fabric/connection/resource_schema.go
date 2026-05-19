@@ -46,6 +46,7 @@ func fabricConnectionResourceSchema() map[string]*schema.Schema {
 		"geo_scope": {
 			Type:         schema.TypeString,
 			Optional:     true,
+			ForceNew:     true,
 			ValidateFunc: validation.StringInSlice([]string{"CANADA", "CONUS", "JAPAN", "UK", "AUSTRALIA", "BRAZIL", "SWITZERLAND"}, false),
 			Description:  "Geographic boundary types",
 		},

@@ -43,6 +43,8 @@ func TestAccFabricCreatePort2SPConnection_PPDS(t *testing.T) {
 					resource.TestCheckResourceAttr(
 						"equinix_fabric_connection.test", "order.0.purchase_order_number", "1-323292"),
 					resource.TestCheckResourceAttr(
+						"equinix_fabric_connection.test", "geo_scope", "CH"),
+					resource.TestCheckResourceAttr(
 						"equinix_fabric_connection.test", "a_side.0.access_point.0.type", "COLO"),
 					resource.TestCheckResourceAttr(
 						"equinix_fabric_connection.test", "a_side.0.access_point.0.link_protocol.0.type", "DOT1Q"),
@@ -133,6 +135,7 @@ func testAccFabricCreatePort2SPConnectionConfig(spName, name, portUUID, zSideMet
 			emails=["example@equinix.com"]
 		} 
 		bandwidth = 50
+		geo_scope = "CH"
 		redundancy {priority= "PRIMARY"}
 		order {
 			purchase_order_number= "1-323292"
