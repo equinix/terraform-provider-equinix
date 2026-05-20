@@ -297,7 +297,7 @@ func waitForConnectionProviderStatusChange(ctx context.Context, uuid string, met
 }
 
 func verifyConnectionCreated(ctx context.Context, uuid string, meta interface{}, d *schema.ResourceData, timeout time.Duration) (*fabricv4.Connection, error) {
-	log.Printf("Waiting for connection to be in created state, uuid %s", uuid)
+	log.Printf("Waiting for the connection to be in created state, uuid %s", uuid)
 	stateConf := &retry.StateChangeConf{
 		Target: []string{
 			string(fabricv4.CONNECTIONSTATE_ACTIVE),
