@@ -14,10 +14,9 @@ resource "equinix_network_device_link" "test" {
     asn          = equinix_network_device.test.secondary_device[0].asn > 0 ? equinix_network_device.test.secondary_device[0].asn : 22333
     interface_id = 7
   }
-  link {
+  metro_link {
     account_number  = equinix_network_device.test.account_number
-    src_metro_code  = equinix_network_device.test.metro_code
-    dst_metro_code  = equinix_network_device.test.secondary_device[0].metro_code
+    metro_code      = equinix_network_device.test.metro_code
     throughput      = "50"
     throughput_unit = "Mbps"
   }

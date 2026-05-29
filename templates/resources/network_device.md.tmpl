@@ -90,6 +90,23 @@ In addition to management modes, there are two software license modes available:
 
 {{tffile "examples/resources/equinix_network_device/fortigate_firewall_ha_device_znpd_static.tf"}}
 
+{{tffile "examples/resources/equinix_network_device/6wind_vsr_ha_device.tf"}}
+
+## Example: Add a Secondary Device to a Primary Network Device
+
+Use the `secondary_device` block inside `equinix_network_device` to define the secondary node for a redundant pair.
+The primary device is configured with top-level arguments, and the secondary device is configured inside `secondary_device {}`.
+
+### How it works
+
+1. Reference the target Network account with `equinix_network_account`.
+2. Define the primary device in `resource "equinix_network_device"` and create a single device
+3. Add a `secondary_device` block with the secondary-specific fields.
+
+### Example
+
+{{tffile "examples/resources/equinix_network_device/add_secondary_device/c8000v_add_secondary.tf"}}
+
 ## Argument Reference
 
 The following arguments are supported:

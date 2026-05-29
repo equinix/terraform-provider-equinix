@@ -45,6 +45,7 @@ func connectionMap(conn *fabricv4.Connection) map[string]interface{} {
 	connection["name"] = conn.GetName()
 	connection["uuid"] = conn.GetUuid()
 	connection["bandwidth"] = conn.GetBandwidth()
+	connection["geo_scope"] = string(conn.GetGeoScope())
 	connection["href"] = conn.GetHref()
 	connection["is_remote"] = conn.GetIsRemote()
 	connection["type"] = string(conn.GetType())
