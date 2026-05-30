@@ -1,0 +1,28 @@
+---
+subcategory: "Metal"
+---
+
+~> **Deprecation Notice** Equinix Metal will reach end of life on June 30, 2026. All Metal resources will be removed in version 5.0.0 of this provider. Use version 4.x of this provider for continued use through sunset. See https://docs.equinix.com/metal/ for more information.
+
+# equinix_metal_project_custom_data (Resource)
+
+Updates only the custom metadata for an existing Equinix Metal project.
+
+~> **Note on Destroy**: When this resource is destroyed, the custom data on the project is cleared (reset to an empty object). The project itself is not affected. If the custom data cannot be cleared after multiple retries, the resource will fail to destroy.
+
+## Example Usage
+
+{{tffile "examples/resources/equinix_metal_project_custom_data/example_1.tf"}}
+
+## Argument Reference
+
+The following arguments are supported:
+
+* `project_id` - (Required) The UUID of the project to update.
+* `custom_data` - (Required) JSON object string containing project custom metadata.
+
+## Attributes Reference
+
+In addition to all arguments above, the following attributes are exported:
+
+* `id` - The project UUID.
