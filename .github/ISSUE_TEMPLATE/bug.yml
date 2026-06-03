@@ -25,7 +25,7 @@ body:
       label: Effected Terraform Resources
       description: Equinix resouces causing/effected by the bug
       placeholder: |
-        equinix_metal_device
+        equinix_network_device
         equinix_fabric_connection
   - type: textarea
     id: config

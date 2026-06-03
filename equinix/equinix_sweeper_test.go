@@ -28,15 +28,13 @@ func sharedConfigForRegion(region string) (*config.Config, error) {
 	if err != nil {
 		return nil, fmt.Errorf("cannot convert value of '%s' env variable to int", config.ClientTimeoutEnvVar)
 	}
-	metalAuthToken := getFromEnvDefault(config.MetalAuthTokenEnvVar, "")
 
-	if clientToken == "" && (clientID == "" || clientSecret == "") && metalAuthToken == "" {
-		return nil, fmt.Errorf("To run acceptance tests sweeper, one of '%s' or pair '%s' - '%s' must be set for Equinix Fabric and Network Edge, and '%s' for Equinix Metal",
-			config.ClientTokenEnvVar, config.ClientIDEnvVar, config.ClientSecretEnvVar, config.MetalAuthTokenEnvVar)
+	if clientToken == "" && (clientID == "" || clientSecret == "") {
+		return nil, fmt.Errorf("To run acceptance tests sweeper, one of '%s' or pair '%s' - '%s' must be set for Equinix Fabric and Network Edge",
+			config.ClientTokenEnvVar, config.ClientIDEnvVar, config.ClientSecretEnvVar)
 	}
 
 	return &config.Config{
-		AuthToken:      metalAuthToken,
 		BaseURL:        endpoint,
 		Token:          clientToken,
 		ClientID:       clientID,

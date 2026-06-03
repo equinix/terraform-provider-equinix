@@ -118,7 +118,6 @@ jobs:
           TF_ACC_FABRIC_DEDICATED_PORTS: ${{ secrets.TF_ACC_FABRIC_DEDICATED_PORTS }}
           EQUINIX_API_CLIENTID: ${{ secrets.EQUINIX_API_CLIENTID_PNFV }}
           EQUINIX_API_CLIENTSECRET: ${{ secrets.EQUINIX_API_CLIENTSECRET_PNFV }}
-          METAL_AUTH_TOKEN: ${{ secrets.METAL_AUTH_TOKEN }}
         run: |
           go test -json ./... -v -coverprofile coverage_pnfv.txt -covermode=atomic -count 1 -parallel 8 -run "(PNFV)" -timeout 180m > pnfv_test_output.json
 
@@ -134,7 +133,6 @@ jobs:
         env:
           EQUINIX_API_CLIENTID: ${{ secrets.EQUINIX_API_CLIENTID_PNFV }}
           EQUINIX_API_CLIENTSECRET: ${{ secrets.EQUINIX_API_CLIENTSECRET_PNFV }}
-          METAL_AUTH_TOKEN: ${{ secrets.METAL_AUTH_TOKEN }}
           SWEEP: "all" #Flag required to define the regions that the sweeper is to be ran in
           SWEEP_ALLOW_FAILURES: "true" #Enable to allow Sweeper Tests to continue after failures
           SWEEP_DIR: "./equinix"
@@ -195,7 +193,6 @@ jobs:
           TF_ACC_FABRIC_STREAM_TEST_DATA: ${{ secrets.TF_ACC_FABRIC_STREAM_TEST_DATA }}
           EQUINIX_API_CLIENTID: ${{ secrets.EQUINIX_API_CLIENTID_PFCR }}
           EQUINIX_API_CLIENTSECRET: ${{ secrets.EQUINIX_API_CLIENTSECRET_PFCR }}
-          METAL_AUTH_TOKEN: ${{ secrets.METAL_AUTH_TOKEN }}
         run: |
           go test -json ./... -v -coverprofile coverage_pfcr.txt -covermode=atomic -count 1 -parallel 8 -run "(PFCR)" -timeout 180m | tee pfcr_test_output.json
 
@@ -211,7 +208,6 @@ jobs:
         env:
           EQUINIX_API_CLIENTID: ${{ secrets.EQUINIX_API_CLIENTID_PFCR }}
           EQUINIX_API_CLIENTSECRET: ${{ secrets.EQUINIX_API_CLIENTSECRET_PFCR }}
-          METAL_AUTH_TOKEN: ${{ secrets.METAL_AUTH_TOKEN }}
           SWEEP: "all" #Flag required to define the regions that the sweeper is to be ran in
           SWEEP_ALLOW_FAILURES: "true" #Enable to allow Sweeper Tests to continue after failures
         run: |
@@ -294,7 +290,6 @@ jobs:
           TF_ACC_FABRIC_MARKET_PLACE_SUBSCRIPTION_ID: ${{ secrets.TF_ACC_FABRIC_MARKET_PLACE_SUBSCRIPTION_ID }}
           TF_ACC_FABRIC_STREAM_TEST_DATA: ${{ secrets.TF_ACC_FABRIC_STREAM_TEST_DATA }}
           EQUINIX_TOKEN_EXCHANGE_SCOPE: ${{ secrets.EQUINIX_STS_AUTH_SCOPE_PFCR }}
-          METAL_AUTH_TOKEN: ${{ secrets.METAL_AUTH_TOKEN }}
           ${{ matrix.sts_config.env_var_name }}: ${{ steps.get_id_token.outputs.id_token }}
           ${{ matrix.sts_config.set_custom_env_var && 'EQUINIX_TOKEN_EXCHANGE_SUBJECT_TOKEN_ENV_VAR' || 'SKIP' }}: ${{ matrix.sts_config.token_exchange_subject_token_env_var || '' }}
         run: |

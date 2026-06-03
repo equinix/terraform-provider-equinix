@@ -152,7 +152,7 @@ func objectValueObjectPtr[T any](ctx context.Context, val attr.Value) (*T, diag.
 	var diags diag.Diagnostics
 
 	ptr := new(T)
-	diags.Append(val.(ObjectValueOf[T]).ObjectValue.As(ctx, ptr, basetypes.ObjectAsOptions{})...)
+	diags.Append(val.(ObjectValueOf[T]).As(ctx, ptr, basetypes.ObjectAsOptions{})...)
 	if diags.HasError() {
 		return nil, diags
 	}

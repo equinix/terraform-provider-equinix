@@ -124,9 +124,7 @@ func (r *BaseResource) ImportState(
 
 	// Handle type conversion
 	var err error
-	var idValue any
-
-	idValue = req.ID
+	var idValue any = req.ID
 
 	if err != nil {
 		resp.Diagnostics.AddError(

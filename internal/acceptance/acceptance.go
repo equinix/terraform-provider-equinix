@@ -1,11 +1,10 @@
 // Package acceptance provides Utilities and test framework setup for running
 // acceptance tests for the Equinix Terraform provider. It handles provider
 // configuration, authentication verification, and prerequisite checks for
-// testing against Equinix Fabric, Network Edge, and Metal services.
+// testing against Equinix Fabric, and Network Edge services.
 package acceptance
 
 import (
-	"os"
 	"sync"
 	"testing"
 
@@ -17,10 +16,6 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	terraformsdk "github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
-)
-
-const (
-	missingMetalToken = "To run acceptance tests of Equinix Metal Resources, you must set %s"
 )
 
 var (
@@ -56,7 +51,7 @@ func init() {
 
 // TestAccPreCheck verifies that the required environment variables are set
 // for running acceptance tests. It checks for authentication credentials for
-// Equinix Fabric, Network Edge, and Metal services.
+// Equinix Fabric, and Network Edge.
 func TestAccPreCheck(t *testing.T) {
 	var err error
 
@@ -80,25 +75,13 @@ func TestAccPreCheck(t *testing.T) {
 		}
 	}
 
-	if err == nil {
-		_, err = env.Get(config.MetalAuthTokenEnvVar)
-	}
-
 	if err != nil {
-		t.Fatalf("To run acceptance tests, one of '%s', pair '%s' - '%s', or pair '%s' - ('%s' or custom env var from '%s') must be set for Equinix Fabric and Network Edge, and '%s' for Equinix Metal",
+		t.Fatalf("To run acceptance tests, one of '%s', pair '%s' - '%s', or pair '%s' - ('%s' or custom env var from '%s') must be set for Equinix Fabric and Network Edge",
 			config.ClientTokenEnvVar, config.ClientIDEnvVar, config.ClientSecretEnvVar,
 			config.TokenExchangeScopeEnvVar, config.DefaultTokenExchangeSubjectTokenEnvVar,
-			config.TokenExchangeSubjectTokenEnvVarEnvVar, config.MetalAuthTokenEnvVar)
+			config.TokenExchangeSubjectTokenEnvVarEnvVar)
 	}
 
-}
-
-// TestAccPreCheckMetal specifically verifies that the Equinix Metal authentication token
-// environment variable is set for running Metal-specific acceptance tests.
-func TestAccPreCheckMetal(t *testing.T) {
-	if os.Getenv(config.MetalAuthTokenEnvVar) == "" {
-		t.Fatalf(missingMetalToken, config.MetalAuthTokenEnvVar)
-	}
 }
 
 // TestAccPreCheckProviderConfigured ensures the provider is properly configured

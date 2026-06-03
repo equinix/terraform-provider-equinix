@@ -17,7 +17,7 @@ func NPrintf(format string, params map[string]interface{}) string {
 		default:
 			strVal = fmt.Sprintf("%v", val)
 		}
-		format = strings.Replace(format, "%{"+key+"}", strVal, -1)
+		format = strings.ReplaceAll(format, "%{"+key+"}", strVal)
 	}
 	return format
 }
