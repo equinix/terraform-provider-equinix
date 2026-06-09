@@ -37,16 +37,15 @@ func testSweepRouteAggregations(_ string) error {
 
 	name := fabricv4.ROUTEFILTERSSEARCHFILTERITEMPROPERTY_NAME
 	equinixState := fabricv4.ROUTEFILTERSSEARCHFILTERITEMPROPERTY_STATE
-	likeOperator := "like"
+	likeOperator := string(fabricv4.EXPRESSIONOPERATOR_LIKE)
 	equalOperator := "="
-	limit := int32(100)
-	routeAggregationsSearch := fabricv4.RouteAggregationsSearchBase{
+	pfcrSearch := fabricv4.RouteAggregationsSearchBase{
 		Filter: &fabricv4.RouteAggregationsSearchBaseFilter{
 			And: []fabricv4.RouteAggregationsSearchFilterItem{
 				{
 					Property: &name,
 					Operator: &likeOperator,
-					Values:   []string{"%_PFCR", "%_PNFV"},
+					Values:   []string{"%_PFCR"},
 				},
 				{
 					Property: &equinixState,
@@ -55,18 +54,36 @@ func testSweepRouteAggregations(_ string) error {
 				},
 			},
 		},
-		Pagination: &fabricv4.Pagination{
-			Limit: limit,
-			Total: limit,
-		},
 	}
 
-	routeAggregation, _, err := fabric.RouteAggregationsApi.SearchRouteAggregations(ctx).RouteAggregationsSearchBase(routeAggregationsSearch).Execute()
+	pfcrRouteAggr, _, err := fabric.RouteAggregationsApi.SearchRouteAggregations(ctx).RouteAggregationsSearchBase(pfcrSearch).Execute()
 	if err != nil {
 		return fmt.Errorf("error getting streams list for sweeping fabric route aggregations: %s", err)
 	}
 
-	for _, ra := range routeAggregation.GetData() {
+	pnfvSearch := fabricv4.RouteAggregationsSearchBase{
+		Filter: &fabricv4.RouteAggregationsSearchBaseFilter{
+			And: []fabricv4.RouteAggregationsSearchFilterItem{
+				{
+					Property: &name,
+					Operator: &likeOperator,
+					Values:   []string{"%_PNFV"},
+				},
+				{
+					Property: &equinixState,
+					Operator: &equalOperator,
+					Values:   []string{string(fabricv4.ROUTEFILTERSTATE_PROVISIONED)},
+				},
+			},
+		},
+	}
+
+	pfnvRouteAggr, _, err := fabric.RouteAggregationsApi.SearchRouteAggregations(ctx).RouteAggregationsSearchBase(pnfvSearch).Execute()
+	if err != nil {
+		return fmt.Errorf("error getting streams list for sweeping fabric route aggregations: %s", err)
+	}
+
+	for _, ra := range append(pfcrRouteAggr.GetData(), pfnvRouteAggr.GetData()...) {
 		if sweep.IsSweepableFabricTestResource(ra.GetName()) {
 			log.Printf("[DEBUG] Deleting route aggregation: %s", ra.GetName())
 			_, resp, err := fabric.RouteAggregationsApi.DeleteRouteAggregationByUuid(ctx, ra.GetUuid()).Execute()
