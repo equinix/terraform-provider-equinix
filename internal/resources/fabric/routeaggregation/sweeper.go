@@ -78,12 +78,12 @@ func testSweepRouteAggregations(_ string) error {
 		},
 	}
 
-	pfnvRouteAggr, _, err := fabric.RouteAggregationsApi.SearchRouteAggregations(ctx).RouteAggregationsSearchBase(pnfvSearch).Execute()
+	pnfvRouteAggr, _, err := fabric.RouteAggregationsApi.SearchRouteAggregations(ctx).RouteAggregationsSearchBase(pnfvSearch).Execute()
 	if err != nil {
 		return fmt.Errorf("error getting streams list for sweeping fabric route aggregations: %s", err)
 	}
 
-	for _, ra := range append(pfcrRouteAggr.GetData(), pfnvRouteAggr.GetData()...) {
+	for _, ra := range append(pfcrRouteAggr.GetData(), pnfvRouteAggr.GetData()...) {
 		if sweep.IsSweepableFabricTestResource(ra.GetName()) {
 			log.Printf("[DEBUG] Deleting route aggregation: %s", ra.GetName())
 			_, resp, err := fabric.RouteAggregationsApi.DeleteRouteAggregationByUuid(ctx, ra.GetUuid()).Execute()
