@@ -58,7 +58,7 @@ func testSweepRouteAggregations(_ string) error {
 
 	pfcrRouteAggr, _, err := fabric.RouteAggregationsApi.SearchRouteAggregations(ctx).RouteAggregationsSearchBase(pfcrSearch).Execute()
 	if err != nil {
-		return fmt.Errorf("error getting streams list for sweeping fabric route aggregations: %s", err)
+		return fmt.Errorf("error getting route aggregations list for sweeping fabric route aggregations: %s", err)
 	}
 
 	pnfvSearch := fabricv4.RouteAggregationsSearchBase{
@@ -80,7 +80,7 @@ func testSweepRouteAggregations(_ string) error {
 
 	pnfvRouteAggr, _, err := fabric.RouteAggregationsApi.SearchRouteAggregations(ctx).RouteAggregationsSearchBase(pnfvSearch).Execute()
 	if err != nil {
-		return fmt.Errorf("error getting streams list for sweeping fabric route aggregations: %s", err)
+		return fmt.Errorf("error getting route aggregations list for sweeping fabric route aggregations: %s", err)
 	}
 
 	for _, ra := range append(pfcrRouteAggr.GetData(), pnfvRouteAggr.GetData()...) {
