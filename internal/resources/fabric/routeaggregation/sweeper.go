@@ -39,7 +39,7 @@ func testSweepRouteAggregations(_ string) error {
 	equinixState := fabricv4.ROUTEFILTERSSEARCHFILTERITEMPROPERTY_STATE
 	likeOperator := string(fabricv4.EXPRESSIONOPERATOR_LIKE)
 	equalOperator := "="
-	pfcrSearch := fabricv4.RouteAggregationsSearchBase{
+	pfcrRouteAggregationsSearch := fabricv4.RouteAggregationsSearchBase{
 		Filter: &fabricv4.RouteAggregationsSearchBaseFilter{
 			And: []fabricv4.RouteAggregationsSearchFilterItem{
 				{
@@ -56,12 +56,12 @@ func testSweepRouteAggregations(_ string) error {
 		},
 	}
 
-	pfcrRouteAggr, _, err := fabric.RouteAggregationsApi.SearchRouteAggregations(ctx).RouteAggregationsSearchBase(pfcrSearch).Execute()
+	pfcrRouteAggr, _, err := fabric.RouteAggregationsApi.SearchRouteAggregations(ctx).RouteAggregationsSearchBase(pfcrRouteAggregationsSearch).Execute()
 	if err != nil {
 		return fmt.Errorf("error getting route aggregations list for sweeping fabric route aggregations: %s", err)
 	}
 
-	pnfvSearch := fabricv4.RouteAggregationsSearchBase{
+	pnfvRouteAggregationsSearch := fabricv4.RouteAggregationsSearchBase{
 		Filter: &fabricv4.RouteAggregationsSearchBaseFilter{
 			And: []fabricv4.RouteAggregationsSearchFilterItem{
 				{
@@ -78,7 +78,7 @@ func testSweepRouteAggregations(_ string) error {
 		},
 	}
 
-	pnfvRouteAggr, _, err := fabric.RouteAggregationsApi.SearchRouteAggregations(ctx).RouteAggregationsSearchBase(pnfvSearch).Execute()
+	pnfvRouteAggr, _, err := fabric.RouteAggregationsApi.SearchRouteAggregations(ctx).RouteAggregationsSearchBase(pnfvRouteAggregationsSearch).Execute()
 	if err != nil {
 		return fmt.Errorf("error getting route aggregations list for sweeping fabric route aggregations: %s", err)
 	}
