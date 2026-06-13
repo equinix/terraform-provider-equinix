@@ -39,9 +39,8 @@ func testSweepRouteFilters(region string) error {
 
 	name := fabricv4.ROUTEFILTERSSEARCHFILTERITEMPROPERTY_NAME
 	equinixState := fabricv4.ROUTEFILTERSSEARCHFILTERITEMPROPERTY_STATE
-	likeOperator := "like"
+	likeOperator := string(fabricv4.EXPRESSIONOPERATOR_LIKE)
 	equalOperator := "="
-	limit := int32(100)
 	routeFiltersSearchRequest := fabricv4.RouteFiltersSearchBase{
 		Filter: &fabricv4.RouteFiltersSearchBaseFilter{
 			And: []fabricv4.RouteFiltersSearchFilterItem{
@@ -56,10 +55,6 @@ func testSweepRouteFilters(region string) error {
 					Values:   []string{string(fabricv4.ROUTEFILTERSTATE_PROVISIONED)},
 				},
 			},
-		},
-		Pagination: &fabricv4.Pagination{
-			Limit: limit,
-			Total: limit,
 		},
 	}
 
