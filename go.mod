@@ -6,7 +6,6 @@ require (
 	github.com/equinix/equinix-sdk-go v0.64.2
 	github.com/equinix/ne-go v1.21.0
 	github.com/equinix/rest-go v1.3.0
-	github.com/google/uuid v1.6.0
 	github.com/hashicorp/go-cty v1.5.0
 	github.com/hashicorp/go-multierror v1.1.1
 	github.com/hashicorp/go-retryablehttp v0.7.8
@@ -22,7 +21,7 @@ require (
 	github.com/hashicorp/terraform-plugin-testing v1.13.3
 	github.com/packethost/packngo v0.31.0
 	github.com/stretchr/testify v1.10.0
-	golang.org/x/oauth2 v0.26.0
+	golang.org/x/oauth2 v0.27.0
 )
 
 require (
@@ -44,6 +43,7 @@ require (
 	github.com/go-test/deep v1.0.7 // indirect
 	github.com/golang/protobuf v1.5.4 // indirect
 	github.com/google/go-cmp v0.7.0 // indirect
+	github.com/google/uuid v1.6.0 // indirect
 	github.com/hashicorp/cli v1.1.7 // indirect
 	github.com/hashicorp/errwrap v1.1.0 // indirect
 	github.com/hashicorp/go-checkpoint v0.5.0 // indirect
