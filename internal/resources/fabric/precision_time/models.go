@@ -300,7 +300,7 @@ func parsePackage(ctx context.Context, packageEpt fabricv4.PrecisionTimePackageP
 	return fwtypes.NewObjectValueOf[packageModel](ctx, &result), diags
 }
 
-func parseOperation(ctx context.Context, operation interface{}) (fwtypes.ObjectValueOf[operationModel], diag.Diagnostics) {
+func parseOperation(ctx context.Context, operation any) (fwtypes.ObjectValueOf[operationModel], diag.Diagnostics) {
 	diags := diag.Diagnostics{}
 	result := operationModel{}
 

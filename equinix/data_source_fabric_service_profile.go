@@ -148,7 +148,7 @@ Additional documentation:
 	}
 }
 
-func dataSourceFabricServiceProfileRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func dataSourceFabricServiceProfileRead(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	uuid, _ := d.Get("uuid").(string)
 	d.SetId(uuid)
 	return resourceFabricServiceProfileRead(ctx, d, meta)
@@ -166,6 +166,6 @@ Additional documentation:
 	}
 }
 
-func dataSourceFabricSearchServiceProfilesRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func dataSourceFabricSearchServiceProfilesRead(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	return resourceServiceProfilesSearchRequest(ctx, d, meta)
 }

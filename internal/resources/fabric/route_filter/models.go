@@ -67,7 +67,7 @@ func buildUpdateRequest(d *schema.ResourceData) []fabricv4.RouteFiltersPatchRequ
 func buildSearchRequest(d *schema.ResourceData) fabricv4.RouteFiltersSearchBase {
 	searchRequest := fabricv4.RouteFiltersSearchBase{}
 
-	schemaFilters := d.Get("filter").([]interface{})
+	schemaFilters := d.Get("filter").([]any)
 	filter := filtersTerraformToGo(schemaFilters)
 	searchRequest.SetFilter(filter)
 
@@ -77,7 +77,7 @@ func buildSearchRequest(d *schema.ResourceData) fabricv4.RouteFiltersSearchBase 
 	}
 
 	if schemaSort, ok := d.GetOk("sort"); ok {
-		sort := sortTerraformToGo(schemaSort.([]interface{}))
+		sort := sortTerraformToGo(schemaSort.([]any))
 		searchRequest.SetSort(sort)
 	}
 	return searchRequest
@@ -95,7 +95,7 @@ func setRouteFilterMap(d *schema.ResourceData, routeFilter *fabricv4.RouteFilter
 
 func setRouteFiltersData(d *schema.ResourceData, routeFilters *fabricv4.RouteFiltersSearchResponse) diag.Diagnostics {
 	diags := diag.Diagnostics{}
-	mappedRouteFilters := make([]map[string]interface{}, len(routeFilters.Data))
+	mappedRouteFilters := make([]map[string]any, len(routeFilters.Data))
 	pagination := routeFilters.GetPagination()
 	if routeFilters.Data != nil {
 		for index, routeFilter := range routeFilters.Data {
@@ -104,7 +104,7 @@ func setRouteFiltersData(d *schema.ResourceData, routeFilters *fabricv4.RouteFil
 	} else {
 		mappedRouteFilters = nil
 	}
-	err := equinix_schema.SetMap(d, map[string]interface{}{
+	err := equinix_schema.SetMap(d, map[string]any{
 		"data":       mappedRouteFilters,
 		"pagination": paginationGoToTerraform(&pagination),
 	})
@@ -114,8 +114,8 @@ func setRouteFiltersData(d *schema.ResourceData, routeFilters *fabricv4.RouteFil
 	return diags
 }
 
-func routeFilterResponseMap(data *fabricv4.RouteFiltersData) map[string]interface{} {
-	routeFilterMap := make(map[string]interface{})
+func routeFilterResponseMap(data *fabricv4.RouteFiltersData) map[string]any {
+	routeFilterMap := make(map[string]any)
 	routeFilterMap["type"] = string(data.GetType())
 	routeFilterMap["name"] = data.GetName()
 	if data.Project != nil {
@@ -141,13 +141,13 @@ func routeFilterResponseMap(data *fabricv4.RouteFiltersData) map[string]interfac
 	return routeFilterMap
 }
 
-func projectTerraformToGo(projectTerraform []interface{}) fabricv4.Project {
+func projectTerraformToGo(projectTerraform []any) fabricv4.Project {
 	if projectTerraform == nil {
 		return fabricv4.Project{}
 	}
 
 	project := fabricv4.Project{}
-	projectMap := projectTerraform[0].(map[string]interface{})
+	projectMap := projectTerraform[0].(map[string]any)
 	project.SetProjectId(projectMap["project_id"].(string))
 	return project
 }
@@ -157,12 +157,12 @@ func projectGoToTerraform(project *fabricv4.RouteFiltersDataProject) *schema.Set
 		return nil
 	}
 
-	mappedProject := make(map[string]interface{})
+	mappedProject := make(map[string]any)
 	mappedProject["project_id"] = project.GetProjectId()
 	mappedProject["href"] = project.GetHref()
 	projectSet := schema.NewSet(
 		schema.HashResource(projectSch()),
-		[]interface{}{mappedProject},
+		[]any{mappedProject},
 	)
 	return projectSet
 }
@@ -172,19 +172,19 @@ func changeGoToTerraform(change *fabricv4.RouteFiltersChange) *schema.Set {
 		return nil
 	}
 
-	mappedChange := make(map[string]interface{})
+	mappedChange := make(map[string]any)
 	mappedChange["href"] = change.GetHref()
 	mappedChange["type"] = string(change.GetType())
 	mappedChange["uuid"] = change.GetUuid()
 	changeSet := schema.NewSet(
 		schema.HashResource(changeSch()),
-		[]interface{}{mappedChange},
+		[]any{mappedChange},
 	)
 
 	return changeSet
 }
 
-func filtersTerraformToGo(filters []interface{}) fabricv4.RouteFiltersSearchBaseFilter {
+func filtersTerraformToGo(filters []any) fabricv4.RouteFiltersSearchBaseFilter {
 	if filters == nil {
 		return fabricv4.RouteFiltersSearchBaseFilter{}
 	}
@@ -192,7 +192,7 @@ func filtersTerraformToGo(filters []interface{}) fabricv4.RouteFiltersSearchBase
 	searchFiltersList := make([]fabricv4.RouteFiltersSearchFilterItem, 0)
 
 	for _, filter := range filters {
-		filterMap := filter.(map[string]interface{})
+		filterMap := filter.(map[string]any)
 		filterItem := fabricv4.RouteFiltersSearchFilterItem{}
 		if property, ok := filterMap["property"]; ok {
 			filterItem.SetProperty(fabricv4.RouteFiltersSearchFilterItemProperty(property.(string)))
@@ -201,7 +201,7 @@ func filtersTerraformToGo(filters []interface{}) fabricv4.RouteFiltersSearchBase
 			filterItem.SetOperator(operator.(string))
 		}
 		if values, ok := filterMap["values"]; ok {
-			stringValues := converters.IfArrToStringArr(values.([]interface{}))
+			stringValues := converters.IfArrToStringArr(values.([]any))
 			filterItem.SetValues(stringValues)
 		}
 		searchFiltersList = append(searchFiltersList, filterItem)
@@ -213,13 +213,13 @@ func filtersTerraformToGo(filters []interface{}) fabricv4.RouteFiltersSearchBase
 	return searchFilters
 }
 
-func paginationTerraformToGo(pagination []interface{}) fabricv4.Pagination {
+func paginationTerraformToGo(pagination []any) fabricv4.Pagination {
 	if pagination == nil {
 		return fabricv4.Pagination{}
 	}
 	paginationRequest := fabricv4.Pagination{}
 	for _, page := range pagination {
-		pageMap := page.(map[string]interface{})
+		pageMap := page.(map[string]any)
 		if offset, ok := pageMap["offset"]; ok {
 			paginationRequest.SetOffset(int32(offset.(int)))
 		}
@@ -238,7 +238,7 @@ func paginationGoToTerraform(pagination *fabricv4.Pagination) *schema.Set {
 	if pagination == nil {
 		return nil
 	}
-	mappedPagination := make(map[string]interface{})
+	mappedPagination := make(map[string]any)
 	mappedPagination["offset"] = int(pagination.GetOffset())
 	mappedPagination["limit"] = int(pagination.GetLimit())
 	mappedPagination["total"] = int(pagination.GetTotal())
@@ -247,18 +247,18 @@ func paginationGoToTerraform(pagination *fabricv4.Pagination) *schema.Set {
 
 	return schema.NewSet(
 		schema.HashResource(paginationSchema()),
-		[]interface{}{mappedPagination},
+		[]any{mappedPagination},
 	)
 }
 
-func sortTerraformToGo(sort []interface{}) []fabricv4.SortItem {
+func sortTerraformToGo(sort []any) []fabricv4.SortItem {
 	if sort == nil {
 		return []fabricv4.SortItem{}
 	}
 	sortItems := make([]fabricv4.SortItem, len(sort))
 	for index, item := range sort {
 		sortItem := fabricv4.SortItem{}
-		pageMap := item.(map[string]interface{})
+		pageMap := item.(map[string]any)
 		if direction, ok := pageMap["direction"]; ok {
 			sortItem.SetDirection(fabricv4.SortItemDirection(direction.(string)))
 		}

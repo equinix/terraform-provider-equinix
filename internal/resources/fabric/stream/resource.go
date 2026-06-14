@@ -269,7 +269,7 @@ func getCreateUpdateWaiter(ctx context.Context, client *fabricv4.APIClient, id s
 		Target: []string{
 			string(fabricv4.STREAMSUBSCRIPTIONSTATE_PROVISIONED),
 		},
-		Refresh: func() (interface{}, string, error) {
+		Refresh: func() (any, string, error) {
 			stream, _, err := client.StreamsApi.GetStreamByUuid(ctx, id).Execute()
 			if err != nil {
 				return 0, "", err
@@ -295,7 +295,7 @@ func getDeleteWaiter(ctx context.Context, client *fabricv4.APIClient, id string,
 			deletedMarker,
 			string(fabricv4.STREAMSUBSCRIPTIONSTATE_DEPROVISIONED),
 		},
-		Refresh: func() (interface{}, string, error) {
+		Refresh: func() (any, string, error) {
 			stream, resp, err := client.StreamsApi.GetStreamByUuid(ctx, id).Execute()
 			if err != nil {
 				if resp != nil && slices.Contains([]int{http.StatusForbidden, http.StatusNotFound}, resp.StatusCode) {

@@ -49,7 +49,7 @@ func testSweepNetworkSSHUser(region string) error {
 	return nil
 }
 
-func testAccNetworkDeviceUser(ctx map[string]interface{}) string {
+func testAccNetworkDeviceUser(ctx map[string]any) string {
 	config := nprintf(`
 resource "equinix_network_ssh_user" "%{user-resourceName}" {
   username = "%{user-username}"
@@ -90,7 +90,7 @@ func testAccNeSSHUserExists(resourceName string, user *ne.SSHUser) resource.Test
 	}
 }
 
-func testAccNeSSHUserAttributes(user *ne.SSHUser, devices []*ne.Device, ctx map[string]interface{}) resource.TestCheckFunc {
+func testAccNeSSHUserAttributes(user *ne.SSHUser, devices []*ne.Device, ctx map[string]any) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		if v, ok := ctx["username"]; ok && ne.StringValue(user.Username) != v.(string) {
 			return fmt.Errorf("name does not match %v - %v", ne.StringValue(user.Username), v)

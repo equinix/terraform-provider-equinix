@@ -111,7 +111,7 @@ func Provider() *schema.Provider {
 		},
 	}
 
-	provider.ConfigureContextFunc = func(ctx context.Context, d *schema.ResourceData) (interface{}, diag.Diagnostics) {
+	provider.ConfigureContextFunc = func(ctx context.Context, d *schema.ResourceData) (any, diag.Diagnostics) {
 		return configureProvider(ctx, d, provider)
 	}
 	return provider
@@ -121,7 +121,7 @@ type providerMeta struct {
 	ModuleName string `cty:"module_name"`
 }
 
-func configureProvider(ctx context.Context, d *schema.ResourceData, p *schema.Provider) (interface{}, diag.Diagnostics) {
+func configureProvider(ctx context.Context, d *schema.ResourceData, p *schema.Provider) (any, diag.Diagnostics) {
 	mrws := d.Get("max_retry_wait_seconds").(int)
 	rt := d.Get("request_timeout").(int)
 
@@ -183,7 +183,7 @@ func stringsFound(source []string, target []string) bool {
 // Deprecated: isEmpty is shared between provider, tests, and resources
 // and is being relocated for package refactoring.
 // Use github.com/equinix/terraform-provider-equinix/internal/comparisons.IsEmpty
-func isEmpty(v interface{}) bool {
+func isEmpty(v any) bool {
 	switch v := v.(type) {
 	case int:
 		return v == 0

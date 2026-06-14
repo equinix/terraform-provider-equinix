@@ -233,7 +233,7 @@ func getCreateUpdateWaiter(ctx context.Context, client *fabricv4.APIClient, rout
 		Target: []string{
 			string(fabricv4.ROUTEAGGREGATIONRULESTATE_PROVISIONED),
 		},
-		Refresh: func() (interface{}, string, error) {
+		Refresh: func() (any, string, error) {
 			routeAggregationRule, _, err := client.RouteAggregationRulesApi.GetRouteAggregationRuleByUuid(ctx, routeAggregationID, routeAggregationRuleID).Execute()
 			if err != nil {
 				return 0, "", err
@@ -258,7 +258,7 @@ func getDeleteWaiter(ctx context.Context, client *fabricv4.APIClient, routeAggre
 		Target: []string{
 			deletedMarker,
 		},
-		Refresh: func() (interface{}, string, error) {
+		Refresh: func() (any, string, error) {
 			routeAggregationRule, resp, err := client.RouteAggregationRulesApi.GetRouteAggregationRuleByUuid(ctx, routeAggregationID, id).Execute()
 			if err != nil {
 				if resp != nil && (resp.StatusCode == 400 || resp.StatusCode == 404) {

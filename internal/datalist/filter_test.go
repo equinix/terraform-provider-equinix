@@ -18,14 +18,14 @@ func TestExpandFilters(t *testing.T) {
 		},
 	}
 
-	rawFilters := []interface{}{
-		map[string]interface{}{
+	rawFilters := []any{
+		map[string]any{
 			"attribute": "fieldA",
-			"values":    []interface{}{"foo", "bar"},
+			"values":    []any{"foo", "bar"},
 		},
-		map[string]interface{}{
+		map[string]any{
 			"attribute": "fieldB",
-			"values":    []interface{}{"20", "40"},
+			"values":    []any{"20", "40"},
 		},
 	}
 
@@ -92,8 +92,8 @@ func sizesTestSchema() map[string]*schema.Schema {
 	}
 }
 
-func sizesTestData() []map[string]interface{} {
-	return []map[string]interface{}{
+func sizesTestData() []map[string]any {
+	return []map[string]any{
 		{
 			"slug":             "s-1vcpu-1gb",
 			"memory":           1024,
@@ -102,10 +102,10 @@ func sizesTestData() []map[string]interface{} {
 			"transfer":         1.0,
 			"price_monthly":    5.0,
 			"price_hourly":     0.007439999841153622,
-			"regions":          []interface{}{"sgp1", "sgp2"},
-			"regions_set":      schema.NewSet(schema.HashString, []interface{}{"sgp1", "sgp2"}),
+			"regions":          []any{"sgp1", "sgp2"},
+			"regions_set":      schema.NewSet(schema.HashString, []any{"sgp1", "sgp2"}),
 			"available":        true,
-			"deployment_types": schema.NewSet(schema.HashString, []interface{}{"on_demand", "spot_market"}),
+			"deployment_types": schema.NewSet(schema.HashString, []any{"on_demand", "spot_market"}),
 		},
 		{
 			"slug":             "s-2vcpu-2gb",
@@ -115,10 +115,10 @@ func sizesTestData() []map[string]interface{} {
 			"transfer":         3.0,
 			"price_monthly":    15.0,
 			"price_hourly":     0.02232000045478344,
-			"regions":          []interface{}{"nyc1", "nyc2"},
-			"regions_set":      schema.NewSet(schema.HashString, []interface{}{"nyc1", "nyc2"}),
+			"regions":          []any{"nyc1", "nyc2"},
+			"regions_set":      schema.NewSet(schema.HashString, []any{"nyc1", "nyc2"}),
 			"available":        false,
-			"deployment_types": schema.NewSet(schema.HashString, []interface{}{"on_demand"}),
+			"deployment_types": schema.NewSet(schema.HashString, []any{"on_demand"}),
 		},
 		{
 			"slug":             "s-4vcpu-8gb",
@@ -128,10 +128,10 @@ func sizesTestData() []map[string]interface{} {
 			"transfer":         5.0,
 			"price_monthly":    40.0,
 			"price_hourly":     0.05951999872922897,
-			"regions":          []interface{}{"ams1", "ams2"},
-			"regions_set":      schema.NewSet(schema.HashString, []interface{}{"ams1", "ams2"}),
+			"regions":          []any{"ams1", "ams2"},
+			"regions_set":      schema.NewSet(schema.HashString, []any{"ams1", "ams2"}),
 			"available":        true,
-			"deployment_types": schema.NewSet(schema.HashString, []interface{}{"spot_market", "on_demand"}),
+			"deployment_types": schema.NewSet(schema.HashString, []any{"spot_market", "on_demand"}),
 		},
 		{
 			"slug":             "m-1vcpu-8gb",
@@ -141,10 +141,10 @@ func sizesTestData() []map[string]interface{} {
 			"transfer":         3.0,
 			"price_monthly":    50.0,
 			"price_hourly":     0.05952,
-			"regions":          []interface{}{"nyc1", "ams1"},
-			"regions_set":      schema.NewSet(schema.HashString, []interface{}{"nyc1", "ams1"}),
+			"regions":          []any{"nyc1", "ams1"},
+			"regions_set":      schema.NewSet(schema.HashString, []any{"nyc1", "ams1"}),
 			"available":        false,
-			"deployment_types": schema.NewSet(schema.HashString, []interface{}{}),
+			"deployment_types": schema.NewSet(schema.HashString, []any{}),
 		},
 	}
 }
@@ -159,7 +159,7 @@ func TestApplyFilters(t *testing.T) {
 			"BySlug",
 			commonFilter{
 				"slug",
-				[]interface{}{"s-1vcpu-1gb", "s-4vcpu-8gb"},
+				[]any{"s-1vcpu-1gb", "s-4vcpu-8gb"},
 				false,
 				"in",
 			},
@@ -169,7 +169,7 @@ func TestApplyFilters(t *testing.T) {
 			"ByMemory",
 			commonFilter{
 				"memory",
-				[]interface{}{1024, 8192},
+				[]any{1024, 8192},
 				false,
 				"in",
 			},
@@ -179,7 +179,7 @@ func TestApplyFilters(t *testing.T) {
 			"ByCPU",
 			commonFilter{
 				"vcpus",
-				[]interface{}{1, 4},
+				[]any{1, 4},
 				false,
 				"in",
 			},
@@ -189,7 +189,7 @@ func TestApplyFilters(t *testing.T) {
 			"ByDisk",
 			commonFilter{
 				"disk",
-				[]interface{}{25, 160},
+				[]any{25, 160},
 				false,
 				"in",
 			},
@@ -199,7 +199,7 @@ func TestApplyFilters(t *testing.T) {
 			"ByTransfer",
 			commonFilter{
 				"transfer",
-				[]interface{}{1.0, 5.0},
+				[]any{1.0, 5.0},
 				false,
 				"in",
 			},
@@ -209,7 +209,7 @@ func TestApplyFilters(t *testing.T) {
 			"ByPriceMonthly",
 			commonFilter{
 				"price_monthly",
-				[]interface{}{5.0, 40.0},
+				[]any{5.0, 40.0},
 				false,
 				"in",
 			},
@@ -219,7 +219,7 @@ func TestApplyFilters(t *testing.T) {
 			"ByPriceHourly",
 			commonFilter{
 				"price_hourly",
-				[]interface{}{0.00744, 0.05952},
+				[]any{0.00744, 0.05952},
 				false,
 				"in",
 			},
@@ -229,7 +229,7 @@ func TestApplyFilters(t *testing.T) {
 			"ByPriceHourlyGreaterThan",
 			commonFilter{
 				"price_hourly",
-				[]interface{}{0.059519},
+				[]any{0.059519},
 				false,
 				"greater_than",
 			},
@@ -239,7 +239,7 @@ func TestApplyFilters(t *testing.T) {
 			"ByPriceHourlyLessThanOrEqual",
 			commonFilter{
 				"price_hourly",
-				[]interface{}{0.0223200},
+				[]any{0.0223200},
 				false,
 				"less_than_or_equal",
 			},
@@ -249,7 +249,7 @@ func TestApplyFilters(t *testing.T) {
 			"ByRegions",
 			commonFilter{
 				"regions",
-				[]interface{}{"sgp1", "ams2"},
+				[]any{"sgp1", "ams2"},
 				false,
 				"in",
 			},
@@ -259,7 +259,7 @@ func TestApplyFilters(t *testing.T) {
 			"ByRegionsSet",
 			commonFilter{
 				"regions_set",
-				[]interface{}{"sgp1", "ams2"},
+				[]any{"sgp1", "ams2"},
 				false,
 				"in",
 			},
@@ -269,7 +269,7 @@ func TestApplyFilters(t *testing.T) {
 			"ByAvailable",
 			commonFilter{
 				"available",
-				[]interface{}{true},
+				[]any{true},
 				false,
 				"in",
 			},
@@ -279,7 +279,7 @@ func TestApplyFilters(t *testing.T) {
 			"ByRegionsSetWithAllValues",
 			commonFilter{
 				"regions_set",
-				[]interface{}{"nyc1", "ams1"},
+				[]any{"nyc1", "ams1"},
 				true,
 				"in",
 			},
@@ -289,7 +289,7 @@ func TestApplyFilters(t *testing.T) {
 			"ByDeploymentTypesAllValues",
 			commonFilter{
 				"deployment_types",
-				[]interface{}{"on_demand", "spot_market"},
+				[]any{"on_demand", "spot_market"},
 				true,
 				"in",
 			},
@@ -299,7 +299,7 @@ func TestApplyFilters(t *testing.T) {
 			"BySlugWithRegularExpression",
 			commonFilter{
 				"slug",
-				[]interface{}{regexp.MustCompile("8gb$")},
+				[]any{regexp.MustCompile("8gb$")},
 				false,
 				"re",
 			},
@@ -309,7 +309,7 @@ func TestApplyFilters(t *testing.T) {
 			"ByRegionSetWithSubstring",
 			commonFilter{
 				"regions_set",
-				[]interface{}{"nyc"},
+				[]any{"nyc"},
 				false,
 				"substring",
 			},

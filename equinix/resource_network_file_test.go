@@ -19,7 +19,7 @@ func TestNetworkFile_createFromResourceData(t *testing.T) {
 		"DeviceManagementType": ne.DeviceManagementTypeSelf,
 		"LicenseMode":          ne.DeviceLicenseModeBYOL,
 	}
-	rawData := map[string]interface{}{
+	rawData := map[string]any{
 		networkFileSchemaNames["FileName"]:       expected["FileName"],
 		networkFileSchemaNames["Content"]:        expected["Content"],
 		networkFileSchemaNames["MetroCode"]:      expected["MetroCode"],
@@ -45,7 +45,7 @@ func TestNetworkFile_updateResourceData(t *testing.T) {
 		ProcessType:    ne.String("testProcessType"),
 		Status:         ne.String("testStatus"),
 	}
-	d := schema.TestResourceDataRaw(t, createNetworkFileSchema(), make(map[string]interface{}))
+	d := schema.TestResourceDataRaw(t, createNetworkFileSchema(), make(map[string]any))
 	// when
 	err := updateFileResource(input, d)
 	// then

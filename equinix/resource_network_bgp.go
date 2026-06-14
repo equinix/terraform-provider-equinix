@@ -122,7 +122,7 @@ func createNetworkBGPResourceSchema() map[string]*schema.Schema {
 	}
 }
 
-func resourceNetworkBGPCreate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func resourceNetworkBGPCreate(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
 	client := m.(*config.Config).Ne
 	m.(*config.Config).AddModuleToNEUserAgent(&client, d)
 	var diags diag.Diagnostics
@@ -152,7 +152,7 @@ func resourceNetworkBGPCreate(ctx context.Context, d *schema.ResourceData, m int
 	return diags
 }
 
-func resourceNetworkBGPRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func resourceNetworkBGPRead(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
 	client := m.(*config.Config).Ne
 	m.(*config.Config).AddModuleToNEUserAgent(&client, d)
 	var diags diag.Diagnostics
@@ -166,7 +166,7 @@ func resourceNetworkBGPRead(ctx context.Context, d *schema.ResourceData, m inter
 	return diags
 }
 
-func resourceNetworkBGPUpdate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func resourceNetworkBGPUpdate(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
 	client := m.(*config.Config).Ne
 	m.(*config.Config).AddModuleToNEUserAgent(&client, d)
 	var diags diag.Diagnostics
@@ -178,7 +178,7 @@ func resourceNetworkBGPUpdate(ctx context.Context, d *schema.ResourceData, m int
 	return diags
 }
 
-func resourceNetworkBGPDelete(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func resourceNetworkBGPDelete(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
 	// BGP configuration removal is not possible with NE public APIs
 	d.SetId("")
 	return nil
@@ -269,7 +269,7 @@ func createBGPConfigStatusProvisioningWaitConfiguration(fetchFunc getBGPConfig, 
 		Timeout:    timeout,
 		Delay:      0,
 		MinTimeout: delay,
-		Refresh: func() (interface{}, string, error) {
+		Refresh: func() (any, string, error) {
 			resp, err := fetchFunc(id)
 			if err != nil {
 				return nil, "", err

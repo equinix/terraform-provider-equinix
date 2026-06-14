@@ -13,14 +13,14 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
-func networkMap(nt *fabricv4.Network) map[string]interface{} {
+func networkMap(nt *fabricv4.Network) map[string]any {
 	operation := nt.GetOperation()
 	change := nt.GetChange()
 	location := nt.GetLocation()
 	notifications := nt.GetNotifications()
 	project := nt.GetProject()
 	changeLog := nt.GetChangeLog()
-	network := map[string]interface{}{
+	network := map[string]any{
 		"name":              nt.GetName(),
 		"href":              nt.GetHref(),
 		"uuid":              nt.GetUuid(),
@@ -52,26 +52,26 @@ func fabricNetworkOperationGoToTerraform(operation *fabricv4.NetworkOperation) *
 	if operation == nil {
 		return nil
 	}
-	mappedOperation := make(map[string]interface{})
+	mappedOperation := make(map[string]any)
 	mappedOperation["equinix_status"] = string(*operation.EquinixStatus)
 
 	operationSet := schema.NewSet(
 		schema.HashResource(&schema.Resource{Schema: fabricNetworkOperationSch()}),
-		[]interface{}{mappedOperation},
+		[]any{mappedOperation},
 	)
 	return operationSet
 }
 
 func simplifiedFabricNetworkChangeGoToTerraform(networkChange *fabricv4.SimplifiedNetworkChange) *schema.Set {
 
-	mappedChange := make(map[string]interface{})
+	mappedChange := make(map[string]any)
 	mappedChange["href"] = networkChange.GetHref()
 	mappedChange["type"] = string(networkChange.GetType())
 	mappedChange["uuid"] = networkChange.GetUuid()
 
 	changeSet := schema.NewSet(
 		schema.HashResource(&schema.Resource{Schema: fabricNetworkChangeSch()}),
-		[]interface{}{mappedChange},
+		[]any{mappedChange},
 	)
 	return changeSet
 }

@@ -88,7 +88,7 @@ func TestAccNetworkDevice_CSR1000V_HA_Managed_Sub(t *testing.T) {
 	metro, _ := schema.EnvDefaultFunc(networkDeviceMetroEnvVar, "SV")()
 	accountName, _ := schema.EnvDefaultFunc(networkDeviceAccountNameEnvVar, "")()
 	projectId, _ := schema.EnvDefaultFunc(networkDeviceProjectId, "")()
-	context := map[string]interface{}{
+	context := map[string]any{
 		"device-resourceName":            "test",
 		"device-account_name":            accountName.(string),
 		"device-self_managed":            false,
@@ -177,7 +177,7 @@ func TestAccNetworkDevice_CSR1000V_HA_Managed_Sub(t *testing.T) {
 func TestAccNetworkDevice_CSR1000V_HA_Self_BYOL(t *testing.T) {
 	metro, _ := schema.EnvDefaultFunc(networkDeviceMetroEnvVar, "SV")()
 	accountName, _ := schema.EnvDefaultFunc(networkDeviceAccountNameEnvVar, "")()
-	context := map[string]interface{}{
+	context := map[string]any{
 		"device-resourceName":            "test",
 		"device-account_name":            accountName.(string),
 		"device-self_managed":            true,
@@ -253,7 +253,7 @@ func TestAccNetworkDevice_CSR1000V_HA_Self_BYOL(t *testing.T) {
 func TestAccNetworkDevice_vSRX_HA_Managed_Sub(t *testing.T) {
 	metro, _ := schema.EnvDefaultFunc(networkDeviceMetroEnvVar, "SV")()
 	accountName, _ := schema.EnvDefaultFunc(networkDeviceAccountNameEnvVar, "")()
-	context := map[string]interface{}{
+	context := map[string]any{
 		"device-resourceName":            "test",
 		"device-account_name":            accountName.(string),
 		"device-self_managed":            false,
@@ -323,7 +323,7 @@ func TestAccNetworkDevice_vSRX_HA_Managed_BYOL(t *testing.T) {
 	if licenseFile.(string) == "" {
 		t.Skip("Skipping TestAccNetworkDevice_vSRX_HA_Managed_BYOL test since TF_ACC_NETWORK_DEVICE_VSRX_LICENSE_FILE env var is not defined with a valid license file")
 	}
-	context := map[string]interface{}{
+	context := map[string]any{
 		"device-resourceName":            "test",
 		"device-account_name":            accountName.(string),
 		"device-self_managed":            false,
@@ -405,7 +405,7 @@ func TestAccNetworkDevice_vSRX_HA_Managed_BYOL(t *testing.T) {
 func TestAccNetworkDevice_vSRX_HA_Self_BYOL(t *testing.T) {
 	metro, _ := schema.EnvDefaultFunc(networkDeviceMetroEnvVar, "SV")()
 	accountName, _ := schema.EnvDefaultFunc(networkDeviceAccountNameEnvVar, "")()
-	context := map[string]interface{}{
+	context := map[string]any{
 		"device-resourceName":            "test",
 		"device-account_name":            accountName.(string),
 		"device-self_managed":            true,
@@ -461,7 +461,7 @@ func TestAccNetworkDevice_vSRX_HA_Self_BYOL(t *testing.T) {
 func TestAccNetworkDevice_PaloAlto_HA_Managed_Sub(t *testing.T) {
 	metro, _ := schema.EnvDefaultFunc(networkDeviceMetroEnvVar, "SV")()
 	accountName, _ := schema.EnvDefaultFunc(networkDeviceAccountNameEnvVar, "")()
-	context := map[string]interface{}{
+	context := map[string]any{
 		"device-resourceName":            "test",
 		"device-account_name":            accountName.(string),
 		"device-self_managed":            false,
@@ -544,7 +544,7 @@ func TestAccNetworkDevice_PaloAlto_HA_Managed_Sub(t *testing.T) {
 func TestAccNetworkDevice_PaloAlto_HA_Self_BYOL(t *testing.T) {
 	metro, _ := schema.EnvDefaultFunc(networkDeviceMetroEnvVar, "SV")()
 	accountName, _ := schema.EnvDefaultFunc(networkDeviceAccountNameEnvVar, "")()
-	context := map[string]interface{}{
+	context := map[string]any{
 		"device-resourceName":            "test",
 		"device-account_name":            accountName.(string),
 		"device-self_managed":            true,
@@ -619,7 +619,7 @@ func TestAccNetworkDevice_CSRSDWAN_HA_Self_BYOL(t *testing.T) {
 	metro, _ := schema.EnvDefaultFunc(networkDeviceMetroEnvVar, "SV")()
 	accountName, _ := schema.EnvDefaultFunc(networkDeviceAccountNameEnvVar, "")()
 	licFile, _ := schema.EnvDefaultFunc(networkDeviceCSRSDWANLicenseFileEnvVar, "test-fixtures/CSRSDWAN.cfg")()
-	context := map[string]interface{}{
+	context := map[string]any{
 		"device-resourceName":                           "test",
 		"device-account_name":                           accountName.(string),
 		"device-self_managed":                           true,
@@ -696,7 +696,7 @@ func TestAccNetworkDevice_Versa_HA_Self_BYOL(t *testing.T) {
 	localID, _ := schema.EnvDefaultFunc(networkDeviceVersaLocalIDEnvVar, "test@versa.com")()
 	remoteID, _ := schema.EnvDefaultFunc(networkDeviceVersaRemoteIDEnvVar, "test@versa.com")()
 	serialNumber, _ := schema.EnvDefaultFunc(networkDeviceVersaSerialNumberEnvVar, "Test")()
-	context := map[string]interface{}{
+	context := map[string]any{
 		"device-resourceName":                        "test",
 		"device-account_name":                        accountName.(string),
 		"device-self_managed":                        true,
@@ -770,7 +770,7 @@ func TestAccNetworkDevice_CGENIX_HA_Self_BYOL(t *testing.T) {
 	accountName, _ := schema.EnvDefaultFunc(networkDeviceAccountNameEnvVar, "")()
 	licenseKey, _ := schema.EnvDefaultFunc(networkDeviceCGENIXLicenseKeyEnvVar, acctest.RandString(10))()
 	licenseSecret, _ := schema.EnvDefaultFunc(networkDeviceCGENIXLicenseSecretEnvVar, acctest.RandString(10))()
-	context := map[string]interface{}{
+	context := map[string]any{
 		"device-resourceName":                         "test",
 		"device-account_name":                         accountName.(string),
 		"device-self_managed":                         true,
@@ -837,7 +837,7 @@ func TestAccNetworkDevice_PaloAlto_Cluster_Self_BYOL(t *testing.T) {
 	metro, _ := schema.EnvDefaultFunc(networkDeviceMetroEnvVar, "SV")()
 	accountName, _ := schema.EnvDefaultFunc(networkDeviceAccountNameEnvVar, "")()
 	licenseToken, _ := schema.EnvDefaultFunc(networkDevicePANWLicenseTokenEnvVar, "")()
-	context := map[string]interface{}{
+	context := map[string]any{
 		"device-resourceName":                "test",
 		"device-account_name":                accountName.(string),
 		"device-self_managed":                true,
@@ -961,7 +961,7 @@ func testAccNeDevicePairExists(resourceName string, primary, secondary *ne.Devic
 	}
 }
 
-func testAccNeDeviceAttributes(device *ne.Device, ctx map[string]interface{}) resource.TestCheckFunc {
+func testAccNeDeviceAttributes(device *ne.Device, ctx map[string]any) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		if v, ok := ctx["device-name"]; ok && (ne.StringValue(device.Name) != v.(string) && ne.StringValue(device.Name) != v.(string)+"-Node0") {
 			return fmt.Errorf("name does not match %v - %v", ne.StringValue(device.Name), v)
@@ -1048,8 +1048,8 @@ func testAccNeDeviceAttributes(device *ne.Device, ctx map[string]interface{}) re
 	}
 }
 
-func testAccNeDeviceSecondaryAttributes(device *ne.Device, ctx map[string]interface{}) resource.TestCheckFunc {
-	secCtx := make(map[string]interface{})
+func testAccNeDeviceSecondaryAttributes(device *ne.Device, ctx map[string]any) resource.TestCheckFunc {
+	secCtx := make(map[string]any)
 	for key, value := range ctx {
 		secCtx[key] = value
 	}
@@ -1178,7 +1178,7 @@ func testAccNeDeviceClusterAttributes(deviceResourceName string) resource.TestCh
 	)
 }
 
-func testAccNeDeviceClusterNodeAttributes(device *ne.Device, ctx map[string]interface{}) resource.TestCheckFunc {
+func testAccNeDeviceClusterNodeAttributes(device *ne.Device, ctx map[string]any) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		cluster := device.ClusterDetails
 		if v, ok := ctx["device-cluster_name"]; ok && ne.StringValue(cluster.ClusterName) != v.(string) {
@@ -1239,7 +1239,7 @@ func (t *testAccConfig) withSSHKey() *testAccConfig {
 	return t
 }
 
-func testAccNetworkDevice(ctx map[string]interface{}) string {
+func testAccNetworkDevice(ctx map[string]any) string {
 	var config string
 	config += nprintf(`
 data "equinix_network_account" "test" {
@@ -1547,7 +1547,7 @@ resource "equinix_network_device" "%{device-resourceName}" {
 	return config
 }
 
-func testAccNetworkDeviceACL(ctx map[string]interface{}) string {
+func testAccNetworkDeviceACL(ctx map[string]any) string {
 	var config string
 	if _, ok := ctx["acl-name"]; ok {
 		config += nprintf(`
@@ -1604,7 +1604,7 @@ resource "equinix_network_acl_template" "%{mgmtAcl-secondary_resourceName}" {
 	return config
 }
 
-func testAccNetworkDeviceSSHKey(ctx map[string]interface{}) string {
+func testAccNetworkDeviceSSHKey(ctx map[string]any) string {
 	return nprintf(`
 resource "equinix_network_ssh_key" "%{sshkey-resourceName}" {
   name       = "%{sshkey-name}"

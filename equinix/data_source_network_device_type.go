@@ -84,7 +84,7 @@ func dataSourceNetworkDeviceType() *schema.Resource {
 	}
 }
 
-func dataSourceNetworkDeviceTypeRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func dataSourceNetworkDeviceTypeRead(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
 	conf := m.(*config.Config)
 	var diags diag.Diagnostics
 	types, err := conf.Ne.GetDeviceTypes()

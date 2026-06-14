@@ -42,12 +42,12 @@ Additional documentation:
 	}
 }
 
-func resourceFabricNetworkCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func resourceFabricNetworkCreate(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	client := meta.(*config.Config).NewFabricClientForSDK(ctx, d)
 	createRequest := fabricv4.NetworkPostRequest{}
 	createRequest.SetName(d.Get("name").(string))
 
-	schemaNotifications := d.Get("notifications").([]interface{})
+	schemaNotifications := d.Get("notifications").([]any)
 	notifications := equinix_fabric_schema.NotificationsTerraformToGo(schemaNotifications)
 	createRequest.SetNotifications(notifications)
 
@@ -81,7 +81,7 @@ func resourceFabricNetworkCreate(ctx context.Context, d *schema.ResourceData, me
 	return resourceFabricNetworkRead(ctx, d, meta)
 }
 
-func resourceFabricNetworkRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func resourceFabricNetworkRead(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	client := meta.(*config.Config).NewFabricClientForSDK(ctx, d)
 	fabricNetwork, _, err := client.NetworksApi.GetNetworkByUuid(ctx, d.Id()).Execute()
 	if err != nil {
@@ -91,7 +91,7 @@ func resourceFabricNetworkRead(ctx context.Context, d *schema.ResourceData, meta
 	return setFabricNetworkMap(d, fabricNetwork)
 }
 
-func resourceFabricNetworkUpdate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func resourceFabricNetworkUpdate(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	client := meta.(*config.Config).NewFabricClientForSDK(ctx, d)
 	start := time.Now()
 	updateTimeout := d.Timeout(schema.TimeoutUpdate) - 30*time.Second - time.Since(start)
@@ -120,11 +120,11 @@ func resourceFabricNetworkUpdate(ctx context.Context, d *schema.ResourceData, me
 	return setFabricNetworkMap(d, updateNetwork)
 }
 
-func waitForFabricNetworkUpdateCompletion(ctx context.Context, uuid string, meta interface{}, d *schema.ResourceData, timeout time.Duration) (*fabricv4.Network, error) {
+func waitForFabricNetworkUpdateCompletion(ctx context.Context, uuid string, meta any, d *schema.ResourceData, timeout time.Duration) (*fabricv4.Network, error) {
 	log.Printf("Waiting for Network update to complete, uuid %s", uuid)
 	stateConf := &retry.StateChangeConf{
 		Target: []string{string(fabricv4.NETWORKEQUINIXSTATUS_PROVISIONED)},
-		Refresh: func() (interface{}, string, error) {
+		Refresh: func() (any, string, error) {
 			client := meta.(*config.Config).NewFabricClientForSDK(ctx, d)
 			dbConn, _, err := client.NetworksApi.GetNetworkByUuid(ctx, uuid).Execute()
 			if err != nil {
@@ -146,7 +146,7 @@ func waitForFabricNetworkUpdateCompletion(ctx context.Context, uuid string, meta
 	return dbConn, err
 }
 
-func waitUntilFabricNetworkIsProvisioned(ctx context.Context, uuid string, meta interface{}, d *schema.ResourceData, timeout time.Duration) (*fabricv4.Network, error) {
+func waitUntilFabricNetworkIsProvisioned(ctx context.Context, uuid string, meta any, d *schema.ResourceData, timeout time.Duration) (*fabricv4.Network, error) {
 	log.Printf("Waiting for Fabric Network to be provisioned, uuid %s", uuid)
 	stateConf := &retry.StateChangeConf{
 		Pending: []string{
@@ -155,7 +155,7 @@ func waitUntilFabricNetworkIsProvisioned(ctx context.Context, uuid string, meta 
 		Target: []string{
 			string(fabricv4.NETWORKEQUINIXSTATUS_PROVISIONED),
 		},
-		Refresh: func() (interface{}, string, error) {
+		Refresh: func() (any, string, error) {
 			client := meta.(*config.Config).NewFabricClientForSDK(ctx, d)
 			dbConn, _, err := client.NetworksApi.GetNetworkByUuid(ctx, uuid).Execute()
 			if err != nil {
@@ -177,7 +177,7 @@ func waitUntilFabricNetworkIsProvisioned(ctx context.Context, uuid string, meta 
 	return dbConn, err
 }
 
-func resourceFabricNetworkDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func resourceFabricNetworkDelete(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	diags := diag.Diagnostics{}
 	client := meta.(*config.Config).NewFabricClientForSDK(ctx, d)
 	start := time.Now()
@@ -203,7 +203,7 @@ func resourceFabricNetworkDelete(ctx context.Context, d *schema.ResourceData, me
 }
 
 // WaitUntilFabricNetworkDeprovisioned waits until the Fabric network is deprovisioned.
-func WaitUntilFabricNetworkDeprovisioned(ctx context.Context, uuid string, meta interface{}, d *schema.ResourceData, timeout time.Duration) error {
+func WaitUntilFabricNetworkDeprovisioned(ctx context.Context, uuid string, meta any, d *schema.ResourceData, timeout time.Duration) error {
 	log.Printf("Waiting for Fabric Network to be deprovisioned, uuid %s", uuid)
 	stateConf := &retry.StateChangeConf{
 		Pending: []string{
@@ -212,7 +212,7 @@ func WaitUntilFabricNetworkDeprovisioned(ctx context.Context, uuid string, meta 
 		Target: []string{
 			string(fabricv4.NETWORKEQUINIXSTATUS_DEPROVISIONED),
 		},
-		Refresh: func() (interface{}, string, error) {
+		Refresh: func() (any, string, error) {
 			client := meta.(*config.Config).NewFabricClientForSDK(ctx, d)
 			dbConn, _, err := client.NetworksApi.GetNetworkByUuid(ctx, uuid).Execute()
 			if err != nil {

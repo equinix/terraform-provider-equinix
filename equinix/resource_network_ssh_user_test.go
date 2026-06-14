@@ -11,7 +11,7 @@ import (
 
 func TestNetworkSSHUser_resourceFromResourceData(t *testing.T) {
 	// given
-	rawData := map[string]interface{}{
+	rawData := map[string]any{
 		networkSSHUserSchemaNames["Username"]: "user",
 		networkSSHUserSchemaNames["Password"]: "secret",
 	}
@@ -33,7 +33,7 @@ func TestNetworkSSHUser_resourceFromResourceData(t *testing.T) {
 
 func TestNetworkSSHUser_updateResourceData(t *testing.T) {
 	// given
-	d := schema.TestResourceDataRaw(t, createNetworkSSHUserResourceSchema(), make(map[string]interface{}))
+	d := schema.TestResourceDataRaw(t, createNetworkSSHUserResourceSchema(), make(map[string]any))
 	input := ne.SSHUser{
 		Username:    ne.String("user"),
 		Password:    ne.String("secret"),

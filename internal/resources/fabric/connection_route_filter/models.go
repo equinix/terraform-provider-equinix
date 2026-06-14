@@ -19,7 +19,7 @@ func setConnectionRouteFilterMap(d *schema.ResourceData, connectionRouteFilter *
 
 func setConnectionRouteFilterData(d *schema.ResourceData, connectionRouteFilters *fabricv4.GetAllConnectionRouteFiltersResponse) diag.Diagnostics {
 	diags := diag.Diagnostics{}
-	mappedRouteFilters := make([]map[string]interface{}, len(connectionRouteFilters.Data))
+	mappedRouteFilters := make([]map[string]any, len(connectionRouteFilters.Data))
 	pagination := connectionRouteFilters.GetPagination()
 	if connectionRouteFilters.Data != nil {
 		for index, routeFilter := range connectionRouteFilters.Data {
@@ -28,7 +28,7 @@ func setConnectionRouteFilterData(d *schema.ResourceData, connectionRouteFilters
 	} else {
 		mappedRouteFilters = nil
 	}
-	err := equinix_schema.SetMap(d, map[string]interface{}{
+	err := equinix_schema.SetMap(d, map[string]any{
 		"data":       mappedRouteFilters,
 		"pagination": paginationGoToTerraform(&pagination),
 	})
@@ -38,8 +38,8 @@ func setConnectionRouteFilterData(d *schema.ResourceData, connectionRouteFilters
 	return diags
 }
 
-func connectionRouteFilterResponseMap(data *fabricv4.ConnectionRouteFilterData) map[string]interface{} {
-	connectionRouteFilterMap := make(map[string]interface{})
+func connectionRouteFilterResponseMap(data *fabricv4.ConnectionRouteFilterData) map[string]any {
+	connectionRouteFilterMap := make(map[string]any)
 	connectionRouteFilterMap["href"] = data.GetHref()
 	connectionRouteFilterMap["type"] = string(data.GetType())
 	connectionRouteFilterMap["uuid"] = data.GetUuid()
@@ -53,7 +53,7 @@ func paginationGoToTerraform(pagination *fabricv4.Pagination) *schema.Set {
 	if pagination == nil {
 		return nil
 	}
-	mappedPagination := make(map[string]interface{})
+	mappedPagination := make(map[string]any)
 	mappedPagination["offset"] = int(pagination.GetOffset())
 	mappedPagination["limit"] = int(pagination.GetLimit())
 	mappedPagination["total"] = int(pagination.GetTotal())
@@ -62,6 +62,6 @@ func paginationGoToTerraform(pagination *fabricv4.Pagination) *schema.Set {
 
 	return schema.NewSet(
 		schema.HashResource(paginationSchema()),
-		[]interface{}{mappedPagination},
+		[]any{mappedPagination},
 	)
 }

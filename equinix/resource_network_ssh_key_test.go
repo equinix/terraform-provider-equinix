@@ -16,7 +16,7 @@ func TestNetworkSSHKey_createFromResourceData(t *testing.T) {
 		Type:      ne.String("RSA"),
 		ProjectID: ne.String("68ccfd49-39b1-478e-957a-67c72f719d7a"),
 	}
-	rawData := map[string]interface{}{
+	rawData := map[string]any{
 		networkSSHKeySchemaNames["Name"]:      ne.StringValue(expected.Name),
 		networkSSHKeySchemaNames["Value"]:     ne.StringValue(expected.Value),
 		networkSSHKeySchemaNames["Type"]:      ne.StringValue(expected.Type),
@@ -37,7 +37,7 @@ func TestNetworkSSHKey_updateResourceData(t *testing.T) {
 		Value: ne.String("testKeyValue"),
 		Type:  ne.String("testKeyType"),
 	}
-	d := schema.TestResourceDataRaw(t, createNetworkSSHKeyResourceSchema(), make(map[string]interface{}))
+	d := schema.TestResourceDataRaw(t, createNetworkSSHKeyResourceSchema(), make(map[string]any))
 	// when
 	err := updateNetworkSSHKeyResource(input, d)
 	// then

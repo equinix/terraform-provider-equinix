@@ -113,7 +113,7 @@ func dataSourceNetworkDeviceSoftware() *schema.Resource {
 	}
 }
 
-func dataSourceNetworkDeviceSoftwareRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func dataSourceNetworkDeviceSoftwareRead(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
 	conf := m.(*config.Config)
 	var diags diag.Diagnostics
 	typeCode := d.Get(networkDeviceSoftwareSchemaNames["DeviceTypeCode"]).(string)

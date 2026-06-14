@@ -113,7 +113,7 @@ func createNetworkFileSchema() map[string]*schema.Schema {
 	}
 }
 
-func resourceNetworkFileCreate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func resourceNetworkFileCreate(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
 	client := m.(*config.Config).Ne
 	m.(*config.Config).AddModuleToNEUserAgent(&client, d)
 	var diags diag.Diagnostics
@@ -129,7 +129,7 @@ func resourceNetworkFileCreate(ctx context.Context, d *schema.ResourceData, m in
 	return diags
 }
 
-func resourceNetworkFileRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func resourceNetworkFileRead(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
 	client := m.(*config.Config).Ne
 	m.(*config.Config).AddModuleToNEUserAgent(&client, d)
 	var diags diag.Diagnostics
@@ -149,7 +149,7 @@ func resourceNetworkFileRead(ctx context.Context, d *schema.ResourceData, m inte
 	return diags
 }
 
-func resourceNetworkFileDelete(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func resourceNetworkFileDelete(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
 	return nil
 }
 

@@ -8,7 +8,7 @@ import (
 )
 
 func TestAccDataSourceNetworkDevicePlatform_basic(t *testing.T) {
-	context := map[string]interface{}{
+	context := map[string]any{
 		"resourceName": "csrLarge",
 		"device_type":  "CSR1000V",
 		"flavor":       "large",
@@ -32,7 +32,7 @@ func TestAccDataSourceNetworkDevicePlatform_basic(t *testing.T) {
 	})
 }
 
-func testAccDataSourceNetworkDevicePlatformConfig_basic(ctx map[string]interface{}) string {
+func testAccDataSourceNetworkDevicePlatformConfig_basic(ctx map[string]any) string {
 	return nprintf(`
 data "equinix_network_device_platform" "%{resourceName}" {
   device_type = "%{device_type}"

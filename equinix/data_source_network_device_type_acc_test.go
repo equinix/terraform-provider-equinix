@@ -10,7 +10,7 @@ import (
 
 func TestAccDataSourceNetworkDeviceType_basic(t *testing.T) {
 	metro, _ := schema.EnvDefaultFunc(networkDeviceMetroEnvVar, "SV")()
-	context := map[string]interface{}{
+	context := map[string]any{
 		"resourceName": "router",
 		"category":     "Router",
 		"vendor":       "Cisco",
@@ -33,7 +33,7 @@ func TestAccDataSourceNetworkDeviceType_basic(t *testing.T) {
 	})
 }
 
-func testAccDataSourceNetworkDeviceTypeConfig_basic(ctx map[string]interface{}) string {
+func testAccDataSourceNetworkDeviceTypeConfig_basic(ctx map[string]any) string {
 	return nprintf(`
 data "equinix_network_device_type" "%{resourceName}" {
   category    = "%{category}"

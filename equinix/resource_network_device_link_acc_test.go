@@ -59,7 +59,7 @@ func TestAccNetworkDeviceLink(t *testing.T) {
 	metroSecondary, _ := schema.EnvDefaultFunc(networkDeviceSecondaryMetroEnvVar, metro)()
 	accountName, _ := schema.EnvDefaultFunc(networkDeviceAccountNameEnvVar, "")()
 	accountNameSecondary, _ := schema.EnvDefaultFunc(networkDeviceSecondaryAccountNameEnvVar, accountName)()
-	context := map[string]interface{}{
+	context := map[string]any{
 		"device-resourceName":               "test",
 		"device-account_name":               accountName.(string),
 		"device-self_managed":               false,
@@ -132,7 +132,7 @@ func (t *testAccConfig) withDeviceLink() *testAccConfig {
 	return t
 }
 
-func testAccNetworkDeviceLink(ctx map[string]interface{}) string {
+func testAccNetworkDeviceLink(ctx map[string]any) string {
 	var config string
 	config += nprintf(`
 resource "equinix_network_device_link" "%{link-resourceName}" {
@@ -194,7 +194,7 @@ func testAccNeDeviceLinkExists(resourceName string, deviceLink *ne.DeviceLinkGro
 	}
 }
 
-func testAccNeDeviceLinkAttributes(deviceLink *ne.DeviceLinkGroup, ctx map[string]interface{}) resource.TestCheckFunc {
+func testAccNeDeviceLinkAttributes(deviceLink *ne.DeviceLinkGroup, ctx map[string]any) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		if v, ok := ctx["link-name"]; ok && ne.StringValue(deviceLink.Name) != v.(string) {
 			return fmt.Errorf("name does not match %v - %v", ne.StringValue(deviceLink.Name), v)
@@ -206,7 +206,7 @@ func testAccNeDeviceLinkAttributes(deviceLink *ne.DeviceLinkGroup, ctx map[strin
 	}
 }
 
-func testAccNeDeviceLinkDeviceConnections(deviceLink *ne.DeviceLinkGroup, primaryDevice, secondaryDevice *ne.Device, ctx map[string]interface{}) resource.TestCheckFunc {
+func testAccNeDeviceLinkDeviceConnections(deviceLink *ne.DeviceLinkGroup, primaryDevice, secondaryDevice *ne.Device, ctx map[string]any) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		if len(deviceLink.Devices) != 2 {
 			return fmt.Errorf("number of devices does not match %v - %v", len(deviceLink.Devices), 2)
@@ -254,7 +254,7 @@ func testAccNeDeviceLinkDeviceConnections(deviceLink *ne.DeviceLinkGroup, primar
 	}
 }
 
-func testAccNeDeviceLinkDeviceAttributes(deviceLink *ne.DeviceLinkGroup, device *ne.Device, ctxPrefix string, ctx map[string]interface{}) error {
+func testAccNeDeviceLinkDeviceAttributes(deviceLink *ne.DeviceLinkGroup, device *ne.Device, ctxPrefix string, ctx map[string]any) error {
 	if v, ok := ctx[ctxPrefix+"_asn"]; ok && ne.IntValue(device.ASN) != v.(int) {
 		return fmt.Errorf("device %v ASN does not match %v - %v", ne.StringValue(device.UUID), ne.IntValue(device.ASN), v)
 	}

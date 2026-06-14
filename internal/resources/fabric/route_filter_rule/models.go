@@ -76,7 +76,7 @@ func setRouteFilterRuleMap(d *schema.ResourceData, routeFilter *fabricv4.RouteFi
 
 func setRouteFilterRulesData(d *schema.ResourceData, routeFilterRules *fabricv4.GetRouteFilterRulesResponse) diag.Diagnostics {
 	diags := diag.Diagnostics{}
-	mappedRouteFilterRules := make([]map[string]interface{}, len(routeFilterRules.Data))
+	mappedRouteFilterRules := make([]map[string]any, len(routeFilterRules.Data))
 	pagination := routeFilterRules.GetPagination()
 	if routeFilterRules.Data != nil {
 		for index, routeFilter := range routeFilterRules.Data {
@@ -85,7 +85,7 @@ func setRouteFilterRulesData(d *schema.ResourceData, routeFilterRules *fabricv4.
 	} else {
 		mappedRouteFilterRules = nil
 	}
-	err := equinix_schema.SetMap(d, map[string]interface{}{
+	err := equinix_schema.SetMap(d, map[string]any{
 		"data":       mappedRouteFilterRules,
 		"pagination": paginationGoToTerraform(&pagination),
 	})
@@ -95,8 +95,8 @@ func setRouteFilterRulesData(d *schema.ResourceData, routeFilterRules *fabricv4.
 	return diags
 }
 
-func routeFilterRuleResponseMap(data *fabricv4.RouteFilterRulesData) map[string]interface{} {
-	routeFilterRuleMap := make(map[string]interface{})
+func routeFilterRuleResponseMap(data *fabricv4.RouteFilterRulesData) map[string]any {
+	routeFilterRuleMap := make(map[string]any)
 	routeFilterRuleMap["type"] = string(data.GetType())
 	routeFilterRuleMap["name"] = data.GetName()
 	routeFilterRuleMap["description"] = data.GetDescription()
@@ -123,13 +123,13 @@ func changeGoToTerraform(change *fabricv4.RouteFilterRulesChange) *schema.Set {
 		return nil
 	}
 
-	mappedChange := make(map[string]interface{})
+	mappedChange := make(map[string]any)
 	mappedChange["href"] = change.GetHref()
 	mappedChange["type"] = string(change.GetType())
 	mappedChange["uuid"] = change.GetUuid()
 	changeSet := schema.NewSet(
 		schema.HashResource(changeSch()),
-		[]interface{}{mappedChange},
+		[]any{mappedChange},
 	)
 
 	return changeSet
@@ -139,7 +139,7 @@ func paginationGoToTerraform(pagination *fabricv4.Pagination) *schema.Set {
 	if pagination == nil {
 		return nil
 	}
-	mappedPagination := make(map[string]interface{})
+	mappedPagination := make(map[string]any)
 	mappedPagination["offset"] = int(pagination.GetOffset())
 	mappedPagination["limit"] = int(pagination.GetLimit())
 	mappedPagination["total"] = int(pagination.GetTotal())
@@ -148,6 +148,6 @@ func paginationGoToTerraform(pagination *fabricv4.Pagination) *schema.Set {
 
 	return schema.NewSet(
 		schema.HashResource(paginationSchema()),
-		[]interface{}{mappedPagination},
+		[]any{mappedPagination},
 	)
 }

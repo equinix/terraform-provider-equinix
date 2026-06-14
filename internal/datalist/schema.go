@@ -24,12 +24,12 @@ type ResourceConfig struct {
 
 	// Given a record returned from the GetRecords function, flatten the record to a
 	// map acceptable to the Set method on schema.ResourceData.
-	FlattenRecord func(record, meta interface{}, extra map[string]interface{}) (map[string]interface{}, error)
+	FlattenRecord func(record, meta any, extra map[string]any) (map[string]any, error)
 
 	// Return all of the records on which the data list resource should operate.
 	// The `meta` argument is the same meta argument passed into the resource's Read
 	// function.
-	GetRecords func(ctx context.Context, d *schema.ResourceData, meta interface{}, extra map[string]interface{}) ([]interface{}, error)
+	GetRecords func(ctx context.Context, d *schema.ResourceData, meta any, extra map[string]any) ([]any, error)
 
 	// Extra parameters to expose on the datasource alongside `filter` and `sort`.
 	ExtraQuerySchema map[string]*schema.Schema
@@ -83,8 +83,8 @@ func NewResource(config *ResourceConfig) *schema.Resource {
 }
 
 func dataListResourceRead(config *ResourceConfig) schema.ReadContextFunc {
-	return func(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-		extra := map[string]interface{}{}
+	return func(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
+		extra := map[string]any{}
 		for attr := range config.ExtraQuerySchema {
 			extra[attr] = d.Get(attr)
 		}
@@ -94,7 +94,7 @@ func dataListResourceRead(config *ResourceConfig) schema.ReadContextFunc {
 			return diag.Errorf("Unable to load records: %s", err)
 		}
 
-		flattenedRecords := make([]map[string]interface{}, len(records))
+		flattenedRecords := make([]map[string]any, len(records))
 		for i, record := range records {
 			flattenedRecord, err := config.FlattenRecord(record, meta, extra)
 			if err != nil {
@@ -112,7 +112,7 @@ func dataListResourceRead(config *ResourceConfig) schema.ReadContextFunc {
 		}
 
 		if v, ok := d.GetOk("sort"); ok {
-			sorts := expandSorts(v.([]interface{}))
+			sorts := expandSorts(v.([]any))
 			flattenedRecords = applySorts(config.RecordSchema, flattenedRecords, sorts)
 		}
 

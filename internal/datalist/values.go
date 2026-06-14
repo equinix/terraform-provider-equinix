@@ -12,7 +12,7 @@ func floatApproxEquals(a, b float64) bool {
 	return math.Abs(a-b) < 0.000001
 }
 
-func valueMatches(s *schema.Schema, value interface{}, filterValue interface{}, matchBy string) bool {
+func valueMatches(s *schema.Schema, value any, filterValue any, matchBy string) bool {
 	switch s.Type {
 	case schema.TypeString:
 		switch matchBy {
@@ -57,7 +57,7 @@ func valueMatches(s *schema.Schema, value interface{}, filterValue interface{}, 
 		return floatApproxEquals(filter, val)
 
 	case schema.TypeList:
-		listValues := value.([]interface{})
+		listValues := value.([]any)
 		result := false
 		for _, listValue := range listValues {
 			valueDoesMatch := valueMatches(s.Elem.(*schema.Schema), listValue, filterValue, matchBy)
@@ -79,7 +79,7 @@ func valueMatches(s *schema.Schema, value interface{}, filterValue interface{}, 
 	return false
 }
 
-func compareValues(s *schema.Schema, value1 interface{}, value2 interface{}) int {
+func compareValues(s *schema.Schema, value1 any, value2 any) int {
 	switch s.Type {
 	case schema.TypeString:
 		return strings.Compare(value1.(string), value2.(string))

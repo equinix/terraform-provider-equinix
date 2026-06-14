@@ -259,8 +259,8 @@ func resourceNetworkDevice() *schema.Resource {
 				return old != newValue
 			}),
 			customdiff.ForceNewIfChange("vendor_configuration", func(_ context.Context, old, newValue, _ any) bool {
-				delete(old.(map[string]interface{}), neDeviceVendorConfigSchemaNames["AdminPassword"])
-				return !comparisons.CompareMaps(old.(map[string]interface{}), newValue.(map[string]interface{}))
+				delete(old.(map[string]any), neDeviceVendorConfigSchemaNames["AdminPassword"])
+				return !comparisons.CompareMaps(old.(map[string]any), newValue.(map[string]any))
 			}),
 			customdiff.ForceNewIfChange("ssh_key", func(_ context.Context, old, newValue, _ any) bool {
 				return reflect.DeepEqual(old, newValue)
@@ -290,8 +290,8 @@ func resourceNetworkDevice() *schema.Resource {
 				return old != newValue && old != nil && old != "" && newValue == nil
 			}),
 			customdiff.ForceNewIfChange("secondary_device.0.vendor_configuration", func(_ context.Context, old, newValue, _ any) bool {
-				delete(old.(map[string]interface{}), neDeviceVendorConfigSchemaNames["AdminPassword"])
-				return !comparisons.CompareMaps(old.(map[string]interface{}), newValue.(map[string]interface{}))
+				delete(old.(map[string]any), neDeviceVendorConfigSchemaNames["AdminPassword"])
+				return !comparisons.CompareMaps(old.(map[string]any), newValue.(map[string]any))
 			}),
 			customdiff.ForceNewIfChange("secondary_device.0.metro_code", func(_ context.Context, old, newValue, _ any) bool {
 				return old != nil && old != "" && old != newValue && newValue == nil
@@ -1085,7 +1085,7 @@ func createVendorConfigurationSchema() map[string]*schema.Schema {
 	}
 }
 
-func resourceNetworkDeviceCreate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func resourceNetworkDeviceCreate(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
 	client := m.(*config.Config).Ne
 	m.(*config.Config).AddModuleToNEUserAgent(&client, d)
 	var diags diag.Diagnostics
@@ -1138,7 +1138,7 @@ func resourceNetworkDeviceCreate(ctx context.Context, d *schema.ResourceData, m 
 	return diags
 }
 
-func resourceNetworkDeviceRead(_ context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func resourceNetworkDeviceRead(_ context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
 	client := m.(*config.Config).Ne
 	m.(*config.Config).AddModuleToNEUserAgent(&client, d)
 	var diags diag.Diagnostics
@@ -1164,7 +1164,7 @@ func resourceNetworkDeviceRead(_ context.Context, d *schema.ResourceData, m inte
 	return diags
 }
 
-func resourceNetworkDeviceUpdate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func resourceNetworkDeviceUpdate(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
 	client := m.(*config.Config).Ne
 	m.(*config.Config).AddModuleToNEUserAgent(&client, d)
 	var diags diag.Diagnostics
@@ -1175,7 +1175,7 @@ func resourceNetworkDeviceUpdate(ctx context.Context, d *schema.ResourceData, m 
 	}
 	updateReq := client.NewDeviceUpdateRequest(d.Id())
 	primaryChanges := equinix_schema.GetResourceDataChangedKeys(supportedChanges, d)
-	var clusterChanges map[string]interface{}
+	var clusterChanges map[string]any
 	clusterSupportedChanges := []string{neDeviceClusterSchemaNames["ClusterName"]}
 	if _, ok := d.GetOk(neDeviceSchemaNames["ClusterDetails"]); ok {
 		clusterChanges = equinix_schema.GetResourceDataListElementChanges(clusterSupportedChanges, neDeviceSchemaNames["ClusterDetails"], 0, d)
@@ -1217,7 +1217,7 @@ func resourceNetworkDeviceUpdate(ctx context.Context, d *schema.ResourceData, m 
 			}
 		}
 	}
-	var secondaryChanges map[string]interface{}
+	var secondaryChanges map[string]any
 	if v, ok := d.GetOk(neDeviceSchemaNames["RedundantUUID"]); ok {
 		secondaryChanges = equinix_schema.GetResourceDataListElementChanges(supportedChanges, neDeviceSchemaNames["Secondary"], 0, d)
 		secondaryUpdateReq := client.NewDeviceUpdateRequest(v.(string))
@@ -1239,7 +1239,7 @@ func resourceNetworkDeviceUpdate(ctx context.Context, d *schema.ResourceData, m 
 	if isSecondaryAdded {
 		var secondary *ne.Device
 		if v, ok := d.GetOk(neDeviceSchemaNames["Secondary"]); ok {
-			secondary = expandNetworkDeviceSecondary(v.([]interface{}))
+			secondary = expandNetworkDeviceSecondary(v.([]any))
 			secondaryUUID, err := client.AddSecondary(d.Id(), *secondary)
 			if err := d.Set(neDeviceSchemaNames["RedundantUUID"], secondaryUUID); err != nil {
 				return diag.Errorf("error reading RedundantUUID: %s", err)
@@ -1265,7 +1265,7 @@ func resourceNetworkDeviceUpdate(ctx context.Context, d *schema.ResourceData, m 
 	return diags
 }
 
-func resourceNetworkDeviceDelete(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func resourceNetworkDeviceDelete(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
 	client := m.(*config.Config).Ne
 	m.(*config.Config).AddModuleToNEUserAgent(&client, d)
 	var diags diag.Diagnostics
@@ -1273,7 +1273,7 @@ func resourceNetworkDeviceDelete(ctx context.Context, d *schema.ResourceData, m 
 		createNetworkDeviceStatusDeleteWaitConfiguration(client.GetDevice, d.Id(), 5*time.Second, d.Timeout(schema.TimeoutDelete)),
 	}
 	if v, ok := d.GetOk(neDeviceSchemaNames["Secondary"]); ok {
-		if secondary := expandNetworkDeviceSecondary(v.([]interface{})); secondary != nil {
+		if secondary := expandNetworkDeviceSecondary(v.([]any)); secondary != nil {
 			waitConfigs = append(waitConfigs,
 				createNetworkDeviceStatusDeleteWaitConfiguration(client.GetDevice, ne.StringValue(secondary.UUID), 5*time.Second, d.Timeout(schema.TimeoutDelete)),
 			)
@@ -1379,7 +1379,7 @@ func createNetworkDevices(d *schema.ResourceData) (*ne.Device, *ne.Device) {
 	}
 	primary.IsSelfManaged = ne.Bool(d.Get(neDeviceSchemaNames["IsSelfManaged"]).(bool))
 	if v, ok := d.GetOk(neDeviceSchemaNames["VendorConfiguration"]); ok {
-		primary.VendorConfiguration = converters.InterfaceMapToStringMap(v.(map[string]interface{}))
+		primary.VendorConfiguration = converters.InterfaceMapToStringMap(v.(map[string]any))
 	}
 	if v, ok := d.GetOk(neDeviceSchemaNames["WanInterfaceId"]); ok {
 		primary.WanInterfaceId = ne.String(v.(string))
@@ -1392,10 +1392,10 @@ func createNetworkDevices(d *schema.ResourceData) (*ne.Device, *ne.Device) {
 		}
 	}
 	if v, ok := d.GetOk(neDeviceSchemaNames["Secondary"]); ok {
-		secondary = expandNetworkDeviceSecondary(v.([]interface{}))
+		secondary = expandNetworkDeviceSecondary(v.([]any))
 	}
 	if v, ok := d.GetOk(neDeviceSchemaNames["ClusterDetails"]); ok {
-		primary.ClusterDetails = expandNetworkDeviceClusterDetails(v.([]interface{}))
+		primary.ClusterDetails = expandNetworkDeviceClusterDetails(v.([]any))
 	}
 	if v, ok := d.GetOk(neDeviceSchemaNames["Connectivity"]); ok {
 		primary.Connectivity = ne.String(v.(string))
@@ -1523,7 +1523,7 @@ func updateNetworkDeviceResource(primary *ne.Device, secondary *ne.Device, d *sc
 	}
 	if secondary != nil {
 		if v, ok := d.GetOk(neDeviceSchemaNames["Secondary"]); ok {
-			secondaryFromSchema := expandNetworkDeviceSecondary(v.([]interface{}))
+			secondaryFromSchema := expandNetworkDeviceSecondary(v.([]any))
 			secondary.LicenseFile = secondaryFromSchema.LicenseFile
 			secondary.LicenseToken = secondaryFromSchema.LicenseToken
 			secondary.CloudInitFileID = secondaryFromSchema.CloudInitFileID
@@ -1535,7 +1535,7 @@ func updateNetworkDeviceResource(primary *ne.Device, secondary *ne.Device, d *sc
 	}
 	if primary.ClusterDetails != nil {
 		if v, ok := d.GetOk(neDeviceSchemaNames["ClusterDetails"]); ok {
-			clusterDetailsFromSchema := expandNetworkDeviceClusterDetails(v.([]interface{}))
+			clusterDetailsFromSchema := expandNetworkDeviceClusterDetails(v.([]any))
 			primary.ClusterDetails.Node0.LicenseFileId = clusterDetailsFromSchema.Node0.LicenseFileId
 			primary.ClusterDetails.Node0.LicenseToken = clusterDetailsFromSchema.Node0.LicenseToken
 			primary.ClusterDetails.Node1.LicenseFileId = clusterDetailsFromSchema.Node1.LicenseFileId
@@ -1548,8 +1548,8 @@ func updateNetworkDeviceResource(primary *ne.Device, secondary *ne.Device, d *sc
 	return nil
 }
 
-func flattenNetworkDeviceSecondary(device *ne.Device) interface{} {
-	transformed := make(map[string]interface{})
+func flattenNetworkDeviceSecondary(device *ne.Device) any {
+	transformed := make(map[string]any)
 	transformed[neDeviceSchemaNames["UUID"]] = device.UUID
 	transformed[neDeviceSchemaNames["Name"]] = device.Name
 	transformed[neDeviceSchemaNames["Status"]] = device.Status
@@ -1576,15 +1576,15 @@ func flattenNetworkDeviceSecondary(device *ne.Device) interface{} {
 	transformed[neDeviceSchemaNames["UserPublicKey"]] = flattenNetworkDeviceUserKeys([]*ne.DeviceUserPublicKey{device.UserPublicKey})
 	transformed[neDeviceSchemaNames["ASN"]] = device.ASN
 	transformed[neDeviceSchemaNames["ZoneCode"]] = device.ZoneCode
-	return []interface{}{transformed}
+	return []any{transformed}
 }
 
-func expandNetworkDeviceSecondary(devices []interface{}) *ne.Device {
+func expandNetworkDeviceSecondary(devices []any) *ne.Device {
 	if len(devices) < 1 {
 		log.Printf("[WARN] resource_network_device expanding empty secondary device collection")
 		return nil
 	}
-	device := devices[0].(map[string]interface{})
+	device := devices[0].(map[string]any)
 	transformed := &ne.Device{}
 	if v, ok := device[neDeviceSchemaNames["UUID"]]; ok && !isEmpty(v) {
 		transformed.UUID = ne.String(v.(string))
@@ -1638,7 +1638,7 @@ func expandNetworkDeviceSecondary(devices []interface{}) *ne.Device {
 		transformed.WanInterfaceId = ne.String(v.(string))
 	}
 	if v, ok := device[neDeviceSchemaNames["VendorConfiguration"]]; ok {
-		transformed.VendorConfiguration = converters.InterfaceMapToStringMap(v.(map[string]interface{}))
+		transformed.VendorConfiguration = converters.InterfaceMapToStringMap(v.(map[string]any))
 	}
 	if v, ok := device[neDeviceSchemaNames["UserPublicKey"]]; ok {
 		userKeys := expandNetworkDeviceUserKeys(v.(*schema.Set))
@@ -1649,10 +1649,10 @@ func expandNetworkDeviceSecondary(devices []interface{}) *ne.Device {
 	return transformed
 }
 
-func flattenNetworkDeviceInterfaces(interfaces []ne.DeviceInterface) interface{} {
-	transformed := make([]interface{}, len(interfaces))
+func flattenNetworkDeviceInterfaces(interfaces []ne.DeviceInterface) any {
+	transformed := make([]any, len(interfaces))
 	for i := range interfaces {
-		transformed[i] = map[string]interface{}{
+		transformed[i] = map[string]any{
 			neDeviceInterfaceSchemaNames["ID"]:                interfaces[i].ID,
 			neDeviceInterfaceSchemaNames["Name"]:              interfaces[i].Name,
 			neDeviceInterfaceSchemaNames["Status"]:            interfaces[i].Status,
@@ -1666,11 +1666,11 @@ func flattenNetworkDeviceInterfaces(interfaces []ne.DeviceInterface) interface{}
 	return transformed
 }
 
-func flattenNetworkDeviceUserKeys(userKeys []*ne.DeviceUserPublicKey) interface{} {
-	transformed := make([]interface{}, 0, len(userKeys))
+func flattenNetworkDeviceUserKeys(userKeys []*ne.DeviceUserPublicKey) any {
+	transformed := make([]any, 0, len(userKeys))
 	for i := range userKeys {
 		if userKeys[i] != nil {
-			transformed = append(transformed, map[string]interface{}{
+			transformed = append(transformed, map[string]any{
 				neDeviceUserKeySchemaNames["Username"]: userKeys[i].Username,
 				neDeviceUserKeySchemaNames["KeyName"]:  userKeys[i].KeyName,
 			})
@@ -1683,7 +1683,7 @@ func expandNetworkDeviceUserKeys(userKeys *schema.Set) []*ne.DeviceUserPublicKey
 	userKeysList := userKeys.List()
 	transformed := make([]*ne.DeviceUserPublicKey, len(userKeysList))
 	for i := range userKeysList {
-		userKeyMap := userKeysList[i].(map[string]interface{})
+		userKeyMap := userKeysList[i].(map[string]any)
 		transformed[i] = &ne.DeviceUserPublicKey{
 			Username: ne.String(userKeyMap[neDeviceUserKeySchemaNames["Username"]].(string)),
 			KeyName:  ne.String(userKeyMap[neDeviceUserKeySchemaNames["KeyName"]].(string)),
@@ -1692,28 +1692,28 @@ func expandNetworkDeviceUserKeys(userKeys *schema.Set) []*ne.DeviceUserPublicKey
 	return transformed
 }
 
-func flattenNetworkDeviceClusterDetails(clusterDetails *ne.ClusterDetails) interface{} {
-	transformed := make(map[string]interface{})
+func flattenNetworkDeviceClusterDetails(clusterDetails *ne.ClusterDetails) any {
+	transformed := make(map[string]any)
 	transformed[neDeviceClusterSchemaNames["ClusterId"]] = clusterDetails.ClusterId
 	transformed[neDeviceClusterSchemaNames["ClusterName"]] = clusterDetails.ClusterName
 	transformed[neDeviceClusterSchemaNames["NumOfNodes"]] = clusterDetails.NumOfNodes
 	transformed[neDeviceClusterSchemaNames["Node0"]] = flattenNetworkDeviceClusterNodeDetail(clusterDetails.Node0)
 	transformed[neDeviceClusterSchemaNames["Node1"]] = flattenNetworkDeviceClusterNodeDetail(clusterDetails.Node1)
-	return []interface{}{transformed}
+	return []any{transformed}
 }
 
-func flattenNetworkDeviceClusterNodeDetail(clusterNodeDetail *ne.ClusterNodeDetail) interface{} {
-	transformed := make(map[string]interface{})
+func flattenNetworkDeviceClusterNodeDetail(clusterNodeDetail *ne.ClusterNodeDetail) any {
+	transformed := make(map[string]any)
 	transformed[neDeviceClusterNodeSchemaNames["UUID"]] = clusterNodeDetail.UUID
 	transformed[neDeviceClusterNodeSchemaNames["Name"]] = clusterNodeDetail.Name
 	transformed[neDeviceClusterNodeSchemaNames["VendorConfiguration"]] = flattenVendorConfiguration(clusterNodeDetail.VendorConfiguration)
 	transformed[neDeviceClusterNodeSchemaNames["LicenseFileId"]] = clusterNodeDetail.LicenseFileId
 	transformed[neDeviceClusterNodeSchemaNames["LicenseToken"]] = clusterNodeDetail.LicenseToken
-	return []interface{}{transformed}
+	return []any{transformed}
 }
 
-func flattenVendorConfiguration(vendorConfig map[string]string) interface{} {
-	transformed := make(map[string]interface{})
+func flattenVendorConfiguration(vendorConfig map[string]string) any {
+	transformed := make(map[string]any)
 	if v, ok := vendorConfig["hostname"]; ok {
 		transformed[neDeviceVendorConfigSchemaNames["Hostname"]] = v
 	}
@@ -1771,37 +1771,37 @@ func flattenVendorConfiguration(vendorConfig map[string]string) interface{} {
 	if v, ok := vendorConfig["ipAddressType"]; ok {
 		transformed[neDeviceVendorConfigSchemaNames["IpAddressType"]] = v
 	}
-	return []interface{}{transformed}
+	return []any{transformed}
 }
 
-func expandNetworkDeviceClusterDetails(clusterDetails []interface{}) *ne.ClusterDetails {
+func expandNetworkDeviceClusterDetails(clusterDetails []any) *ne.ClusterDetails {
 	if len(clusterDetails) < 1 {
 		log.Printf("[WARN] resource_network_device expanding empty cluster details")
 		return nil
 	}
-	clusterDetail := clusterDetails[0].(map[string]interface{})
+	clusterDetail := clusterDetails[0].(map[string]any)
 	transformed := &ne.ClusterDetails{}
 	if v, ok := clusterDetail[neDeviceClusterSchemaNames["ClusterName"]]; ok && !isEmpty(v) {
 		transformed.ClusterName = ne.String(v.(string))
 	}
 	if v, ok := clusterDetail[neDeviceClusterSchemaNames["Node0"]]; ok {
-		transformed.Node0 = expandNetworkDeviceClusterNodeDetail(v.([]interface{}))
+		transformed.Node0 = expandNetworkDeviceClusterNodeDetail(v.([]any))
 	}
 	if v, ok := clusterDetail[neDeviceClusterSchemaNames["Node1"]]; ok {
-		transformed.Node1 = expandNetworkDeviceClusterNodeDetail(v.([]interface{}))
+		transformed.Node1 = expandNetworkDeviceClusterNodeDetail(v.([]any))
 	}
 	return transformed
 }
 
-func expandNetworkDeviceClusterNodeDetail(clusterNodeDetails []interface{}) *ne.ClusterNodeDetail {
+func expandNetworkDeviceClusterNodeDetail(clusterNodeDetails []any) *ne.ClusterNodeDetail {
 	if len(clusterNodeDetails) < 1 {
 		log.Printf("[WARN] resource_network_device expanding empty cluster node details")
 		return nil
 	}
-	clusterNodeDetail := clusterNodeDetails[0].(map[string]interface{})
+	clusterNodeDetail := clusterNodeDetails[0].(map[string]any)
 	transformed := &ne.ClusterNodeDetail{}
 	if v, ok := clusterNodeDetail[neDeviceClusterNodeSchemaNames["VendorConfiguration"]]; ok {
-		transformed.VendorConfiguration = expandVendorConfiguration(v.([]interface{}))
+		transformed.VendorConfiguration = expandVendorConfiguration(v.([]any))
 	}
 	if v, ok := clusterNodeDetail[neDeviceClusterNodeSchemaNames["LicenseFileId"]]; ok && !isEmpty(v) {
 		transformed.LicenseFileId = ne.String(v.(string))
@@ -1812,12 +1812,12 @@ func expandNetworkDeviceClusterNodeDetail(clusterNodeDetails []interface{}) *ne.
 	return transformed
 }
 
-func expandVendorConfiguration(vendorConfigs []interface{}) map[string]string {
+func expandVendorConfiguration(vendorConfigs []any) map[string]string {
 	if len(vendorConfigs) < 1 {
 		log.Printf("[WARN] resource_network_device expanding empty vendor configurations")
 		return nil
 	}
-	vendorConfig := vendorConfigs[0].(map[string]interface{})
+	vendorConfig := vendorConfigs[0].(map[string]any)
 	transformed := make(map[string]string)
 	if v, ok := vendorConfig[neDeviceVendorConfigSchemaNames["Hostname"]]; ok && !isEmpty(v) {
 		transformed["hostname"] = v.(string)
@@ -1879,7 +1879,7 @@ func expandVendorConfiguration(vendorConfigs []interface{}) map[string]string {
 	return transformed
 }
 
-func fillNetworkDeviceUpdateRequest(updateReq ne.DeviceUpdateRequest, changes map[string]interface{}) ne.DeviceUpdateRequest {
+func fillNetworkDeviceUpdateRequest(updateReq ne.DeviceUpdateRequest, changes map[string]any) ne.DeviceUpdateRequest {
 	for change, changeValue := range changes {
 		switch change {
 		case neDeviceSchemaNames["Name"]:
@@ -1903,7 +1903,7 @@ func fillNetworkDeviceUpdateRequest(updateReq ne.DeviceUpdateRequest, changes ma
 	return updateReq
 }
 
-func getNetworkDeviceStateChangeConfigs(c ne.Client, deviceID string, timeout time.Duration, changes map[string]interface{}) []*retry.StateChangeConf {
+func getNetworkDeviceStateChangeConfigs(c ne.Client, deviceID string, timeout time.Duration, changes map[string]any) []*retry.StateChangeConf {
 	configs := make([]*retry.StateChangeConf, 0, len(changes))
 	if changeValue, found := changes[neDeviceSchemaNames["ACLTemplateUUID"]]; found {
 		aclTemplateUUID, ok := changeValue.(string)
@@ -2010,7 +2010,7 @@ func createNetworkDeviceStatusWaitConfiguration(fetchFunc getDevice, id string, 
 		Timeout:    timeout,
 		Delay:      0,
 		MinTimeout: delay,
-		Refresh: func() (interface{}, string, error) {
+		Refresh: func() (any, string, error) {
 			resp, err := fetchFunc(id)
 			if err != nil {
 				return nil, "", err
@@ -2037,7 +2037,7 @@ func createNetworkDeviceLicenseStatusWaitConfiguration(fetchFunc getDevice, id s
 		Timeout:    timeout,
 		Delay:      0,
 		MinTimeout: delay,
-		Refresh: func() (interface{}, string, error) {
+		Refresh: func() (any, string, error) {
 			resp, err := fetchFunc(id)
 			if err != nil {
 				return nil, "", err
@@ -2058,7 +2058,7 @@ func createNetworkDeviceACLStatusWaitConfiguration(fetchFunc getACL, id string, 
 		Timeout:    timeout,
 		Delay:      0,
 		MinTimeout: delay,
-		Refresh: func() (interface{}, string, error) {
+		Refresh: func() (any, string, error) {
 			resp, err := fetchFunc(id)
 			if err != nil {
 				return nil, "", err
@@ -2079,7 +2079,7 @@ func createNetworkDeviceAdditionalBandwidthStatusWaitConfiguration(fetchFunc get
 		Timeout:    timeout,
 		Delay:      0,
 		MinTimeout: delay,
-		Refresh: func() (interface{}, string, error) {
+		Refresh: func() (any, string, error) {
 			resp, err := fetchFunc(deviceID)
 			if err != nil {
 				return nil, "", err

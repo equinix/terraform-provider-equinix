@@ -6,8 +6,8 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
-func sizesTestDataForSorts() []map[string]interface{} {
-	return []map[string]interface{}{
+func sizesTestDataForSorts() []map[string]any {
+	return []map[string]any{
 		{
 			"slug":          "s-1vcpu-1gb",
 			"memory":        1024,
@@ -16,8 +16,8 @@ func sizesTestDataForSorts() []map[string]interface{} {
 			"transfer":      1.0,
 			"price_monthly": 5.0,
 			"price_hourly":  0.007439999841153622,
-			"regions":       []interface{}{"sgp1", "sgp2"},
-			"regions_set":   schema.NewSet(schema.HashString, []interface{}{"sgp1", "sgp2"}),
+			"regions":       []any{"sgp1", "sgp2"},
+			"regions_set":   schema.NewSet(schema.HashString, []any{"sgp1", "sgp2"}),
 			"available":     true,
 		},
 		{
@@ -28,8 +28,8 @@ func sizesTestDataForSorts() []map[string]interface{} {
 			"transfer":      3.0,
 			"price_monthly": 15.0,
 			"price_hourly":  0.02232000045478344,
-			"regions":       []interface{}{"nyc1", "nyc2"},
-			"regions_set":   schema.NewSet(schema.HashString, []interface{}{"nyc1", "nyc2"}),
+			"regions":       []any{"nyc1", "nyc2"},
+			"regions_set":   schema.NewSet(schema.HashString, []any{"nyc1", "nyc2"}),
 			"available":     false,
 		},
 		{
@@ -40,20 +40,20 @@ func sizesTestDataForSorts() []map[string]interface{} {
 			"transfer":      5.0,
 			"price_monthly": 40.0,
 			"price_hourly":  0.05951999872922897,
-			"regions":       []interface{}{"ams1", "ams2"},
-			"regions_set":   schema.NewSet(schema.HashString, []interface{}{"ams1", "ams2"}),
+			"regions":       []any{"ams1", "ams2"},
+			"regions_set":   schema.NewSet(schema.HashString, []any{"ams1", "ams2"}),
 			"available":     true,
 		},
 	}
 }
 
 func TestExpandSorts(t *testing.T) {
-	rawSorts := []interface{}{
-		map[string]interface{}{
+	rawSorts := []any{
+		map[string]any{
 			"attribute": "fieldA",
 			"direction": "asc",
 		},
-		map[string]interface{}{
+		map[string]any{
 			"attribute": "fieldB",
 			"direction": "desc",
 		},
@@ -117,7 +117,7 @@ func TestApplySorts(t *testing.T) {
 }
 
 func TestApplySortsMultiple(t *testing.T) {
-	testData := []map[string]interface{}{
+	testData := []map[string]any{
 		{
 			"slug":          "s-1vcpu-1gb",
 			"memory":        1024,

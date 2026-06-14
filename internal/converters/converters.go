@@ -10,8 +10,8 @@ import (
 )
 
 // StringArrToIfArr converts a slice of strings to a slice of any
-func StringArrToIfArr(sli []string) []interface{} {
-	var arr []interface{}
+func StringArrToIfArr(sli []string) []any {
+	var arr []any
 	for _, v := range sli {
 		arr = append(arr, v)
 	}
@@ -19,7 +19,7 @@ func StringArrToIfArr(sli []string) []interface{} {
 }
 
 // IfArrToStringArr converts a slice of any to a slice of strings
-func IfArrToStringArr(ifaceArr []interface{}) []string {
+func IfArrToStringArr(ifaceArr []any) []string {
 	arr := make([]string, len(ifaceArr))
 	for i, v := range ifaceArr {
 		arr[i] = fmt.Sprint(v)
@@ -28,7 +28,7 @@ func IfArrToStringArr(ifaceArr []interface{}) []string {
 }
 
 // IfArrToIntStringArr converts a slice of any to a slice of strings, where each element is an int
-func IfArrToIntStringArr(ifaceArr []interface{}) []string {
+func IfArrToIntStringArr(ifaceArr []any) []string {
 	var arr []string
 	for _, v := range ifaceArr {
 		if v == nil {
@@ -40,7 +40,7 @@ func IfArrToIntStringArr(ifaceArr []interface{}) []string {
 }
 
 // IfArrToIntArr converts a slice of any to a slice of ints
-func IfArrToIntArr(ifaceArr []interface{}) []int {
+func IfArrToIntArr(ifaceArr []any) []int {
 	var arr []int
 	for _, v := range ifaceArr {
 		if v == nil {
@@ -52,7 +52,7 @@ func IfArrToIntArr(ifaceArr []interface{}) []int {
 }
 
 // ToLowerIf converts an any to a string and converts it to lowercase
-func ToLowerIf(v interface{}) string {
+func ToLowerIf(v any) string {
 	return strings.ToLower(v.(string))
 }
 
@@ -73,7 +73,7 @@ func Difference(a, b []string) []string {
 }
 
 // ListToInt32List converts a slice of any to a slice of int32
-func ListToInt32List(list []interface{}) []int32 {
+func ListToInt32List(list []any) []int32 {
 	result := make([]int32, len(list))
 	for i, v := range list {
 		result[i] = int32(v.(int))
@@ -88,7 +88,7 @@ func SetToStringList(set *schema.Set) []string {
 }
 
 // InterfaceMapToStringMap converts a string map of any values to a string map of strings
-func InterfaceMapToStringMap(mapIn map[string]interface{}) map[string]string {
+func InterfaceMapToStringMap(mapIn map[string]any) map[string]string {
 	mapOut := make(map[string]string)
 	for k, v := range mapIn {
 		mapOut[k] = fmt.Sprintf("%v", v)

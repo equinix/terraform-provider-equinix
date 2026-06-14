@@ -41,7 +41,7 @@ Additional Documentation:
 	}
 }
 
-func resourceRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func resourceRead(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	client := meta.(*config.Config).NewFabricClientForSDK(ctx, d)
 	routeFilterID := d.Get("route_filter_id").(string)
 	routeFilterRule, _, err := client.RouteFilterRulesApi.GetRouteFilterRuleByUuid(ctx, routeFilterID, d.Id()).Execute()
@@ -56,7 +56,7 @@ func resourceRead(ctx context.Context, d *schema.ResourceData, meta interface{})
 	return setRouteFilterRuleMap(d, routeFilterRule)
 }
 
-func resourceCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func resourceCreate(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	client := meta.(*config.Config).NewFabricClientForSDK(ctx, d)
 	routeFilterID := d.Get("route_filter_id").(string)
 	createRequest := buildCreateRequest(d)
@@ -80,7 +80,7 @@ func resourceCreate(ctx context.Context, d *schema.ResourceData, meta interface{
 	return resourceRead(ctx, d, meta)
 }
 
-func resourceUpdate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func resourceUpdate(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	client := meta.(*config.Config).NewFabricClientForSDK(ctx, d)
 	routeFilterID := d.Get("route_filter_id").(string)
 	updateRequest := buildUpdateRequest(d)
@@ -99,7 +99,7 @@ func resourceUpdate(ctx context.Context, d *schema.ResourceData, meta interface{
 	return setRouteFilterRuleMap(d, routeFilter)
 }
 
-func resourceDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func resourceDelete(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	diags := diag.Diagnostics{}
 	client := meta.(*config.Config).NewFabricClientForSDK(ctx, d)
 	routeFilterID := d.Get("route_filter_id").(string)
@@ -125,7 +125,7 @@ func resourceDelete(ctx context.Context, d *schema.ResourceData, meta interface{
 	return diags
 }
 
-func waitForStability(ctx context.Context, routeFilterID, ruleID string, meta interface{}, d *schema.ResourceData, timeout time.Duration) error {
+func waitForStability(ctx context.Context, routeFilterID, ruleID string, meta any, d *schema.ResourceData, timeout time.Duration) error {
 	log.Printf("Waiting for route filter rule %s on route filter %s to be stable", d.Id(), routeFilterID)
 	stateConf := &retry.StateChangeConf{
 		Pending: []string{
@@ -135,7 +135,7 @@ func waitForStability(ctx context.Context, routeFilterID, ruleID string, meta in
 		Target: []string{
 			string(fabricv4.ROUTEFILTERRULESTATE_PROVISIONED),
 		},
-		Refresh: func() (interface{}, string, error) {
+		Refresh: func() (any, string, error) {
 			client := meta.(*config.Config).NewFabricClientForSDK(ctx, d)
 			routeFilterRule, _, err := client.RouteFilterRulesApi.GetRouteFilterRuleByUuid(ctx, routeFilterID, ruleID).Execute()
 			if err != nil {
@@ -154,7 +154,7 @@ func waitForStability(ctx context.Context, routeFilterID, ruleID string, meta in
 }
 
 // WaitForDeletion waits until the route filter rule is deleted.
-func WaitForDeletion(ctx context.Context, routeFilterID, ruleID string, meta interface{}, d *schema.ResourceData, timeout time.Duration) error {
+func WaitForDeletion(ctx context.Context, routeFilterID, ruleID string, meta any, d *schema.ResourceData, timeout time.Duration) error {
 	log.Printf("Waiting for route filter rule %s on route filter %s to be deleted", d.Id(), routeFilterID)
 	stateConf := &retry.StateChangeConf{
 		Pending: []string{
@@ -164,7 +164,7 @@ func WaitForDeletion(ctx context.Context, routeFilterID, ruleID string, meta int
 		Target: []string{
 			string(fabricv4.ROUTEFILTERRULESTATE_DEPROVISIONED),
 		},
-		Refresh: func() (interface{}, string, error) {
+		Refresh: func() (any, string, error) {
 			client := meta.(*config.Config).NewFabricClientForSDK(ctx, d)
 			routeFilterRule, body, err := client.RouteFilterRulesApi.GetRouteFilterRuleByUuid(ctx, routeFilterID, ruleID).Execute()
 			if err != nil {

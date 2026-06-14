@@ -8,7 +8,7 @@ import (
 )
 
 // IsEmpty returns true if the given value is empty
-func IsEmpty(v interface{}) bool {
+func IsEmpty(v any) bool {
 	switch v := v.(type) {
 	case int:
 		return v == 0
@@ -68,7 +68,7 @@ func _(s1, s2 string) int {
 }
 
 // CompareMaps is a comparison function for comparing vendor config maps
-func CompareMaps(old, newMap map[string]interface{}) bool {
+func CompareMaps(old, newMap map[string]any) bool {
 	var oldTemp = copyMap(old)
 	var newTemp = copyMap(newMap)
 	if len(oldTemp) != len(newTemp) {
@@ -88,8 +88,8 @@ func CompareMaps(old, newMap map[string]interface{}) bool {
 	return true
 }
 
-func copyMap(m map[string]interface{}) map[string]interface{} {
-	nm := make(map[string]interface{}, len(m))
+func copyMap(m map[string]any) map[string]any {
+	nm := make(map[string]any, len(m))
 	for k, v := range m {
 		nm[k] = v
 	}

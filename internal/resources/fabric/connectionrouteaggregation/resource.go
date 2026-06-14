@@ -164,7 +164,7 @@ func getCreateUpdateWaiter(ctx context.Context, client *fabricv4.APIClient, rout
 		Target: []string{
 			string(fabricv4.CONNECTIONROUTEAGGREGATIONDATAATTACHMENTSTATUS_ATTACHED),
 		},
-		Refresh: func() (interface{}, string, error) {
+		Refresh: func() (any, string, error) {
 			connectionRouteAggregation, _, err := client.RouteAggregationsApi.GetConnectionRouteAggregationByUuid(ctx, routeAggregationID, connectionID).Execute()
 			if err != nil {
 				return 0, "", err
@@ -190,7 +190,7 @@ func getDeleteWaiter(ctx context.Context, client *fabricv4.APIClient, routeAggre
 			string(fabricv4.CONNECTIONROUTEAGGREGATIONDATAATTACHMENTSTATUS_DETACHED),
 			deletedMarker,
 		},
-		Refresh: func() (interface{}, string, error) {
+		Refresh: func() (any, string, error) {
 			routeAggregationRule, resp, err := client.RouteAggregationsApi.GetConnectionRouteAggregationByUuid(ctx, routeAggregationID, connectionID).Execute()
 			if err != nil {
 				if resp != nil && slices.Contains([]int{http.StatusForbidden, http.StatusNotFound}, resp.StatusCode) {

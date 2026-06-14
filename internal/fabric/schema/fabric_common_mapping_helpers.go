@@ -6,13 +6,13 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
-func OrderTerraformToGo(orderTerraform []interface{}) fabricv4.Order {
+func OrderTerraformToGo(orderTerraform []any) fabricv4.Order {
 	if len(orderTerraform) == 0 {
 		return fabricv4.Order{}
 	}
 	var order fabricv4.Order
 
-	orderMap := orderTerraform[0].(map[string]interface{})
+	orderMap := orderTerraform[0].(map[string]any)
 	purchaseOrderNumber := orderMap["purchase_order_number"].(string)
 	billingTier := orderMap["billing_tier"].(string)
 	orderID := orderMap["order_id"].(string)
@@ -41,7 +41,7 @@ func OrderGoToTerraform(order *fabricv4.Order) *schema.Set {
 	if order == nil {
 		return nil
 	}
-	mappedOrder := make(map[string]interface{})
+	mappedOrder := make(map[string]any)
 	mappedOrder["purchase_order_number"] = order.GetPurchaseOrderNumber()
 	mappedOrder["billing_tier"] = order.GetBillingTier()
 	mappedOrder["order_id"] = order.GetOrderId()
@@ -49,7 +49,7 @@ func OrderGoToTerraform(order *fabricv4.Order) *schema.Set {
 	mappedOrder["term_length"] = int(order.GetTermLength())
 	orderSet := schema.NewSet(
 		schema.HashResource(&schema.Resource{Schema: OrderSch()}),
-		[]interface{}{mappedOrder},
+		[]any{mappedOrder},
 	)
 	return orderSet
 }
@@ -58,7 +58,7 @@ func AccountGoToTerraform(account *fabricv4.SimplifiedAccount) *schema.Set {
 	if account == nil {
 		return nil
 	}
-	mappedAccount := map[string]interface{}{
+	mappedAccount := map[string]any{
 		"account_number":           int(account.GetAccountNumber()),
 		"account_name":             account.GetAccountName(),
 		"org_id":                   int(account.GetOrgId()),
@@ -71,22 +71,22 @@ func AccountGoToTerraform(account *fabricv4.SimplifiedAccount) *schema.Set {
 
 	accountSet := schema.NewSet(
 		schema.HashResource(&schema.Resource{Schema: AccountSch()}),
-		[]interface{}{mappedAccount},
+		[]any{mappedAccount},
 	)
 
 	return accountSet
 }
 
-func NotificationsTerraformToGo(notificationsTerraform []interface{}) []fabricv4.SimplifiedNotification {
+func NotificationsTerraformToGo(notificationsTerraform []any) []fabricv4.SimplifiedNotification {
 	if len(notificationsTerraform) == 0 {
 		return nil
 	}
 	notifications := make([]fabricv4.SimplifiedNotification, len(notificationsTerraform))
 	for index, notification := range notificationsTerraform {
-		notificationMap := notification.(map[string]interface{})
+		notificationMap := notification.(map[string]any)
 		notificationType := fabricv4.SimplifiedNotificationType(notificationMap["type"].(string))
 		sendInterval := notificationMap["send_interval"].(string)
-		emailsRaw := notificationMap["emails"].([]interface{})
+		emailsRaw := notificationMap["emails"].([]any)
 		emails := converters.IfArrToStringArr(emailsRaw)
 		simplifiedNotification := fabricv4.SimplifiedNotification{}
 		simplifiedNotification.SetType(notificationType)
@@ -99,13 +99,13 @@ func NotificationsTerraformToGo(notificationsTerraform []interface{}) []fabricv4
 	return notifications
 }
 
-func NotificationsGoToTerraform(notifications []fabricv4.SimplifiedNotification) []map[string]interface{} {
+func NotificationsGoToTerraform(notifications []fabricv4.SimplifiedNotification) []map[string]any {
 	if notifications == nil {
 		return nil
 	}
-	mappedNotifications := make([]map[string]interface{}, len(notifications))
+	mappedNotifications := make([]map[string]any, len(notifications))
 	for index, notification := range notifications {
-		mappedNotifications[index] = map[string]interface{}{
+		mappedNotifications[index] = map[string]any{
 			"type":          string(notification.GetType()),
 			"send_interval": notification.GetSendInterval(),
 			"emails":        notification.GetEmails(),
@@ -114,13 +114,13 @@ func NotificationsGoToTerraform(notifications []fabricv4.SimplifiedNotification)
 	return mappedNotifications
 }
 
-func LocationTerraformToGo(locationList []interface{}) fabricv4.SimplifiedLocation {
+func LocationTerraformToGo(locationList []any) fabricv4.SimplifiedLocation {
 	if len(locationList) == 0 {
 		return fabricv4.SimplifiedLocation{}
 	}
 
 	var location fabricv4.SimplifiedLocation
-	locationListMap := locationList[0].(map[string]interface{})
+	locationListMap := locationList[0].(map[string]any)
 	metroName := locationListMap["metro_name"].(string)
 	region := locationListMap["region"].(string)
 	metroCode := locationListMap["metro_code"].(string)
@@ -145,7 +145,7 @@ func LocationGoToTerraform(location *fabricv4.SimplifiedLocation) *schema.Set {
 	if location == nil {
 		return nil
 	}
-	mappedLocations := make(map[string]interface{})
+	mappedLocations := make(map[string]any)
 	mappedLocations["region"] = location.GetRegion()
 	mappedLocations["metro_name"] = location.GetMetroName()
 	mappedLocations["metro_code"] = location.GetMetroCode()
@@ -153,25 +153,25 @@ func LocationGoToTerraform(location *fabricv4.SimplifiedLocation) *schema.Set {
 
 	locationSet := schema.NewSet(
 		schema.HashResource(&schema.Resource{Schema: LocationSch()}),
-		[]interface{}{mappedLocations},
+		[]any{mappedLocations},
 	)
 	return locationSet
 }
 
-func LocationWithoutIBXTerraformToGo(locationList []interface{}) fabricv4.SimplifiedLocationWithoutIBX {
+func LocationWithoutIBXTerraformToGo(locationList []any) fabricv4.SimplifiedLocationWithoutIBX {
 	if len(locationList) == 0 {
 		return fabricv4.SimplifiedLocationWithoutIBX{}
 	}
 
 	var locationWithoutIbx fabricv4.SimplifiedLocationWithoutIBX
-	locationMap := locationList[0].(map[string]interface{})
+	locationMap := locationList[0].(map[string]any)
 	metroCode := locationMap["metro_code"].(string)
 	locationWithoutIbx.SetMetroCode(metroCode)
 	return locationWithoutIbx
 }
 
 func LocationWithoutIBXGoToTerraform(location *fabricv4.SimplifiedLocationWithoutIBX) *schema.Set {
-	mappedLocation := map[string]interface{}{
+	mappedLocation := map[string]any{
 		"region":     location.GetRegion(),
 		"metro_name": location.GetMetroName(),
 		"metro_code": location.GetMetroCode(),
@@ -179,17 +179,17 @@ func LocationWithoutIBXGoToTerraform(location *fabricv4.SimplifiedLocationWithou
 
 	locationSet := schema.NewSet(
 		schema.HashResource(&schema.Resource{Schema: LocationSch()}),
-		[]interface{}{mappedLocation},
+		[]any{mappedLocation},
 	)
 	return locationSet
 }
 
-func ProjectTerraformToGo(projectTerraform []interface{}) fabricv4.Project {
+func ProjectTerraformToGo(projectTerraform []any) fabricv4.Project {
 	if len(projectTerraform) == 0 {
 		return fabricv4.Project{}
 	}
 	var project fabricv4.Project
-	projectMap := projectTerraform[0].(map[string]interface{})
+	projectMap := projectTerraform[0].(map[string]any)
 	projectID := projectMap["project_id"].(string)
 	if projectID != "" {
 		project.SetProjectId(projectID)
@@ -202,11 +202,11 @@ func ProjectGoToTerraform(project *fabricv4.Project) *schema.Set {
 	if project == nil {
 		return nil
 	}
-	mappedProject := make(map[string]interface{})
+	mappedProject := make(map[string]any)
 	mappedProject["project_id"] = project.GetProjectId()
 	projectSet := schema.NewSet(
 		schema.HashResource(&schema.Resource{Schema: ProjectSch()}),
-		[]interface{}{mappedProject})
+		[]any{mappedProject})
 	return projectSet
 }
 
@@ -215,7 +215,7 @@ func ChangeLogGoToTerraform(changeLog *fabricv4.Changelog) *schema.Set {
 		return nil
 	}
 
-	mappedChangeLog := map[string]interface{}{
+	mappedChangeLog := map[string]any{
 		"created_by":           changeLog.GetCreatedBy(),
 		"created_by_full_name": changeLog.GetCreatedByFullName(),
 		"created_by_email":     changeLog.GetCreatedByEmail(),
@@ -231,18 +231,18 @@ func ChangeLogGoToTerraform(changeLog *fabricv4.Changelog) *schema.Set {
 
 	changeLogSet := schema.NewSet(
 		schema.HashResource(&schema.Resource{Schema: ChangeLogSch()}),
-		[]interface{}{mappedChangeLog},
+		[]any{mappedChangeLog},
 	)
 	return changeLogSet
 }
 
-func ErrorGoToTerraform(errors []fabricv4.Error) []interface{} {
+func ErrorGoToTerraform(errors []fabricv4.Error) []any {
 	if len(errors) == 0 {
 		return nil
 	}
-	mappedErrors := make([]interface{}, len(errors))
+	mappedErrors := make([]any, len(errors))
 	for index, mError := range errors {
-		mappedErrors[index] = map[string]interface{}{
+		mappedErrors[index] = map[string]any{
 			"error_code":      mError.GetErrorCode(),
 			"error_message":   mError.GetErrorMessage(),
 			"correlation_id":  mError.GetCorrelationId(),
@@ -254,13 +254,13 @@ func ErrorGoToTerraform(errors []fabricv4.Error) []interface{} {
 	return mappedErrors
 }
 
-func ErrorAdditionalInfoGoToTerraform(additionalInfol []fabricv4.PriceErrorAdditionalInfo) []interface{} {
+func ErrorAdditionalInfoGoToTerraform(additionalInfol []fabricv4.PriceErrorAdditionalInfo) []any {
 	if additionalInfol == nil {
 		return nil
 	}
-	mappedAdditionalInfol := make([]interface{}, len(additionalInfol))
+	mappedAdditionalInfol := make([]any, len(additionalInfol))
 	for index, additionalInfo := range additionalInfol {
-		mappedAdditionalInfol[index] = map[string]interface{}{
+		mappedAdditionalInfol[index] = map[string]any{
 			"property": additionalInfo.GetProperty(),
 			"reason":   additionalInfo.GetReason(),
 		}

@@ -10,7 +10,7 @@ import (
 
 func TestAccDataSourceNetworkAccount_basic(t *testing.T) {
 	metro, _ := schema.EnvDefaultFunc(networkDeviceMetroEnvVar, "SV")()
-	context := map[string]interface{}{
+	context := map[string]any{
 		"resourceName": "tf-account",
 		"metro_code":   metro.(string),
 		"status":       "active",
@@ -35,7 +35,7 @@ func TestAccDataSourceNetworkAccount_basic(t *testing.T) {
 	})
 }
 
-func testAccDataSourceNetworkAccountConfig_basic(ctx map[string]interface{}) string {
+func testAccDataSourceNetworkAccountConfig_basic(ctx map[string]any) string {
 	return nprintf(`
 data "equinix_network_account" "%{resourceName}" {
   metro_code = "%{metro_code}"

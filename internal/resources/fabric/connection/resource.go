@@ -39,7 +39,7 @@ func Resource() *schema.Resource {
 	}
 }
 
-func resourceFabricConnectionCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func resourceFabricConnectionCreate(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	client := meta.(*config.Config).NewFabricClientForSDK(ctx, d)
 
 	createConnectionRequest := fabricv4.ConnectionPostRequest{}
@@ -55,7 +55,7 @@ func resourceFabricConnectionCreate(ctx context.Context, d *schema.ResourceData,
 		createConnectionRequest.SetOrder(order)
 	}
 
-	schemaNotifications := d.Get("notifications").([]interface{})
+	schemaNotifications := d.Get("notifications").([]any)
 	notifications := equinix_fabric_schema.NotificationsTerraformToGo(schemaNotifications)
 	createConnectionRequest.SetNotifications(notifications)
 
@@ -93,7 +93,7 @@ func resourceFabricConnectionCreate(ctx context.Context, d *schema.ResourceData,
 		customFields := serviceProfile.GetCustomFields()
 
 		if len(customFields) != 0 {
-			additionalInfo := additionalInfoTerraformToGo(additionalInfoTerraConfig.([]interface{}))
+			additionalInfo := additionalInfoTerraformToGo(additionalInfoTerraConfig.([]any))
 			createConnectionRequest.SetAdditionalInfo(additionalInfo)
 		}
 	}
@@ -110,13 +110,13 @@ func resourceFabricConnectionCreate(ctx context.Context, d *schema.ResourceData,
 		return diag.Errorf("error waiting for connection (%s) to be created: %s", d.Id(), err)
 	}
 
-	awsSecrets, hasAWSSecrets := additionalInfoContainsAWSSecrets(additionalInfoTerraConfig.([]interface{}))
+	awsSecrets, hasAWSSecrets := additionalInfoContainsAWSSecrets(additionalInfoTerraConfig.([]any))
 	if hasAWSSecrets {
 		patchChangeOperation := []fabricv4.ConnectionChangeOperation{
 			{
 				Op:    "add",
 				Path:  "",
-				Value: map[string]interface{}{"additionalInfo": awsSecrets},
+				Value: map[string]any{"additionalInfo": awsSecrets},
 			},
 		}
 
@@ -134,7 +134,7 @@ func resourceFabricConnectionCreate(ctx context.Context, d *schema.ResourceData,
 	return resourceFabricConnectionRead(ctx, d, meta)
 }
 
-func resourceFabricConnectionRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func resourceFabricConnectionRead(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	client := meta.(*config.Config).NewFabricClientForSDK(ctx, d)
 	conn, _, err := client.ConnectionsApi.GetConnectionByUuid(ctx, d.Id()).Execute()
 	if err != nil {
@@ -148,7 +148,7 @@ func resourceFabricConnectionRead(ctx context.Context, d *schema.ResourceData, m
 	return setFabricMap(d, conn)
 }
 
-func resourceFabricConnectionUpdate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func resourceFabricConnectionUpdate(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	client := meta.(*config.Config).NewFabricClientForSDK(ctx, d)
 	start := time.Now()
 	updateTimeout := d.Timeout(schema.TimeoutUpdate) - 30*time.Second - time.Since(start)
@@ -175,7 +175,7 @@ func resourceFabricConnectionUpdate(ctx context.Context, d *schema.ResourceData,
 			continue
 		}
 
-		var waitFunction func(ctx context.Context, uuid string, meta interface{}, d *schema.ResourceData, timeout time.Duration) (*fabricv4.Connection, error)
+		var waitFunction func(ctx context.Context, uuid string, meta any, d *schema.ResourceData, timeout time.Duration) (*fabricv4.Connection, error)
 		switch op := update[0].Op; op {
 		case "replace":
 			// Update type is either name or bandwidth
@@ -201,11 +201,11 @@ func resourceFabricConnectionUpdate(ctx context.Context, d *schema.ResourceData,
 	return append(diags, setFabricMap(d, updatedConn)...)
 }
 
-func waitForConnectionUpdateCompletion(ctx context.Context, uuid string, meta interface{}, d *schema.ResourceData, timeout time.Duration) (*fabricv4.Connection, error) {
+func waitForConnectionUpdateCompletion(ctx context.Context, uuid string, meta any, d *schema.ResourceData, timeout time.Duration) (*fabricv4.Connection, error) {
 	log.Printf("[DEBUG] Waiting for connection update to complete, uuid %s", uuid)
 	stateConf := &retry.StateChangeConf{
 		Target: []string{"COMPLETED", "SUBMITTED_FOR_APPROVAL"},
-		Refresh: func() (interface{}, string, error) {
+		Refresh: func() (any, string, error) {
 			client := meta.(*config.Config).NewFabricClientForSDK(ctx, d)
 			dbConn, _, err := client.ConnectionsApi.GetConnectionByUuid(ctx, uuid).Execute()
 			if err != nil {
@@ -233,7 +233,7 @@ func waitForConnectionUpdateCompletion(ctx context.Context, uuid string, meta in
 	return dbConn, err
 }
 
-func waitUntilConnectionIsCreated(ctx context.Context, uuid string, meta interface{}, d *schema.ResourceData, timeout time.Duration) error {
+func waitUntilConnectionIsCreated(ctx context.Context, uuid string, meta any, d *schema.ResourceData, timeout time.Duration) error {
 	log.Printf("Waiting for connection to be created, uuid %s", uuid)
 	stateConf := &retry.StateChangeConf{
 		Pending: []string{
@@ -244,7 +244,7 @@ func waitUntilConnectionIsCreated(ctx context.Context, uuid string, meta interfa
 			string(fabricv4.CONNECTIONSTATE_PROVISIONED),
 			string(fabricv4.CONNECTIONSTATE_ACTIVE),
 		},
-		Refresh: func() (interface{}, string, error) {
+		Refresh: func() (any, string, error) {
 			client := meta.(*config.Config).NewFabricClientForSDK(ctx, d)
 			dbConn, _, err := client.ConnectionsApi.GetConnectionByUuid(ctx, uuid).Execute()
 			if err != nil {
@@ -262,7 +262,7 @@ func waitUntilConnectionIsCreated(ctx context.Context, uuid string, meta interfa
 	return err
 }
 
-func waitForConnectionProviderStatusChange(ctx context.Context, uuid string, meta interface{}, d *schema.ResourceData, timeout time.Duration) (*fabricv4.Connection, error) {
+func waitForConnectionProviderStatusChange(ctx context.Context, uuid string, meta any, d *schema.ResourceData, timeout time.Duration) (*fabricv4.Connection, error) {
 	log.Printf("DEBUG: wating for provider status to update. Connection uuid: %s", uuid)
 	stateConf := &retry.StateChangeConf{
 		Pending: []string{
@@ -272,7 +272,7 @@ func waitForConnectionProviderStatusChange(ctx context.Context, uuid string, met
 		Target: []string{
 			string(fabricv4.PROVIDERSTATUS_PROVISIONED),
 		},
-		Refresh: func() (interface{}, string, error) {
+		Refresh: func() (any, string, error) {
 			client := meta.(*config.Config).NewFabricClientForSDK(ctx, d)
 			dbConn, _, err := client.ConnectionsApi.GetConnectionByUuid(ctx, uuid).Execute()
 			if err != nil {
@@ -296,7 +296,7 @@ func waitForConnectionProviderStatusChange(ctx context.Context, uuid string, met
 	return dbConn, err
 }
 
-func verifyConnectionCreated(ctx context.Context, uuid string, meta interface{}, d *schema.ResourceData, timeout time.Duration) (*fabricv4.Connection, error) {
+func verifyConnectionCreated(ctx context.Context, uuid string, meta any, d *schema.ResourceData, timeout time.Duration) (*fabricv4.Connection, error) {
 	log.Printf("Waiting for the connection to be in created state, uuid %s", uuid)
 	stateConf := &retry.StateChangeConf{
 		Target: []string{
@@ -304,7 +304,7 @@ func verifyConnectionCreated(ctx context.Context, uuid string, meta interface{},
 			string(fabricv4.CONNECTIONSTATE_PROVISIONED),
 			string(fabricv4.CONNECTIONSTATE_PENDING),
 		},
-		Refresh: func() (interface{}, string, error) {
+		Refresh: func() (any, string, error) {
 			client := meta.(*config.Config).NewFabricClientForSDK(ctx, d)
 			dbConn, _, err := client.ConnectionsApi.GetConnectionByUuid(ctx, uuid).Execute()
 			if err != nil {
@@ -326,7 +326,7 @@ func verifyConnectionCreated(ctx context.Context, uuid string, meta interface{},
 	return dbConn, err
 }
 
-func resourceFabricConnectionDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func resourceFabricConnectionDelete(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	diags := diag.Diagnostics{}
 	client := meta.(*config.Config).NewFabricClientForSDK(ctx, d)
 	start := time.Now()
@@ -352,7 +352,7 @@ func resourceFabricConnectionDelete(ctx context.Context, d *schema.ResourceData,
 }
 
 // WaitUntilConnectionDeprovisioned waits until the connection is in DEPROVISIONED state, which indicates that the connection has been deleted successfully. This is required as the API allows deletion of the resource, but the actual resource gets deleted only after it is in DEPROVISIONED state.
-func WaitUntilConnectionDeprovisioned(ctx context.Context, uuid string, meta interface{}, d *schema.ResourceData, timeout time.Duration) error {
+func WaitUntilConnectionDeprovisioned(ctx context.Context, uuid string, meta any, d *schema.ResourceData, timeout time.Duration) error {
 	log.Printf("Waiting for connection to be deprovisioned, uuid %s", uuid)
 	stateConf := &retry.StateChangeConf{
 		Pending: []string{
@@ -363,7 +363,7 @@ func WaitUntilConnectionDeprovisioned(ctx context.Context, uuid string, meta int
 		Target: []string{
 			string(fabricv4.CONNECTIONSTATE_DEPROVISIONED),
 		},
-		Refresh: func() (interface{}, string, error) {
+		Refresh: func() (any, string, error) {
 			client := meta.(*config.Config).NewFabricClientForSDK(ctx, d)
 			dbConn, _, err := client.ConnectionsApi.GetConnectionByUuid(ctx, uuid).Execute()
 			if err != nil {

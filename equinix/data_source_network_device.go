@@ -49,7 +49,7 @@ func getNeDeviceStatusList(deviceStateText string) (*[]string, error) {
 	return &validItems, nil
 }
 
-func stringIsValidDeviceStateList(i interface{}, k string) ([]string, []error) {
+func stringIsValidDeviceStateList(i any, k string) ([]string, []error) {
 	v, ok := i.(string)
 	if !ok {
 		return nil, []error{fmt.Errorf("expected type of %s to be string", k)}
@@ -703,7 +703,7 @@ func getDeviceByName(deviceName string, conf *config.Config, validDeviceStateLis
 	return nil, fmt.Errorf("device %s not found", deviceName)
 }
 
-func dataSourceNetworkDeviceRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func dataSourceNetworkDeviceRead(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
 	conf := m.(*config.Config)
 	var diags diag.Diagnostics
 	var err error
@@ -866,7 +866,7 @@ func updateDataSourceNetworkDeviceResource(primary *ne.Device, secondary *ne.Dev
 	}
 	if secondary != nil {
 		if v, ok := d.GetOk(neDeviceSchemaNames["Secondary"]); ok {
-			secondaryFromSchema := expandNetworkDeviceSecondary(v.([]interface{}))
+			secondaryFromSchema := expandNetworkDeviceSecondary(v.([]any))
 			secondary.LicenseFile = secondaryFromSchema.LicenseFile
 		}
 		if err := d.Set(neDeviceSchemaNames["Secondary"], flattenNetworkDeviceSecondary(secondary)); err != nil {
@@ -875,7 +875,7 @@ func updateDataSourceNetworkDeviceResource(primary *ne.Device, secondary *ne.Dev
 	}
 	if primary.ClusterDetails != nil {
 		if v, ok := d.GetOk(neDeviceSchemaNames["ClusterDetails"]); ok {
-			clusterDetailsFromSchema := expandNetworkDeviceClusterDetails(v.([]interface{}))
+			clusterDetailsFromSchema := expandNetworkDeviceClusterDetails(v.([]any))
 			primary.ClusterDetails.Node0.LicenseFileId = clusterDetailsFromSchema.Node0.LicenseFileId
 			primary.ClusterDetails.Node0.LicenseToken = clusterDetailsFromSchema.Node0.LicenseToken
 			primary.ClusterDetails.Node1.LicenseFileId = clusterDetailsFromSchema.Node1.LicenseFileId

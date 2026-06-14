@@ -104,7 +104,7 @@ func getCreateUpdateWaiter(ctx context.Context, client *fabricv4.APIClient, stre
 		Target: []string{
 			string(fabricv4.STREAMALERTRULESTATE_ACTIVE),
 		},
-		Refresh: func() (interface{}, string, error) {
+		Refresh: func() (any, string, error) {
 			streamAlertRule, _, err := client.StreamAlertRulesApi.GetStreamAlertRuleByUuid(ctx, streamID, streamAlertRuleID).Execute()
 			if err != nil {
 				return 0, "", err
@@ -414,7 +414,7 @@ func getDeleteWaiter(ctx context.Context, client *fabricv4.APIClient, streamID, 
 			deletedMarker,
 			string(fabricv4.STREAMALERTRULESTATE_INACTIVE),
 		},
-		Refresh: func() (interface{}, string, error) {
+		Refresh: func() (any, string, error) {
 			streamAlertRule, resp, err := client.StreamAlertRulesApi.GetStreamAlertRuleByUuid(ctx, streamID, streamAlertRuleID).Execute()
 			if err != nil {
 				if resp != nil && slices.Contains([]int{http.StatusForbidden, http.StatusNotFound}, resp.StatusCode) {

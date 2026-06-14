@@ -78,7 +78,7 @@ func dataSourceNetworkAccount() *schema.Resource {
 	}
 }
 
-func dataSourceNetworkAccountRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func dataSourceNetworkAccountRead(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
 	conf := m.(*config.Config)
 	var diags diag.Diagnostics
 	metro := d.Get(networkAccountSchemaNames["MetroCode"]).(string)

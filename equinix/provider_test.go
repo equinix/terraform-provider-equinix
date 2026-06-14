@@ -52,7 +52,7 @@ var (
 )
 
 type testAccConfig struct {
-	ctx    map[string]interface{}
+	ctx    map[string]any
 	config string
 }
 
@@ -102,7 +102,7 @@ func TestProvider_stringsFound_negative(t *testing.T) {
 // Deprecated test moved to internal/comparissons/comparisons_test.go
 func TestProvider_isEmpty(t *testing.T) {
 	// given
-	input := []interface{}{
+	input := []any{
 		"test",
 		"",
 		nil,
@@ -182,7 +182,7 @@ func testAccPreCheck(t *testing.T) {
 	}
 }
 
-func newTestAccConfig(ctx map[string]interface{}) *testAccConfig {
+func newTestAccConfig(ctx map[string]any) *testAccConfig {
 	return &testAccConfig{
 		ctx:    ctx,
 		config: "",
@@ -198,7 +198,7 @@ func (t *testAccConfig) build() string {
 // Deprecated: nprintf is shared between NE resource tests and has been
 // centralized ahead of those NE resources moving to separate packages.
 // Use github.com/equinix/terraform-provider-equinix/internal/nprintf.NPrintf instead
-func nprintf(format string, params map[string]interface{}) string {
+func nprintf(format string, params map[string]any) string {
 	for key, val := range params {
 		var strVal string
 		switch val.(type) {
@@ -227,8 +227,8 @@ func getFromEnvDefault(varName string, defaultValue string) string {
 	return defaultValue
 }
 
-func copyMap(source map[string]interface{}) map[string]interface{} {
-	target := make(map[string]interface{})
+func copyMap(source map[string]any) map[string]any {
+	target := make(map[string]any)
 	for k, v := range source {
 		target[k] = v
 	}

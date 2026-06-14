@@ -36,7 +36,7 @@ func Resource() *schema.Resource {
 	}
 }
 
-func resourceRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func resourceRead(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	client := meta.(*config.Config).NewFabricClientForSDK(ctx, d)
 	serviceToken, _, err := client.ServiceTokensApi.GetServiceTokenByUuid(ctx, d.Id()).Execute()
 	if err != nil {
@@ -50,7 +50,7 @@ func resourceRead(ctx context.Context, d *schema.ResourceData, meta interface{})
 	return setServiceTokenMap(d, serviceToken)
 }
 
-func resourceCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func resourceCreate(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	client := meta.(*config.Config).NewFabricClientForSDK(ctx, d)
 	createRequest := buildCreateRequest(d)
 
@@ -73,7 +73,7 @@ func resourceCreate(ctx context.Context, d *schema.ResourceData, meta interface{
 	return resourceRead(ctx, d, meta)
 }
 
-func resourceUpdate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func resourceUpdate(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	client := meta.(*config.Config).NewFabricClientForSDK(ctx, d)
 	start := time.Now()
 	updateTimeout := d.Timeout(schema.TimeoutUpdate) - 30*time.Second - time.Since(start)
@@ -106,7 +106,7 @@ func resourceUpdate(ctx context.Context, d *schema.ResourceData, meta interface{
 	return append(diags, setServiceTokenMap(d, dbToken)...)
 }
 
-func resourceDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func resourceDelete(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	diags := diag.Diagnostics{}
 	client := meta.(*config.Config).NewFabricClientForSDK(ctx, d)
 
@@ -131,13 +131,13 @@ func resourceDelete(ctx context.Context, d *schema.ResourceData, meta interface{
 	return diags
 }
 
-func waitForStability(ctx context.Context, uuid string, meta interface{}, d *schema.ResourceData, timeout time.Duration) (*fabricv4.ServiceToken, error) {
+func waitForStability(ctx context.Context, uuid string, meta any, d *schema.ResourceData, timeout time.Duration) (*fabricv4.ServiceToken, error) {
 	log.Printf("Waiting for service token to be created, uuid %s", uuid)
 	stateConf := &retry.StateChangeConf{
 		Target: []string{
 			string(fabricv4.SERVICETOKENSTATE_INACTIVE),
 		},
-		Refresh: func() (interface{}, string, error) {
+		Refresh: func() (any, string, error) {
 			client := meta.(*config.Config).NewFabricClientForSDK(ctx, d)
 			serviceToken, _, err := client.ServiceTokensApi.GetServiceTokenByUuid(ctx, uuid).Execute()
 			if err != nil {
@@ -166,7 +166,7 @@ func waitForStability(ctx context.Context, uuid string, meta interface{}, d *sch
 	return serviceToken, err
 }
 
-func WaitForDeletion(ctx context.Context, uuid string, meta interface{}, d *schema.ResourceData, timeout time.Duration) error {
+func WaitForDeletion(ctx context.Context, uuid string, meta any, d *schema.ResourceData, timeout time.Duration) error {
 	log.Printf("Waiting for service token to be deleted, uuid %s", uuid)
 	stateConf := &retry.StateChangeConf{
 		Pending: []string{
@@ -175,7 +175,7 @@ func WaitForDeletion(ctx context.Context, uuid string, meta interface{}, d *sche
 		Target: []string{
 			string(fabricv4.SERVICETOKENSTATE_DELETED),
 		},
-		Refresh: func() (interface{}, string, error) {
+		Refresh: func() (any, string, error) {
 			client := meta.(*config.Config).NewFabricClientForSDK(ctx, d)
 			serviceToken, body, err := client.ServiceTokensApi.GetServiceTokenByUuid(ctx, uuid).Execute()
 			if err != nil {
