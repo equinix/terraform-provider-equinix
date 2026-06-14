@@ -1586,55 +1586,55 @@ func expandNetworkDeviceSecondary(devices []any) *ne.Device {
 	}
 	device := devices[0].(map[string]any)
 	transformed := &ne.Device{}
-	if v, ok := device[neDeviceSchemaNames["UUID"]]; ok && !isEmpty(v) {
+	if v, ok := device[neDeviceSchemaNames["UUID"]]; ok && !comparisons.IsEmpty(v) {
 		transformed.UUID = ne.String(v.(string))
 	}
-	if v, ok := device[neDeviceSchemaNames["Name"]]; ok && !isEmpty(v) {
+	if v, ok := device[neDeviceSchemaNames["Name"]]; ok && !comparisons.IsEmpty(v) {
 		transformed.Name = ne.String(v.(string))
 	}
-	if v, ok := device[neDeviceSchemaNames["Tier"]]; ok && !isEmpty(v) {
+	if v, ok := device[neDeviceSchemaNames["Tier"]]; ok && !comparisons.IsEmpty(v) {
 		transformed.Tier = ne.Int(v.(int))
 	}
-	if v, ok := device[neDeviceSchemaNames["ProjectID"]]; ok && !isEmpty(v) {
+	if v, ok := device[neDeviceSchemaNames["ProjectID"]]; ok && !comparisons.IsEmpty(v) {
 		transformed.ProjectID = ne.String(v.(string))
 	}
-	if v, ok := device[neDeviceSchemaNames["MetroCode"]]; ok && !isEmpty(v) {
+	if v, ok := device[neDeviceSchemaNames["MetroCode"]]; ok && !comparisons.IsEmpty(v) {
 		transformed.MetroCode = ne.String(v.(string))
 	}
-	if v, ok := device[neDeviceSchemaNames["HostName"]]; ok && !isEmpty(v) {
+	if v, ok := device[neDeviceSchemaNames["HostName"]]; ok && !comparisons.IsEmpty(v) {
 		transformed.HostName = ne.String(v.(string))
 	}
-	if v, ok := device[neDeviceSchemaNames["LicenseToken"]]; ok && !isEmpty(v) {
+	if v, ok := device[neDeviceSchemaNames["LicenseToken"]]; ok && !comparisons.IsEmpty(v) {
 		transformed.LicenseToken = ne.String(v.(string))
 	}
-	if v, ok := device[neDeviceSchemaNames["LicenseFile"]]; ok && !isEmpty(v) {
+	if v, ok := device[neDeviceSchemaNames["LicenseFile"]]; ok && !comparisons.IsEmpty(v) {
 		transformed.LicenseFile = ne.String(v.(string))
 	}
-	if v, ok := device[neDeviceSchemaNames["LicenseFileID"]]; ok && !isEmpty(v) {
+	if v, ok := device[neDeviceSchemaNames["LicenseFileID"]]; ok && !comparisons.IsEmpty(v) {
 		transformed.LicenseFileID = ne.String(v.(string))
 	}
-	if v, ok := device[neDeviceSchemaNames["CloudInitFileID"]]; ok && !isEmpty(v) {
+	if v, ok := device[neDeviceSchemaNames["CloudInitFileID"]]; ok && !comparisons.IsEmpty(v) {
 		transformed.CloudInitFileID = ne.String(v.(string))
 	}
-	if v, ok := device[neDeviceSchemaNames["ACLTemplateUUID"]]; ok && !isEmpty(v) {
+	if v, ok := device[neDeviceSchemaNames["ACLTemplateUUID"]]; ok && !comparisons.IsEmpty(v) {
 		transformed.ACLTemplateUUID = ne.String(v.(string))
 	}
-	if v, ok := device[neDeviceSchemaNames["MgmtAclTemplateUuid"]]; ok && !isEmpty(v) {
+	if v, ok := device[neDeviceSchemaNames["MgmtAclTemplateUuid"]]; ok && !comparisons.IsEmpty(v) {
 		transformed.MgmtAclTemplateUuid = ne.String(v.(string))
 	}
-	if v, ok := device[neDeviceSchemaNames["AccountNumber"]]; ok && !isEmpty(v) {
+	if v, ok := device[neDeviceSchemaNames["AccountNumber"]]; ok && !comparisons.IsEmpty(v) {
 		transformed.AccountNumber = ne.String(v.(string))
 	}
 	if v, ok := device[neDeviceSchemaNames["Notifications"]]; ok {
 		transformed.Notifications = converters.SetToStringList(v.(*schema.Set))
 	}
-	if v, ok := device[neDeviceSchemaNames["AdditionalBandwidth"]]; ok && !isEmpty(v) {
+	if v, ok := device[neDeviceSchemaNames["AdditionalBandwidth"]]; ok && !comparisons.IsEmpty(v) {
 		transformed.AdditionalBandwidth = ne.Int(v.(int))
 	}
-	if v, ok := device[neDeviceSchemaNames["PurchaseOrderNumber"]]; ok && !isEmpty(v) {
+	if v, ok := device[neDeviceSchemaNames["PurchaseOrderNumber"]]; ok && !comparisons.IsEmpty(v) {
 		transformed.PurchaseOrderNumber = ne.String(v.(string))
 	}
-	if v, ok := device[neDeviceSchemaNames["WanInterfaceId"]]; ok && !isEmpty(v) {
+	if v, ok := device[neDeviceSchemaNames["WanInterfaceId"]]; ok && !comparisons.IsEmpty(v) {
 		transformed.WanInterfaceId = ne.String(v.(string))
 	}
 	if v, ok := device[neDeviceSchemaNames["VendorConfiguration"]]; ok {
@@ -1781,7 +1781,7 @@ func expandNetworkDeviceClusterDetails(clusterDetails []any) *ne.ClusterDetails 
 	}
 	clusterDetail := clusterDetails[0].(map[string]any)
 	transformed := &ne.ClusterDetails{}
-	if v, ok := clusterDetail[neDeviceClusterSchemaNames["ClusterName"]]; ok && !isEmpty(v) {
+	if v, ok := clusterDetail[neDeviceClusterSchemaNames["ClusterName"]]; ok && !comparisons.IsEmpty(v) {
 		transformed.ClusterName = ne.String(v.(string))
 	}
 	if v, ok := clusterDetail[neDeviceClusterSchemaNames["Node0"]]; ok {
@@ -1803,10 +1803,10 @@ func expandNetworkDeviceClusterNodeDetail(clusterNodeDetails []any) *ne.ClusterN
 	if v, ok := clusterNodeDetail[neDeviceClusterNodeSchemaNames["VendorConfiguration"]]; ok {
 		transformed.VendorConfiguration = expandVendorConfiguration(v.([]any))
 	}
-	if v, ok := clusterNodeDetail[neDeviceClusterNodeSchemaNames["LicenseFileId"]]; ok && !isEmpty(v) {
+	if v, ok := clusterNodeDetail[neDeviceClusterNodeSchemaNames["LicenseFileId"]]; ok && !comparisons.IsEmpty(v) {
 		transformed.LicenseFileId = ne.String(v.(string))
 	}
-	if v, ok := clusterNodeDetail[neDeviceClusterNodeSchemaNames["LicenseToken"]]; ok && !isEmpty(v) {
+	if v, ok := clusterNodeDetail[neDeviceClusterNodeSchemaNames["LicenseToken"]]; ok && !comparisons.IsEmpty(v) {
 		transformed.LicenseToken = ne.String(v.(string))
 	}
 	return transformed
@@ -1819,61 +1819,61 @@ func expandVendorConfiguration(vendorConfigs []any) map[string]string {
 	}
 	vendorConfig := vendorConfigs[0].(map[string]any)
 	transformed := make(map[string]string)
-	if v, ok := vendorConfig[neDeviceVendorConfigSchemaNames["Hostname"]]; ok && !isEmpty(v) {
+	if v, ok := vendorConfig[neDeviceVendorConfigSchemaNames["Hostname"]]; ok && !comparisons.IsEmpty(v) {
 		transformed["hostname"] = v.(string)
 	}
-	if v, ok := vendorConfig[neDeviceVendorConfigSchemaNames["AdminPassword"]]; ok && !isEmpty(v) {
+	if v, ok := vendorConfig[neDeviceVendorConfigSchemaNames["AdminPassword"]]; ok && !comparisons.IsEmpty(v) {
 		transformed["adminPassword"] = v.(string)
 	}
-	if v, ok := vendorConfig[neDeviceVendorConfigSchemaNames["Controller1"]]; ok && !isEmpty(v) {
+	if v, ok := vendorConfig[neDeviceVendorConfigSchemaNames["Controller1"]]; ok && !comparisons.IsEmpty(v) {
 		transformed["controller1"] = v.(string)
 	}
-	if v, ok := vendorConfig[neDeviceVendorConfigSchemaNames["ActivationKey"]]; ok && !isEmpty(v) {
+	if v, ok := vendorConfig[neDeviceVendorConfigSchemaNames["ActivationKey"]]; ok && !comparisons.IsEmpty(v) {
 		transformed["activationKey"] = v.(string)
 	}
-	if v, ok := vendorConfig[neDeviceVendorConfigSchemaNames["ControllerFqdn"]]; ok && !isEmpty(v) {
+	if v, ok := vendorConfig[neDeviceVendorConfigSchemaNames["ControllerFqdn"]]; ok && !comparisons.IsEmpty(v) {
 		transformed["controllerFqdn"] = v.(string)
 	}
-	if v, ok := vendorConfig[neDeviceVendorConfigSchemaNames["RootPassword"]]; ok && !isEmpty(v) {
+	if v, ok := vendorConfig[neDeviceVendorConfigSchemaNames["RootPassword"]]; ok && !comparisons.IsEmpty(v) {
 		transformed["rootPassword"] = v.(string)
 	}
-	if v, ok := vendorConfig[neDeviceVendorConfigSchemaNames["PrivateAddress"]]; ok && !isEmpty(v) {
+	if v, ok := vendorConfig[neDeviceVendorConfigSchemaNames["PrivateAddress"]]; ok && !comparisons.IsEmpty(v) {
 		transformed["privateAddress"] = v.(string)
 	}
-	if v, ok := vendorConfig[neDeviceVendorConfigSchemaNames["PrivateCIDRMask"]]; ok && !isEmpty(v) {
+	if v, ok := vendorConfig[neDeviceVendorConfigSchemaNames["PrivateCIDRMask"]]; ok && !comparisons.IsEmpty(v) {
 		transformed["privateCidrMask"] = v.(string)
 	}
-	if v, ok := vendorConfig[neDeviceVendorConfigSchemaNames["LicenseKey"]]; ok && !isEmpty(v) {
+	if v, ok := vendorConfig[neDeviceVendorConfigSchemaNames["LicenseKey"]]; ok && !comparisons.IsEmpty(v) {
 		transformed["licenseKey"] = v.(string)
 	}
-	if v, ok := vendorConfig[neDeviceVendorConfigSchemaNames["LicenseID"]]; ok && !isEmpty(v) {
+	if v, ok := vendorConfig[neDeviceVendorConfigSchemaNames["LicenseID"]]; ok && !comparisons.IsEmpty(v) {
 		transformed["licenseId"] = v.(string)
 	}
-	if v, ok := vendorConfig[neDeviceVendorConfigSchemaNames["PrivateGateway"]]; ok && !isEmpty(v) {
+	if v, ok := vendorConfig[neDeviceVendorConfigSchemaNames["PrivateGateway"]]; ok && !comparisons.IsEmpty(v) {
 		transformed["privateGateway"] = v.(string)
 	}
-	if v, ok := vendorConfig[neDeviceVendorConfigSchemaNames["PanoramaIPAddress"]]; ok && !isEmpty(v) {
+	if v, ok := vendorConfig[neDeviceVendorConfigSchemaNames["PanoramaIPAddress"]]; ok && !comparisons.IsEmpty(v) {
 		transformed["panoramaIpAddress"] = v.(string)
 	}
-	if v, ok := vendorConfig[neDeviceVendorConfigSchemaNames["PanoramaAuthKey"]]; ok && !isEmpty(v) {
+	if v, ok := vendorConfig[neDeviceVendorConfigSchemaNames["PanoramaAuthKey"]]; ok && !comparisons.IsEmpty(v) {
 		transformed["panoramaAuthKey"] = v.(string)
 	}
-	if v, ok := vendorConfig[neDeviceVendorConfigSchemaNames["ManagementType"]]; ok && !isEmpty(v) {
+	if v, ok := vendorConfig[neDeviceVendorConfigSchemaNames["ManagementType"]]; ok && !comparisons.IsEmpty(v) {
 		transformed["managementType"] = v.(string)
 	}
-	if v, ok := vendorConfig[neDeviceVendorConfigSchemaNames["IpAddressType"]]; ok && !isEmpty(v) {
+	if v, ok := vendorConfig[neDeviceVendorConfigSchemaNames["IpAddressType"]]; ok && !comparisons.IsEmpty(v) {
 		transformed["ipAddressType"] = v.(string)
 	}
-	if v, ok := vendorConfig[neDeviceVendorConfigSchemaNames["ManagementInterfaceId"]]; ok && !isEmpty(v) {
+	if v, ok := vendorConfig[neDeviceVendorConfigSchemaNames["ManagementInterfaceId"]]; ok && !comparisons.IsEmpty(v) {
 		transformed["managementInterfaceId"] = v.(string)
 	}
-	if v, ok := vendorConfig[neDeviceVendorConfigSchemaNames["IPAddress"]]; ok && !isEmpty(v) {
+	if v, ok := vendorConfig[neDeviceVendorConfigSchemaNames["IPAddress"]]; ok && !comparisons.IsEmpty(v) {
 		transformed["ipAddress"] = v.(string)
 	}
-	if v, ok := vendorConfig[neDeviceVendorConfigSchemaNames["SubnetMaskIP"]]; ok && !isEmpty(v) {
+	if v, ok := vendorConfig[neDeviceVendorConfigSchemaNames["SubnetMaskIP"]]; ok && !comparisons.IsEmpty(v) {
 		transformed["subnetMaskIp"] = v.(string)
 	}
-	if v, ok := vendorConfig[neDeviceVendorConfigSchemaNames["GatewayIP"]]; ok && !isEmpty(v) {
+	if v, ok := vendorConfig[neDeviceVendorConfigSchemaNames["GatewayIP"]]; ok && !comparisons.IsEmpty(v) {
 		transformed["gatewayIp"] = v.(string)
 	}
 	return transformed

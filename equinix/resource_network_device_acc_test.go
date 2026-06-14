@@ -6,6 +6,7 @@ import (
 	"log"
 	"testing"
 
+	"github.com/equinix/terraform-provider-equinix/internal/comparisons"
 	"github.com/equinix/terraform-provider-equinix/internal/config"
 
 	"github.com/equinix/ne-go"
@@ -1246,7 +1247,7 @@ data "equinix_network_account" "test" {
   metro_code = "%{device-metro_code}"
   status     = "Active"
   project_id = "%{device-project_id}"`, ctx)
-	if v, ok := ctx["device-account_name"]; ok && !isEmpty(v) {
+	if v, ok := ctx["device-account_name"]; ok && !comparisons.IsEmpty(v) {
 		config += nprintf(`
   name = "%{device-account_name}"`, ctx)
 	}
@@ -1257,7 +1258,7 @@ data "equinix_network_account" "test" {
 data "equinix_network_account" "test-secondary" {
   metro_code = "%{device-secondary_metro_code}"
   status     = "Active"`, ctx)
-		if v, ok := ctx["device-secondary_account_name"]; ok && !isEmpty(v) {
+		if v, ok := ctx["device-secondary_account_name"]; ok && !comparisons.IsEmpty(v) {
 			config += nprintf(`
   name = "%{device-secondary_account_name}"`, ctx)
 		}
