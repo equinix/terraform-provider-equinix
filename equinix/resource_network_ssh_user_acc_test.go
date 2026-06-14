@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"log"
 
+	"github.com/equinix/terraform-provider-equinix/internal/comparisons"
 	"github.com/equinix/terraform-provider-equinix/internal/config"
 
 	"github.com/equinix/ne-go"
@@ -99,7 +100,7 @@ func testAccNeSSHUserAttributes(user *ne.SSHUser, devices []*ne.Device, ctx map[
 		for i := range devices {
 			deviceIDs[i] = ne.StringValue(devices[i].UUID)
 		}
-		if !slicesMatch(deviceIDs, user.DeviceUUIDs) {
+		if !comparisons.SlicesMatch(deviceIDs, user.DeviceUUIDs) {
 			return fmt.Errorf("device_ids does not match %v - %v", deviceIDs, user.DeviceUUIDs)
 		}
 		return nil
