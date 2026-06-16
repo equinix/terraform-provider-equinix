@@ -39,7 +39,7 @@ func testAccFabricStreamConfig(name, description string) string {
 		  name = "%s"
 		  description = "%s"
 		  project = {
-			project_id = "291639000636552"
+			project_id = "33ec651f-cc99-48e0-94d3-47466899cdc7"
 		  }
 		}
 	`, name, description)
@@ -62,7 +62,7 @@ func TestAccFabricStream_PFCR(t *testing.T) {
 					resource.TestCheckResourceAttr(
 						"equinix_fabric_stream.new_stream", "type", "TELEMETRY_STREAM"),
 					resource.TestCheckResourceAttr(
-						"equinix_fabric_stream.new_stream", "project.project_id", "291639000636552"),
+						"equinix_fabric_stream.new_stream", "project.project_id", "33ec651f-cc99-48e0-94d3-47466899cdc7"),
 					resource.TestCheckResourceAttr(
 						"equinix_fabric_stream.new_stream", "description", streamDescription),
 					resource.TestCheckResourceAttrSet("equinix_fabric_stream.new_stream", "id"),
@@ -79,7 +79,7 @@ func TestAccFabricStream_PFCR(t *testing.T) {
 					resource.TestCheckResourceAttr(
 						"equinix_fabric_stream.new_stream", "name", updatedStreamName),
 					resource.TestCheckResourceAttr(
-						"equinix_fabric_stream.new_stream", "project.project_id", "291639000636552"),
+						"equinix_fabric_stream.new_stream", "project.project_id", "33ec651f-cc99-48e0-94d3-47466899cdc7"),
 					resource.TestCheckResourceAttr(
 						"equinix_fabric_stream.new_stream", "description", updatedStreamDescription),
 					resource.TestCheckResourceAttrSet("equinix_fabric_stream.new_stream", "id"),
