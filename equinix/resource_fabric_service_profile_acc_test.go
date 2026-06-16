@@ -132,7 +132,6 @@ func testAccFabricCreateServiceProfileConfig(portUUID string, portType string, p
   access_point_type_configs {
       type = "COLO"
       connection_redundancy_required = false
-      selective_redundancy = true
       allow_bandwidth_auto_approval = false
       allow_remote_connections = false
       connection_label = "test"
