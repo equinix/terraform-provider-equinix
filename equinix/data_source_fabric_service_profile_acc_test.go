@@ -1,19 +1,20 @@
 package equinix_test
 
 import (
-	"fmt"
 	"testing"
 
 	"github.com/equinix/terraform-provider-equinix/internal/acceptance"
 	testinghelpers "github.com/equinix/terraform-provider-equinix/internal/fabric/testing_helpers"
+	"github.com/hashicorp/terraform-plugin-testing/config"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
+	"github.com/hashicorp/terraform-plugin-testing/knownvalue"
+	"github.com/hashicorp/terraform-plugin-testing/statecheck"
+	"github.com/hashicorp/terraform-plugin-testing/tfjsonpath"
 )
 
-func testAccFabricReadServiceProfileConfig(spName string, portUUID string, portType string, portMetroCode string) string {
-	return fmt.Sprintf(`
-
+const testAccFabricReadServiceProfileConfig = `
 resource "equinix_fabric_service_profile" "test" {
-  name = "%s"
+  name = "SP_DataSource_PFCR"
   description = "Generic Read SP"
   self_profile = false
   type = "L2_PROFILE"
@@ -25,10 +26,10 @@ resource "equinix_fabric_service_profile" "test" {
   visibility = "PRIVATE"
   allowed_emails = ["panthersfcr@test.com"]
   ports {
-      uuid = "%s"
-      type = "%s"
+      uuid = var.port_uuid
+      type = var.port_type
       location {
-        metro_code = "%s"
+        metro_code = var.metro_code
       }
       cross_connect_id = ""
       seller_region = ""
@@ -73,8 +74,21 @@ data "equinix_fabric_service_profiles" "test" {
 		operator = "="
 		values = [equinix_fabric_service_profile.test.uuid]
 	}
-}`, spName, portUUID, portType, portMetroCode)
 }
+
+
+variable "port_uuid" {
+  type = string
+}
+
+variable "port_type" {
+  type = string
+}
+
+variable "metro_code" {
+  type = string
+}
+`
 
 func TestAccFabricServiceProfileDataSources_PFCR(t *testing.T) {
 	ports := testinghelpers.GetFabricEnvPorts(t)
@@ -94,57 +108,82 @@ func TestAccFabricServiceProfileDataSources_PFCR(t *testing.T) {
 		CheckDestroy: checkServiceProfileDelete,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccFabricReadServiceProfileConfig("SP_DataSource_PFCR", portUUID, portType, portMetroCode),
-				Check: resource.ComposeTestCheckFunc(
-					resource.TestCheckResourceAttr(
-						"data.equinix_fabric_service_profile.test", "name", "SP_DataSource_PFCR"),
-					resource.TestCheckResourceAttrSet(
-						"data.equinix_fabric_service_profile.test", "uuid"),
-					resource.TestCheckResourceAttr(
-						"data.equinix_fabric_service_profile.test", "description", "Generic Read SP"),
-					resource.TestCheckResourceAttr(
-						"data.equinix_fabric_service_profile.test", "state", "ACTIVE"),
-					resource.TestCheckResourceAttr(
-						"data.equinix_fabric_service_profile.test", "visibility", "PRIVATE"),
-					resource.TestCheckResourceAttr(
-						"data.equinix_fabric_service_profile.test", "access_point_type_configs.#", "1"),
-					resource.TestCheckResourceAttrSet("data.equinix_fabric_service_profile.test", "href"),
-					resource.TestCheckResourceAttrSet("data.equinix_fabric_service_profile.test", "description"),
-					resource.TestCheckResourceAttrSet("data.equinix_fabric_service_profile.test", "access_point_type_configs.0.uuid"),
-					resource.TestCheckResourceAttrSet("data.equinix_fabric_service_profile.test", "access_point_type_configs.0.type"),
-					resource.TestCheckResourceAttrSet("data.equinix_fabric_service_profile.test", "access_point_type_configs.0.allow_remote_connections"),
-					resource.TestCheckResourceAttrSet("data.equinix_fabric_service_profile.test", "access_point_type_configs.0.allow_custom_bandwidth"),
-					resource.TestCheckResourceAttrSet("data.equinix_fabric_service_profile.test", "access_point_type_configs.0.enable_auto_generate_service_key"),
-					resource.TestCheckResourceAttrSet("data.equinix_fabric_service_profile.test", "access_point_type_configs.0.connection_redundancy_required"),
-					resource.TestCheckResourceAttr("data.equinix_fabric_service_profile.test", "metros.0.code", portMetroCode),
-					resource.TestCheckResourceAttrSet("data.equinix_fabric_service_profile.test", "metros.0.name"),
-					resource.TestCheckResourceAttrSet("data.equinix_fabric_service_profile.test", "metros.0.display_name"),
-					resource.TestCheckResourceAttrSet("data.equinix_fabric_service_profile.test", "self_profile"),
-					resource.TestCheckResourceAttr(
-						"data.equinix_fabric_service_profiles.test", "data.0.name", "SP_DataSource_PFCR"),
-					resource.TestCheckResourceAttrSet(
-						"data.equinix_fabric_service_profiles.test", "data.0.uuid"),
-					resource.TestCheckResourceAttr(
-						"data.equinix_fabric_service_profiles.test", "data.0.description", "Generic Read SP"),
-					resource.TestCheckResourceAttr(
-						"data.equinix_fabric_service_profiles.test", "data.0.state", "ACTIVE"),
-					resource.TestCheckResourceAttr(
-						"data.equinix_fabric_service_profiles.test", "data.0.visibility", "PRIVATE"),
-					resource.TestCheckResourceAttr(
-						"data.equinix_fabric_service_profiles.test", "data.0.access_point_type_configs.#", "1"),
-					resource.TestCheckResourceAttrSet("data.equinix_fabric_service_profiles.test", "data.0.href"),
-					resource.TestCheckResourceAttrSet("data.equinix_fabric_service_profiles.test", "data.0.description"),
-					resource.TestCheckResourceAttrSet("data.equinix_fabric_service_profiles.test", "data.0.access_point_type_configs.0.uuid"),
-					resource.TestCheckResourceAttrSet("data.equinix_fabric_service_profiles.test", "data.0.access_point_type_configs.0.type"),
-					resource.TestCheckResourceAttrSet("data.equinix_fabric_service_profiles.test", "data.0.access_point_type_configs.0.allow_remote_connections"),
-					resource.TestCheckResourceAttrSet("data.equinix_fabric_service_profiles.test", "data.0.access_point_type_configs.0.allow_custom_bandwidth"),
-					resource.TestCheckResourceAttrSet("data.equinix_fabric_service_profiles.test", "data.0.access_point_type_configs.0.enable_auto_generate_service_key"),
-					resource.TestCheckResourceAttrSet("data.equinix_fabric_service_profiles.test", "data.0.access_point_type_configs.0.connection_redundancy_required"),
-					resource.TestCheckResourceAttr("data.equinix_fabric_service_profiles.test", "data.0.metros.0.code", portMetroCode),
-					resource.TestCheckResourceAttrSet("data.equinix_fabric_service_profiles.test", "data.0.metros.0.name"),
-					resource.TestCheckResourceAttrSet("data.equinix_fabric_service_profiles.test", "data.0.metros.0.display_name"),
-					resource.TestCheckResourceAttrSet("data.equinix_fabric_service_profiles.test", "data.0.self_profile"),
-				),
+				Config: testAccFabricReadServiceProfileConfig,
+				ConfigVariables: config.Variables{
+					"port_uuid":  config.StringVariable(portUUID),
+					"port_type":  config.StringVariable(portType),
+					"metro_code": config.StringVariable(portMetroCode),
+				},
+				ConfigStateChecks: []statecheck.StateCheck{
+					statecheck.ExpectKnownValue("data.equinix_fabric_service_profile.test", tfjsonpath.New("name"), knownvalue.StringExact("SP_DataSource_PFCR")),
+					statecheck.ExpectKnownValue(
+						"data.equinix_fabric_service_profile.test",
+						tfjsonpath.New("uuid"),
+						knownvalue.NotNull(),
+					),
+					statecheck.ExpectKnownValue("data.equinix_fabric_service_profile.test", tfjsonpath.New("description"), knownvalue.StringExact("Generic Read SP")),
+					statecheck.ExpectKnownValue("data.equinix_fabric_service_profile.test", tfjsonpath.New("state"), knownvalue.StringExact("ACTIVE")),
+					statecheck.ExpectKnownValue("data.equinix_fabric_service_profile.test", tfjsonpath.New("visibility"), knownvalue.StringExact("PRIVATE")),
+					statecheck.ExpectKnownValue("data.equinix_fabric_service_profile.test", tfjsonpath.New("href"), knownvalue.NotNull()),
+					statecheck.ExpectKnownValue("data.equinix_fabric_service_profile.test", tfjsonpath.New("self_profile"), knownvalue.Bool(false)),
+					statecheck.ExpectKnownValue(
+						"data.equinix_fabric_service_profile.test",
+						tfjsonpath.New("access_point_type_configs"),
+						knownvalue.ListExact([]knownvalue.Check{
+							knownvalue.ObjectPartial(map[string]knownvalue.Check{
+								"uuid":                             knownvalue.NotNull(),
+								"type":                             knownvalue.NotNull(),
+								"allow_remote_connections":         knownvalue.NotNull(),
+								"allow_custom_bandwidth":           knownvalue.NotNull(),
+								"enable_auto_generate_service_key": knownvalue.NotNull(),
+								"connection_redundancy_required":   knownvalue.NotNull(),
+							}),
+						}),
+					),
+					statecheck.ExpectKnownValue(
+						"data.equinix_fabric_service_profile.test",
+						tfjsonpath.New("metros"),
+						knownvalue.ListExact([]knownvalue.Check{
+							knownvalue.ObjectPartial(map[string]knownvalue.Check{
+								"code":         knownvalue.StringExact(portMetroCode),
+								"name":         knownvalue.NotNull(),
+								"display_name": knownvalue.NotNull(),
+							}),
+						}),
+					),
+
+					statecheck.ExpectKnownValue(
+						"data.equinix_fabric_service_profiles.test",
+						tfjsonpath.New("data"),
+						knownvalue.ListExact([]knownvalue.Check{
+							knownvalue.ObjectPartial(map[string]knownvalue.Check{
+								"name":         knownvalue.StringExact("SP_DataSource_PFCR"),
+								"uuid":         knownvalue.NotNull(),
+								"description":  knownvalue.StringExact("Generic Read SP"),
+								"state":        knownvalue.StringExact("ACTIVE"),
+								"visibility":   knownvalue.StringExact("PRIVATE"),
+								"href":         knownvalue.NotNull(),
+								"self_profile": knownvalue.Bool(false),
+								"access_point_type_configs": knownvalue.ListExact([]knownvalue.Check{
+									knownvalue.ObjectPartial(map[string]knownvalue.Check{
+										"uuid":                             knownvalue.NotNull(),
+										"type":                             knownvalue.NotNull(),
+										"allow_remote_connections":         knownvalue.NotNull(),
+										"allow_custom_bandwidth":           knownvalue.NotNull(),
+										"enable_auto_generate_service_key": knownvalue.NotNull(),
+										"connection_redundancy_required":   knownvalue.NotNull(),
+									}),
+								}),
+								"metros": knownvalue.ListExact([]knownvalue.Check{
+									knownvalue.ObjectPartial(map[string]knownvalue.Check{
+										"name":         knownvalue.NotNull(),
+										"display_name": knownvalue.NotNull(),
+									}),
+								}),
+							}),
+						}),
+					),
+				},
 				ExpectNonEmptyPlan: true,
 			},
 		},
