@@ -69,9 +69,9 @@ data "equinix_fabric_service_profile" "test" {
 data "equinix_fabric_service_profiles" "test" {
 	and_filters = true
 	filter {
-		property = "/name"
+		property = "/uuid"
 		operator = "="
-		values = [equinix_fabric_service_profile.test.name]
+		values = [equinix_fabric_service_profile.test.uuid]
 	}
 }`, spName, portUUID, portType, portMetroCode)
 }
