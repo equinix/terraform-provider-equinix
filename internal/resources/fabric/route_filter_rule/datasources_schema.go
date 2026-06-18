@@ -2,6 +2,7 @@ package route_filter_rule
 
 import (
 	"fmt"
+
 	"github.com/equinix/equinix-sdk-go/services/fabricv4"
 	equinix_fabric_schema "github.com/equinix/terraform-provider-equinix/internal/fabric/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"

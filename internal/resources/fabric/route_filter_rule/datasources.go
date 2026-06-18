@@ -8,6 +8,7 @@ import (
 	"github.com/equinix/equinix-sdk-go/services/fabricv4"
 	"github.com/equinix/terraform-provider-equinix/internal/config"
 	equinix_errors "github.com/equinix/terraform-provider-equinix/internal/errors"
+	"github.com/equinix/terraform-provider-equinix/internal/slice"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -58,24 +59,15 @@ func dataSourceGetRules(ctx context.Context, d *schema.ResourceData, meta any) d
 		return &fabricv4.RouteFilterRuleSimpleExpression{
 			Property: &property,
 			Operator: &operator,
-			Values: func(vs []any) []string {
-				result := []string{}
-				for _, v := range vs {
-					result = append(result, v.(string))
-				}
-				return result
-			}(values),
+			Values:   slice.Map(values, func(v any) string { return v.(string) }),
 		}
 	}
 
-	innerRuleFilters := []fabricv4.RouteFilterRuleExpression{}
-	for _, filter := range filters {
-		innerRuleFilters = append(innerRuleFilters, fabricv4.RouteFilterRuleExpression{
-			RouteFilterRuleSimpleExpression: toReq(filter.(map[string]any))})
-	}
+	innerRuleFilters := slice.Map(filters, func(filter any) fabricv4.RouteFilterRuleExpression {
+		return fabricv4.RouteFilterRuleExpression{RouteFilterRuleSimpleExpression: toReq(filter.(map[string]any))}
+	})
 
 	rulesFilter := fabricv4.RouteFilterRulesFilter{}
-
 	if outerOperator := d.Get("outer_operator"); outerOperator != nil {
 		outerOperator := outerOperator.(string)
 
@@ -91,10 +83,9 @@ func dataSourceGetRules(ctx context.Context, d *schema.ResourceData, meta any) d
 	searchRequest.SetFilter(rulesFilter)
 
 	sortInputs := d.Get("sort").([]any)
-	reqSortParam := []fabricv4.RouteFilterRuleSortCriteria{}
-	for _, sortInput := range sortInputs {
+	reqSortParam := slice.Map(sortInputs, func(_sortInput any) fabricv4.RouteFilterRuleSortCriteria {
+		sortInput := _sortInput.(map[string]any)
 		sortItem := fabricv4.NewRouteFilterRuleSortCriteriaWithDefaults()
-		sortInput := sortInput.(map[string]any)
 
 		if direction, ok := sortInput["direction"]; ok {
 			sortItem.SetDirection(fabricv4.RouteFilterRuleSortDirection(direction.(string)))
@@ -103,8 +94,9 @@ func dataSourceGetRules(ctx context.Context, d *schema.ResourceData, meta any) d
 			sortItem.SetProperty(fabricv4.RouteFilterRuleSortBy(property.(string)))
 		}
 
-		reqSortParam = append(reqSortParam, *sortItem)
-	}
+		return *sortItem
+	})
+
 	searchRequest.SetSort(reqSortParam)
 
 	searchRequest.SetPagination(*fabricv4.NewPaginationRequestWithDefaults())
