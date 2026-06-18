@@ -1,8 +1,11 @@
 package route_filter_rule
 
 import (
+	"fmt"
+	"github.com/equinix/equinix-sdk-go/services/fabricv4"
 	equinix_fabric_schema "github.com/equinix/terraform-provider-equinix/internal/fabric/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 )
 
 func dataSourceBaseSchema() map[string]*schema.Schema {
@@ -115,7 +118,7 @@ func dataSourceByUUIDSchema() map[string]*schema.Schema {
 	return baseSchema
 }
 
-func dataSourceAllRulesForRouteFilterSchema() map[string]*schema.Schema {
+func dataSourceRulesForRouteFilterSchema() map[string]*schema.Schema {
 	baseSchema := dataSourceBaseSchema()
 	baseSchema["uuid"] = &schema.Schema{
 		Type:        schema.TypeString,
@@ -124,6 +127,40 @@ func dataSourceAllRulesForRouteFilterSchema() map[string]*schema.Schema {
 	}
 	routeFilterRulesSchema := map[string]*schema.Schema{
 		"route_filter_id": routeFilterSchema(),
+		"filter": {
+			Type:        schema.TypeList,
+			Optional:    true,
+			Description: "Filters for the Data Source Search Request",
+			MaxItems:    8,
+			Elem: &schema.Resource{
+				Schema: map[string]*schema.Schema{
+					"property": {
+						Type:        schema.TypeString,
+						Required:    true,
+						Description: "Possible field names to use on filters. One of [ /type, /name, /uuid, /state, /prefix]",
+					},
+					"operator": {
+						Type:        schema.TypeString,
+						Required:    true,
+						Description: "Operators to use on your filtered field with the values given. One of [ =, !=, LIKE, NOT LIKE, IN, NOT IN, ILIKE]",
+					},
+					"values": {
+						Type:        schema.TypeList,
+						Required:    true,
+						Description: "The values that you want to apply the property+operator combination to in order to filter your data search",
+						Elem: &schema.Schema{
+							Type: schema.TypeString,
+						},
+					},
+				},
+			},
+		},
+		"outer_operator": {
+			Type:         schema.TypeString,
+			Required:     true,
+			Description:  "Determines if the filter list will be grouped by AND or by OR. One of [AND, OR]",
+			ValidateFunc: validation.StringInSlice([]string{"AND", "OR"}, false),
+		},
 		"offset": {
 			Type:        schema.TypeInt,
 			Optional:    true,
@@ -135,6 +172,28 @@ func dataSourceAllRulesForRouteFilterSchema() map[string]*schema.Schema {
 			Optional:    true,
 			Default:     20,
 			Description: "Number of elements to be requested per page. Number must be between 1 and 100. Default is 20",
+		},
+		"sort": {
+			Type:        schema.TypeList,
+			Optional:    true,
+			Description: "Filters for the Data Source Search Request",
+			Elem: &schema.Resource{
+				Schema: map[string]*schema.Schema{
+					"direction": {
+						Type:         schema.TypeString,
+						Optional:     true,
+						Default:      "DESC",
+						Description:  "The sorting direction. Can be one of: [DESC, ASC], Defaults to DESC",
+						ValidateFunc: validation.StringInSlice([]string{"DESC", "ASC"}, true),
+					},
+					"property": {
+						Type:        schema.TypeString,
+						Optional:    true,
+						Default:     "/changeLog/updatedDateTime",
+						Description: fmt.Sprintf("The property name to use in sorting. One of %v. Defaults to /changeLog/updatedDateTime", fabricv4.AllowedRouteFilterRuleSortByEnumValues),
+					},
+				},
+			},
 		},
 		"pagination": {
 			Type:        schema.TypeSet,
