@@ -119,7 +119,7 @@ output "first_connection_zSide_location_metro_code" {
 ### Optional
 
 - `pagination` (Block Set, Max: 1) Pagination details for the Data Source Search Request (see [below for nested schema](#nestedblock--pagination))
-- `sort` (Block List) Filters for the Data Source Search Request (see [below for nested schema](#nestedblock--sort))
+- `sort` (Block List) Sort criteria for the Data Source Search Request (see [below for nested schema](#nestedblock--sort))
 
 ### Read-Only
 

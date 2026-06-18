@@ -49,7 +49,7 @@ output "first_route_filter_rule_prefix_match" {
 - `filter` (Block List, Max: 8) Filters for the Data Source Search Request (see [below for nested schema](#nestedblock--filter))
 - `limit` (Number) Number of elements to be requested per page. Number must be between 1 and 100. Default is 20
 - `offset` (Number) The page offset for the pagination request. Index of the first element. Default is 0.
-- `sort` (Block List) Filters for the Data Source Search Request (see [below for nested schema](#nestedblock--sort))
+- `sort` (Block List) Sort criteria for the Data Source Search Request (see [below for nested schema](#nestedblock--sort))
 
 ### Read-Only
 
