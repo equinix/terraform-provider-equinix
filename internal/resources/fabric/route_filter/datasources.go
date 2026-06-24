@@ -48,7 +48,7 @@ func dataSourceSearch(ctx context.Context, d *schema.ResourceData, meta any) dia
 	client := meta.(*config.Config).NewFabricClientForSDK(ctx, d)
 	searchRequest := buildSearchRequest(d)
 
-	routeFilters, _, err := client.RouteFiltersApi.SearchRouteFilters(ctx).RouteFiltersSearchBase(searchRequest).Execute()
+	routeFilters, _, err := client.RouteFiltersApi.SearchRouteFilters(ctx).RouteFiltersSearchRequest(searchRequest).Execute()
 	if err != nil {
 		return diag.FromErr(equinix_errors.FormatFabricError(err))
 	}
