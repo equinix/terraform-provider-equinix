@@ -92,7 +92,6 @@ func testAccFabricRouteFilterPolicyDataSourcesConfig(policyName string) string {
 			pagination {
 				offset = 0
 				limit = 5
-				total = 25
 			}
 			sort {
 				direction = "ASC"
