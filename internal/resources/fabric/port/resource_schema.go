@@ -36,7 +36,6 @@ Additional Documentation:
 			}),
 			"name": schema.StringAttribute{
 				Description: "Designated name of the port",
-				Optional:    true,
 				Computed:    true,
 			},
 			"type": schema.StringAttribute{
@@ -120,16 +119,16 @@ Additional Documentation:
 			},
 			"device": schema.SingleNestedAttribute{
 				Description: "Port device configuration",
-				Optional:    true,
+				Computed:    true,
 				CustomType:  fwtypes.NewObjectTypeOf[deviceModel](ctx),
 				Attributes: map[string]schema.Attribute{
 					"name": schema.StringAttribute{
 						Description: "Device name for the port",
-						Optional:    true,
+						Computed:    true,
 					},
 					"redundancy": schema.SingleNestedAttribute{
 						Description: "Device redundancy configuration",
-						Optional:    true,
+						Computed:    true,
 
 						CustomType: fwtypes.NewObjectTypeOf[deviceRedundancyModel](ctx),
 						Attributes: map[string]schema.Attribute{
@@ -306,17 +305,17 @@ Additional Documentation:
 			},
 			"additional_info": schema.ListNestedAttribute{
 				Description: "List of key/value objects to provide additional context to the Port order",
-				Optional:    true,
+				Computed:    true,
 				CustomType:  fwtypes.NewListNestedObjectTypeOf[additionalInfoModel](ctx),
 				NestedObject: schema.NestedAttributeObject{
 					Attributes: map[string]schema.Attribute{
 						"key": schema.StringAttribute{
 							Description: "The key name of the key/value pair",
-							Required:    true,
+							Computed:    true,
 						},
 						"value": schema.StringAttribute{
 							Description: "The value of the key/value pair",
-							Required:    true,
+							Computed:    true,
 						},
 					},
 				},
