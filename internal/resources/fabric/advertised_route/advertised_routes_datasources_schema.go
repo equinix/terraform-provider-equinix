@@ -2,9 +2,6 @@ package advertisedroute
 
 import (
 	"context"
-	"fmt"
-
-	"github.com/equinix/equinix-sdk-go/services/fabricv4"
 
 	"github.com/equinix/terraform-provider-equinix/internal/framework"
 	fwtypes "github.com/equinix/terraform-provider-equinix/internal/framework/types"
@@ -71,7 +68,7 @@ func dataSourceAdvertisedRoutesSchema(ctx context.Context) schema.Schema {
 				Required:    true,
 				Attributes: map[string]schema.Attribute{
 					"property": schema.StringAttribute{
-						Description: fmt.Sprintf("possible field names to use on filters. One of %v", fabricv4.AllowedRouteFiltersSearchFilterItemPropertyEnumValues),
+						Description: "possible field names to use on filters. One of /type, /state, /prefix, /nextHop, /*",
 						Required:    true,
 					},
 					"operator": schema.StringAttribute{
