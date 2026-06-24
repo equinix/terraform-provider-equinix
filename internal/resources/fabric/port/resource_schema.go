@@ -58,21 +58,6 @@ Additional Documentation:
 					},
 				},
 			},
-			"settings": schema.SingleNestedAttribute{
-				Description: "Port order configuration settings",
-				Required:    true,
-				CustomType:  fwtypes.NewObjectTypeOf[settingsModel](ctx),
-				Attributes: map[string]schema.Attribute{
-					"package_type": schema.StringAttribute{
-						Description: "Billing package for the port being ordered",
-						Required:    true,
-					},
-					"shared_port_type": schema.BoolAttribute{
-						Description: "Indicates whether this is a dedicated customer cage or a shared neutral cage",
-						Required:    true,
-					},
-				},
-			},
 			"encapsulation": schema.SingleNestedAttribute{
 				Description: "Port encapsulation settings",
 				Required:    true,

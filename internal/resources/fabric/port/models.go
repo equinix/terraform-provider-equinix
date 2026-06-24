@@ -25,7 +25,6 @@ type basePortModel struct {
 	Name                   types.String                                         `tfsdk:"name"`
 	ConnectivitySourceType types.String                                         `tfsdk:"connectivity_source_type"`
 	Location               fwtypes.ObjectValueOf[locationModel]                 `tfsdk:"location"`
-	Settings               fwtypes.ObjectValueOf[settingsModel]                 `tfsdk:"settings"`
 	Encapsulation          fwtypes.ObjectValueOf[encapsulationModel]            `tfsdk:"encapsulation"`
 	Account                fwtypes.ObjectValueOf[accountModel]                  `tfsdk:"account"`
 	Project                fwtypes.ObjectValueOf[projectModel]                  `tfsdk:"project"`
@@ -48,11 +47,6 @@ type basePortModel struct {
 
 type locationModel struct {
 	MetroCode types.String `tfsdk:"metro_code"`
-}
-
-type settingsModel struct {
-	PackageType    types.String `tfsdk:"package_type"`
-	SharedPortType types.Bool   `tfsdk:"shared_port_type"`
 }
 
 type encapsulationModel struct {
@@ -199,13 +193,6 @@ func (m *basePortModel) parse(ctx context.Context, port *fabricv4.Port) diag.Dia
 		MetroCode: types.StringValue(portLocation.GetMetroCode()),
 	}
 	m.Location = fwtypes.NewObjectValueOf[locationModel](ctx, &location)
-
-	portSettings := port.GetSettings()
-	settings := settingsModel{
-		PackageType:    types.StringValue(string(portSettings.GetPackageType())),
-		SharedPortType: types.BoolValue(portSettings.GetSharedPortType()),
-	}
-	m.Settings = fwtypes.NewObjectValueOf[settingsModel](ctx, &settings)
 
 	if port.Encapsulation != nil {
 		portEncapsulation := port.GetEncapsulation()

@@ -280,19 +280,6 @@ func buildCreateRequest(ctx context.Context, plan resourceModel) (fabricv4.PortR
 		request.SetLocation(simplifiedLocation)
 	}
 
-	if !plan.Settings.IsNull() && !plan.Settings.IsUnknown() {
-		var settings settingsModel
-		diags := plan.Settings.As(ctx, &settings, basetypes.ObjectAsOptions{})
-		if diags.HasError() {
-			mDiags.Append(diags...)
-			return fabricv4.PortRequest{}, mDiags
-		}
-		portSettings := fabricv4.PortSettings{}
-		portSettings.SetPackageType(fabricv4.PortSettingsPackageType(settings.PackageType.ValueString()))
-		portSettings.SetSharedPortType(settings.SharedPortType.ValueBool())
-		request.SetSettings(portSettings)
-	}
-
 	if !plan.Encapsulation.IsNull() && !plan.Encapsulation.IsUnknown() {
 		var encapsulation encapsulationModel
 		diags := plan.Encapsulation.As(ctx, &encapsulation, basetypes.ObjectAsOptions{})
