@@ -250,18 +250,6 @@ Additional Documentation:
 							},
 						},
 					},
-					"order_number": schema.StringAttribute{
-						Description: "Order Reference Number",
-						Computed:    true,
-					},
-					"order_id": schema.StringAttribute{
-						Description: "Order Identification",
-						Computed:    true,
-					},
-					"uuid": schema.StringAttribute{
-						Description: "Equinix-assigned order identifier, this is a derived response attribute",
-						Computed:    true,
-					},
 					"customer_reference_id": schema.StringAttribute{
 						Description: "Customer order reference Id",
 						Optional:    true,

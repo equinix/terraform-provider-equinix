@@ -98,9 +98,6 @@ type demarcationPointModel struct {
 
 type orderModel struct {
 	PurchaseOrder       fwtypes.ObjectValueOf[purchaseOrderModel] `tfsdk:"purchase_order"`
-	OrderNumber         types.String                              `tfsdk:"order_number"`
-	OrderID             types.String                              `tfsdk:"order_id"`
-	UUID                types.String                              `tfsdk:"uuid"`
 	CustomerReferenceID types.String                              `tfsdk:"customer_reference_id"`
 	Signature           fwtypes.ObjectValueOf[signatureModel]     `tfsdk:"signature"`
 }
@@ -290,9 +287,6 @@ func parseDemarcationPoint(ctx context.Context, demPoint fabricv4.PortDemarcatio
 
 func parseOrder(ctx context.Context, portOrder fabricv4.PortOrder) fwtypes.ObjectValueOf[orderModel] {
 	order := orderModel{
-		OrderNumber:         types.StringValue(portOrder.GetOrderNumber()),
-		OrderID:             types.StringValue(portOrder.GetOrderId()),
-		UUID:                types.StringValue(portOrder.GetUuid()),
 		CustomerReferenceID: types.StringValue(portOrder.GetCustomerReferenceId()),
 	}
 
@@ -302,8 +296,8 @@ func parseOrder(ctx context.Context, portOrder fabricv4.PortOrder) fwtypes.Objec
 		Amount:       types.StringValue(purchaseOrder.GetAmount()),
 		AttachmentID: types.StringValue(purchaseOrder.GetAttachmentId()),
 		Type:         types.StringValue(string(purchaseOrder.GetType())),
-		StartDate:    types.StringValue(purchaseOrder.GetStartDate().String()),
-		EndDate:      types.StringValue(purchaseOrder.GetEndDate().String()),
+		StartDate:    types.StringValue(purchaseOrder.GetStartDate()),
+		EndDate:      types.StringValue(purchaseOrder.GetEndDate()),
 	})
 
 	signature := portOrder.GetSignature()
