@@ -10,46 +10,44 @@ import (
 
 func testAccFabricRouteAggregationDataSourcesConfig(name, description string) string {
 	return fmt.Sprintf(`
+resource "equinix_fabric_route_aggregation" "new_ra_1" {
+  type        = "BGP_IPv4_PREFIX_AGGREGATION"
+  name        = "%[1]s"
+  description = "%[2]s"
+  project = {
+    project_id = "33ec651f-cc99-48e0-94d3-47466899cdc7"
+  }
+}
 
-		resource "equinix_fabric_route_aggregation" "new_ra_1" {
-		  type = "BGP_IPv4_PREFIX_AGGREGATION"
-		  name = "%[1]s"
-		  description = "%[2]s"
-		  project = {
-			project_id = "33ec651f-cc99-48e0-94d3-47466899cdc7"
-		  }
-		}
+resource "equinix_fabric_route_aggregation" "new_ra_2" {
+  type        = "BGP_IPv4_PREFIX_AGGREGATION"
+  name        = "%[1]s"
+  description = "%[2]s"
+  project = {
+    project_id = "33ec651f-cc99-48e0-94d3-47466899cdc7"
+  }
+}
 
-		resource "equinix_fabric_route_aggregation" "new_ra_2" {
-		  type = "BGP_IPv4_PREFIX_AGGREGATION"
-		  name = "%[1]s"
-		  description = "%[2]s"
-		  project = {
-			project_id = "33ec651f-cc99-48e0-94d3-47466899cdc7"
-		  }
-		}
+data "equinix_fabric_route_aggregation" "data_ra" {
+  route_aggregation_id = equinix_fabric_route_aggregation.new_ra_2.id
+}
 
-		data "equinix_fabric_route_aggregation" "data_ra" {
-		 route_aggregation_id = equinix_fabric_route_aggregation.new_ra_2.id
-		}
-
-		data "equinix_fabric_route_aggregations" "data_ras" {
-		 depends_on = [equinix_fabric_route_aggregation.new_ra_1, equinix_fabric_route_aggregation.new_ra_2]
-		   filter =  {
-   		property = "/type"
-   		operator = "="
-			values    = ["BGP_IPv4_PREFIX_AGGREGATION"]
- 			}
-		pagination = {
-   		limit = 2
-   		offset = 1
- 		}
-		 sort = {
-   		property = "/changeLog/updatedDateTime"
-   		direction = "DESC"
-       }
-		}
-	`, name, description)
+data "equinix_fabric_route_aggregations" "data_ras" {
+  depends_on = [equinix_fabric_route_aggregation.new_ra_1, equinix_fabric_route_aggregation.new_ra_2]
+  filter = {
+    property = "/type"
+    operator = "="
+    values   = ["BGP_IPv4_PREFIX_AGGREGATION"]
+  }
+  pagination = {
+    limit  = 2
+    offset = 1
+  }
+  sort = {
+    property  = "/changeLog/updatedDateTime"
+    direction = "DESC"
+  }
+}`, name, description)
 }
 
 func TestAccFabricRouteAggregationDataSources_PFCR(t *testing.T) {

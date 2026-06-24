@@ -55,48 +55,47 @@ func TestAccFabricRouteFilterPolicy_DataSources_PFCR(t *testing.T) {
 
 func testAccFabricRouteFilterPolicyDataSourcesConfig(policyName string) string {
 	return fmt.Sprintf(`
-		resource "equinix_fabric_route_filter" "test" {
-			name = "%s"
-			project {
-				project_id = "291639000636552"
-			}
-			type = "BGP_IPv4_PREFIX_FILTER"
-			description = "Route Filter Policy for X Purpose"
-		}
+resource "equinix_fabric_route_filter" "test" {
+  name = "%s"
+  project {
+    project_id = "291639000636552"
+  }
+  type        = "BGP_IPv4_PREFIX_FILTER"
+  description = "Route Filter Policy for X Purpose"
+}
 
-		data "equinix_fabric_route_filter" "rf_policy" {
-			uuid = equinix_fabric_route_filter.test.id
-		}
-		
-		data "equinix_fabric_route_filters" "rf_policies" {
-			filter {
-				property = "/type"
-				operator = "="
-				values 	 = ["BGP_IPv4_PREFIX_FILTER"]
-			}
-			filter {
-				property = "/state"
-				operator = "="
-				values   = ["PROVISIONED"]
-			}
-			filter {
-				property = "/project/projectId"
-				operator = "="
-				values = ["291639000636552"]
-			}
-			filter {
-				property = "/name"
-				operator = "="
-				values = [equinix_fabric_route_filter.test.name]
-			}
-			pagination {
-				offset = 0
-				limit = 5
-			}
-			sort {
-				direction = "ASC"
-				property = "/name"
-			}
-		}
-	`, policyName)
+data "equinix_fabric_route_filter" "rf_policy" {
+  uuid = equinix_fabric_route_filter.test.id
+}
+
+data "equinix_fabric_route_filters" "rf_policies" {
+  filter {
+    property = "/type"
+    operator = "="
+    values   = ["BGP_IPv4_PREFIX_FILTER"]
+  }
+  filter {
+    property = "/state"
+    operator = "="
+    values   = ["PROVISIONED"]
+  }
+  filter {
+    property = "/project/projectId"
+    operator = "="
+    values   = ["291639000636552"]
+  }
+  filter {
+    property = "/name"
+    operator = "="
+    values   = [equinix_fabric_route_filter.test.name]
+  }
+  pagination {
+    offset = 0
+    limit  = 5
+  }
+  sort {
+    direction = "ASC"
+    property  = "/name"
+  }
+}`, policyName)
 }
