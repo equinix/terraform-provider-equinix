@@ -93,6 +93,11 @@ data "equinix_fabric_route_filter_rules" "rf_rules_or" {
     values   = ["RF_DS_Rule2_PFCR"]
   }
 
+  sort {
+    property  = "/name"
+    direction = "ASC"
+  }
+
   outer_operator = "OR"
 }
 
