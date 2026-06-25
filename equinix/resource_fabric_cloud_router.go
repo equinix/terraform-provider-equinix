@@ -221,47 +221,47 @@ Additional documentation:
 	}
 }
 
-func accountCloudRouterTerraformToGo(accountList []interface{}) fabricv4.SimplifiedAccount {
+func accountCloudRouterTerraformToGo(accountList []any) fabricv4.SimplifiedAccount {
 	if len(accountList) == 0 {
 		return fabricv4.SimplifiedAccount{}
 	}
 	simplifiedAccount := fabricv4.SimplifiedAccount{}
-	accountMap := accountList[0].(map[string]interface{})
+	accountMap := accountList[0].(map[string]any)
 	accountNumber := int64(accountMap["account_number"].(int))
 	simplifiedAccount.SetAccountNumber(accountNumber)
 
 	return simplifiedAccount
 }
 
-func packageCloudRouterTerraformToGo(packageList []interface{}) fabricv4.CloudRouterPostRequestPackage {
+func packageCloudRouterTerraformToGo(packageList []any) fabricv4.CloudRouterPostRequestPackage {
 	if len(packageList) == 0 {
 		return fabricv4.CloudRouterPostRequestPackage{}
 	}
 
 	cloudRouterPackage := fabricv4.CloudRouterPostRequestPackage{}
-	packageMap := packageList[0].(map[string]interface{})
+	packageMap := packageList[0].(map[string]any)
 	code := fabricv4.CloudRouterPostRequestPackageCode(packageMap["code"].(string))
 	cloudRouterPackage.SetCode(code)
 
 	return cloudRouterPackage
 }
-func projectCloudRouterTerraformToGo(projectTerraform []interface{}) fabricv4.Project {
+func projectCloudRouterTerraformToGo(projectTerraform []any) fabricv4.Project {
 	if len(projectTerraform) == 0 {
 		return fabricv4.Project{}
 	}
 	project := fabricv4.Project{}
-	projectMap := projectTerraform[0].(map[string]interface{})
+	projectMap := projectTerraform[0].(map[string]any)
 	projectID := projectMap["project_id"].(string)
 	project.SetProjectId(projectID)
 
 	return project
 }
-func marketplaceSubscriptionCloudRouterTerraformToGo(marketplaceSubscriptionTerraform []interface{}) fabricv4.MarketplaceSubscription {
+func marketplaceSubscriptionCloudRouterTerraformToGo(marketplaceSubscriptionTerraform []any) fabricv4.MarketplaceSubscription {
 	if len(marketplaceSubscriptionTerraform) == 0 {
 		return fabricv4.MarketplaceSubscription{}
 	}
 	marketplaceSubscription := fabricv4.MarketplaceSubscription{}
-	marketplaceSubscriptionMap := marketplaceSubscriptionTerraform[0].(map[string]interface{})
+	marketplaceSubscriptionMap := marketplaceSubscriptionTerraform[0].(map[string]any)
 	subscriptionUUID := marketplaceSubscriptionMap["uuid"].(string)
 	subscriptionType := marketplaceSubscriptionMap["type"].(string)
 	if subscriptionUUID != "" {
@@ -273,7 +273,7 @@ func marketplaceSubscriptionCloudRouterTerraformToGo(marketplaceSubscriptionTerr
 
 	return marketplaceSubscription
 }
-func resourceFabricCloudRouterCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func resourceFabricCloudRouterCreate(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	client := meta.(*config.Config).NewFabricClientForSDK(ctx, d)
 
 	createCloudRouterRequest := fabricv4.CloudRouterPostRequest{}
@@ -283,7 +283,7 @@ func resourceFabricCloudRouterCreate(ctx context.Context, d *schema.ResourceData
 	cloudRouterType := fabricv4.CloudRouterPostRequestBaseType(d.Get("type").(string))
 	createCloudRouterRequest.SetType(cloudRouterType)
 
-	schemaNotifications := d.Get("notifications").([]interface{})
+	schemaNotifications := d.Get("notifications").([]any)
 	notifications := equinix_fabric_schema.NotificationsTerraformToGo(schemaNotifications)
 	createCloudRouterRequest.SetNotifications(notifications)
 
@@ -328,7 +328,7 @@ func resourceFabricCloudRouterCreate(ctx context.Context, d *schema.ResourceData
 	return resourceFabricCloudRouterRead(ctx, d, meta)
 }
 
-func resourceFabricCloudRouterRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func resourceFabricCloudRouterRead(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	client := meta.(*config.Config).NewFabricClientForSDK(ctx, d)
 	cloudRouter, _, err := client.CloudRoutersApi.GetCloudRouterByUuid(ctx, d.Id()).Execute()
 	if err != nil {
@@ -342,7 +342,7 @@ func resourceFabricCloudRouterRead(ctx context.Context, d *schema.ResourceData, 
 	return setCloudRouterMap(d, cloudRouter)
 }
 
-func fabricCloudRouterMap(fcr *fabricv4.CloudRouter) map[string]interface{} {
+func fabricCloudRouterMap(fcr *fabricv4.CloudRouter) map[string]any {
 	cloudRouterPackage := fcr.GetPackage()
 	location := fcr.GetLocation()
 	changeLog := fcr.GetChangeLog()
@@ -351,7 +351,7 @@ func fabricCloudRouterMap(fcr *fabricv4.CloudRouter) map[string]interface{} {
 	project := fcr.GetProject()
 	order := fcr.GetOrder()
 	marketplaceSubscription := fcr.GetMarketplaceSubscription()
-	return map[string]interface{}{
+	return map[string]any{
 		"name":                     fcr.GetName(),
 		"uuid":                     fcr.GetUuid(),
 		"href":                     fcr.GetHref(),
@@ -384,24 +384,24 @@ func accountCloudRouterGoToTerraform(account *fabricv4.SimplifiedAccount) *schem
 		return nil
 	}
 
-	mappedAccount := map[string]interface{}{
+	mappedAccount := map[string]any{
 		"account_number": int(account.GetAccountNumber()),
 	}
 
 	accountSet := schema.NewSet(
 		schema.HashResource(&schema.Resource{Schema: equinix_fabric_schema.AccountSch()}),
-		[]interface{}{mappedAccount},
+		[]any{mappedAccount},
 	)
 
 	return accountSet
 }
 func packageCloudRouterGoToTerraform(packageType *fabricv4.CloudRouterPostRequestPackage) *schema.Set {
-	mappedPackage := map[string]interface{}{
+	mappedPackage := map[string]any{
 		"code": string(packageType.GetCode()),
 	}
 	packageSet := schema.NewSet(
 		schema.HashResource(&schema.Resource{Schema: fabricCloudRouterPackageSch()}),
-		[]interface{}{mappedPackage},
+		[]any{mappedPackage},
 	)
 	return packageSet
 }
@@ -409,13 +409,13 @@ func marketplaceSubscriptionCloudRouterGoToTerraform(subscription *fabricv4.Mark
 	if subscription == nil {
 		return nil
 	}
-	mappedSubscription := make(map[string]interface{})
+	mappedSubscription := make(map[string]any)
 	mappedSubscription["type"] = string(subscription.GetType())
 	mappedSubscription["uuid"] = subscription.GetUuid()
 
 	subscriptionSet := schema.NewSet(
 		schema.HashResource(&schema.Resource{Schema: fabricMarketplaceSubscriptionSch()}),
-		[]interface{}{mappedSubscription})
+		[]any{mappedSubscription})
 	return subscriptionSet
 }
 func getCloudRouterUpdateRequests(cr *fabricv4.CloudRouter, d *schema.ResourceData) ([][]fabricv4.CloudRouterChangeOperation, error) {
@@ -428,7 +428,7 @@ func getCloudRouterUpdateRequests(cr *fabricv4.CloudRouter, d *schema.ResourceDa
 	cloudRouterPackage := packageCloudRouterTerraformToGo(schemaPackage)
 	updatePackageVal := cloudRouterPackage.GetCode()
 
-	schemaNotifications := d.Get("notifications").([]interface{})
+	schemaNotifications := d.Get("notifications").([]any)
 	updateNotificationsVal := equinix_fabric_schema.NotificationsTerraformToGo(schemaNotifications)
 	prevEmails, nextEmails := make([]string, len(existingNotifications[0].GetEmails())), make([]string, len(updateNotificationsVal[0].GetEmails()))
 	copy(prevEmails, existingNotifications[0].GetEmails())
@@ -464,7 +464,7 @@ func getCloudRouterUpdateRequests(cr *fabricv4.CloudRouter, d *schema.ResourceDa
 	return changeOps, nil
 }
 
-func resourceFabricCloudRouterUpdate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func resourceFabricCloudRouterUpdate(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	client := meta.(*config.Config).NewFabricClientForSDK(ctx, d)
 	start := time.Now()
 	updateTimeout := d.Timeout(schema.TimeoutUpdate) - 30*time.Second - time.Since(start)
@@ -500,11 +500,11 @@ func resourceFabricCloudRouterUpdate(ctx context.Context, d *schema.ResourceData
 	return append(diags, setCloudRouterMap(d, dbCR)...)
 }
 
-func waitForCloudRouterUpdateCompletion(ctx context.Context, uuid string, meta interface{}, d *schema.ResourceData, timeout time.Duration) (*fabricv4.CloudRouter, error) {
+func waitForCloudRouterUpdateCompletion(ctx context.Context, uuid string, meta any, d *schema.ResourceData, timeout time.Duration) (*fabricv4.CloudRouter, error) {
 	log.Printf("Waiting for Cloud Router update to complete, uuid %s", uuid)
 	stateConf := &retry.StateChangeConf{
 		Target: []string{string(fabricv4.CLOUDROUTERACCESSPOINTSTATE_PROVISIONED)},
-		Refresh: func() (interface{}, string, error) {
+		Refresh: func() (any, string, error) {
 			client := meta.(*config.Config).NewFabricClientForSDK(ctx, d)
 			dbCR, _, err := client.CloudRoutersApi.GetCloudRouterByUuid(ctx, uuid).Execute()
 			if err != nil {
@@ -526,7 +526,7 @@ func waitForCloudRouterUpdateCompletion(ctx context.Context, uuid string, meta i
 	return dbCR, err
 }
 
-func waitUntilCloudRouterIsProvisioned(ctx context.Context, uuid string, meta interface{}, d *schema.ResourceData, timeout time.Duration) (*fabricv4.CloudRouter, error) {
+func waitUntilCloudRouterIsProvisioned(ctx context.Context, uuid string, meta any, d *schema.ResourceData, timeout time.Duration) (*fabricv4.CloudRouter, error) {
 	log.Printf("Waiting for Cloud Router to be provisioned, uuid %s", uuid)
 	stateConf := &retry.StateChangeConf{
 		Pending: []string{
@@ -535,7 +535,7 @@ func waitUntilCloudRouterIsProvisioned(ctx context.Context, uuid string, meta in
 		Target: []string{
 			string(fabricv4.CLOUDROUTERACCESSPOINTSTATE_PROVISIONED),
 		},
-		Refresh: func() (interface{}, string, error) {
+		Refresh: func() (any, string, error) {
 			client := meta.(*config.Config).NewFabricClientForSDK(ctx, d)
 			dbCR, _, err := client.CloudRoutersApi.GetCloudRouterByUuid(ctx, uuid).Execute()
 			if err != nil {
@@ -557,7 +557,7 @@ func waitUntilCloudRouterIsProvisioned(ctx context.Context, uuid string, meta in
 	return dbCR, err
 }
 
-func resourceFabricCloudRouterDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func resourceFabricCloudRouterDelete(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	diags := diag.Diagnostics{}
 	client := meta.(*config.Config).NewFabricClientForSDK(ctx, d)
 	start := time.Now()
@@ -583,7 +583,7 @@ func resourceFabricCloudRouterDelete(ctx context.Context, d *schema.ResourceData
 }
 
 // WaitUntilCloudRouterDeprovisioned Waits until the cloud router with given UUID is fully deprovisioned
-func WaitUntilCloudRouterDeprovisioned(ctx context.Context, uuid string, meta interface{}, d *schema.ResourceData, timeout time.Duration) error {
+func WaitUntilCloudRouterDeprovisioned(ctx context.Context, uuid string, meta any, d *schema.ResourceData, timeout time.Duration) error {
 	log.Printf("Waiting for Fabric Cloud Router to be deprovisioned, uuid %s", uuid)
 	stateConf := &retry.StateChangeConf{
 		Pending: []string{
@@ -592,7 +592,7 @@ func WaitUntilCloudRouterDeprovisioned(ctx context.Context, uuid string, meta in
 		Target: []string{
 			string(fabricv4.CLOUDROUTERACCESSPOINTSTATE_DEPROVISIONED),
 		},
-		Refresh: func() (interface{}, string, error) {
+		Refresh: func() (any, string, error) {
 			client := meta.(*config.Config).NewFabricClientForSDK(ctx, d)
 			dbCR, _, err := client.CloudRoutersApi.GetCloudRouterByUuid(ctx, uuid).Execute()
 			if err != nil {

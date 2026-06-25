@@ -338,9 +338,9 @@ func buildUpdateRequest(ctx context.Context, state resourceModel, plan resourceM
 			return []fabricv4.PrecisionTimeChangeOperation{}, mDiags
 		}
 
-		var ntpList []map[string]interface{}
+		var ntpList []map[string]any
 		for _, ntp := range planNtpModel {
-			ntpList = append(ntpList, map[string]interface{}{
+			ntpList = append(ntpList, map[string]any{
 				"type":      ntp.Type.ValueString(),
 				"keyNumber": ntp.KeyNumber.ValueInt32(),
 				"key":       ntp.Key.ValueString(),
@@ -526,7 +526,7 @@ func getCreateUpdateWaiter(ctx context.Context, client *fabricv4.APIClient, id s
 			string(fabricv4.PRECISIONTIMESERVICERESPONSESTATE_PROVISIONED),
 			string(fabricv4.PRECISIONTIMESERVICERESPONSESTATE_CONFIGURING),
 		},
-		Refresh: func() (interface{}, string, error) {
+		Refresh: func() (any, string, error) {
 			ept, _, err := client.PrecisionTimeApi.GetTimeServicesById(ctx, id).Execute()
 			if err != nil {
 				return 0, "", err
@@ -549,7 +549,7 @@ func getDeleteWaiter(ctx context.Context, client *fabricv4.APIClient, id string,
 			deletedMarker,
 			string(fabricv4.PRECISIONTIMESERVICERESPONSESTATE_DEPROVISIONED),
 		},
-		Refresh: func() (interface{}, string, error) {
+		Refresh: func() (any, string, error) {
 			ept, resp, err := client.PrecisionTimeApi.GetTimeServicesById(ctx, id).Execute()
 			if err != nil {
 				if resp != nil && slices.Contains([]int{http.StatusForbidden, http.StatusNotFound}, resp.StatusCode) {

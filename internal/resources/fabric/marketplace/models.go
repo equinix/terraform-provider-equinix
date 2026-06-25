@@ -17,8 +17,8 @@ func setFabricMap(d *schema.ResourceData, subs *fabricv4.SubscriptionResponse) d
 	return diags
 }
 
-func subscriptionMap(subs *fabricv4.SubscriptionResponse) map[string]interface{} {
-	subscription := make(map[string]interface{})
+func subscriptionMap(subs *fabricv4.SubscriptionResponse) map[string]any {
+	subscription := make(map[string]any)
 	subscription["href"] = subs.GetHref()
 	subscription["uuid"] = subs.GetUuid()
 	subscription["status"] = subs.GetState()
@@ -40,23 +40,23 @@ func subscriptionTrialGoToTerraform(trial *fabricv4.SubscriptionTrial) *schema.S
 	if trial == nil {
 		return nil
 	}
-	mappedTrial := make(map[string]interface{})
+	mappedTrial := make(map[string]any)
 	mappedTrial["enabled"] = trial.GetEnabled()
 	trialSet := schema.NewSet(
 		schema.HashResource(marketplaceSubscriptionTrialSch()),
-		[]interface{}{mappedTrial},
+		[]any{mappedTrial},
 	)
 	return trialSet
 }
 
-func subscriptionEntitlementsGoToTerraform(entitlementsList []fabricv4.SubscriptionEntitlementResponse) []map[string]interface{} {
+func subscriptionEntitlementsGoToTerraform(entitlementsList []fabricv4.SubscriptionEntitlementResponse) []map[string]any {
 	if entitlementsList == nil {
 		return nil
 	}
-	mappedEntitlements := make([]map[string]interface{}, len(entitlementsList))
+	mappedEntitlements := make([]map[string]any, len(entitlementsList))
 	for index, entitlements := range entitlementsList {
 		asset := entitlements.GetAsset()
-		mappedEntitlements[index] = map[string]interface{}{
+		mappedEntitlements[index] = map[string]any{
 			"uuid":              entitlements.GetUuid(),
 			"quantity_entitled": entitlements.GetQuantityEntitled(),
 			"quantity_consumed": entitlements.GetQuantityConsumed(),
@@ -70,13 +70,13 @@ func subscriptionAssetGoToTerraform(asset *fabricv4.SubscriptionAsset) *schema.S
 	if asset == nil {
 		return nil
 	}
-	mappedAsset := make(map[string]interface{})
+	mappedAsset := make(map[string]any)
 	mappedAsset["type"] = string(asset.GetType())
 	package_ := asset.GetPackage()
 	mappedAsset["package"] = subscriptionPackageGoToTerraform(&package_)
 	assetSet := schema.NewSet(
 		schema.HashResource(marketplaceSubscriptionAssetSch()),
-		[]interface{}{mappedAsset},
+		[]any{mappedAsset},
 	)
 	return assetSet
 }
@@ -85,11 +85,11 @@ func subscriptionPackageGoToTerraform(package_ *fabricv4.SubscriptionRouterPacka
 	if package_ == nil {
 		return nil
 	}
-	mappedPackage := make(map[string]interface{})
+	mappedPackage := make(map[string]any)
 	mappedPackage["code"] = string(package_.GetCode())
 	packageSet := schema.NewSet(
 		schema.HashResource(marketplaceSubscriptionPackageSch()),
-		[]interface{}{mappedPackage},
+		[]any{mappedPackage},
 	)
 	return packageSet
 }

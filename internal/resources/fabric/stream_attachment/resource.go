@@ -229,7 +229,7 @@ func getCreateUpdateWaiter(ctx context.Context, client *fabricv4.APIClient, asse
 		Target: []string{
 			string(fabricv4.STREAMASSETATTACHMENTSTATUS_ATTACHED),
 		},
-		Refresh: func() (interface{}, string, error) {
+		Refresh: func() (any, string, error) {
 			stream, _, err := client.StreamsApi.GetStreamAssetByUuid(ctx, assetID, fabricv4.Asset(asset), streamID).Execute()
 			if err != nil {
 				return 0, "", err
@@ -256,7 +256,7 @@ func getDeleteWaiter(ctx context.Context, client *fabricv4.APIClient, assetID, a
 			deletedMarker,
 			string(fabricv4.STREAMASSETATTACHMENTSTATUS_DETACHED),
 		},
-		Refresh: func() (interface{}, string, error) {
+		Refresh: func() (any, string, error) {
 			stream, resp, err := client.StreamsApi.GetStreamAssetByUuid(ctx, assetID, fabricv4.Asset(asset), streamID).Execute()
 			if err != nil {
 				//Design decision from API team was to return 400 for all errors instead of 404 for not found

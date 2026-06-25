@@ -54,7 +54,7 @@ func testSweepNetworkACLTemplate(region string) error {
 }
 
 func TestAccNetworkACLTemplate(t *testing.T) {
-	context := map[string]interface{}{
+	context := map[string]any{
 		"resourceName":               "test",
 		"name":                       fmt.Sprintf("%s-%s", tstResourcePrefix, acctest.RandString(6)),
 		"description":                acctest.RandString(50),
@@ -109,7 +109,7 @@ func TestAccNetworkACLTemplate(t *testing.T) {
 	})
 }
 
-func testAccNetworkACLTemplate(ctx map[string]interface{}) string {
+func testAccNetworkACLTemplate(ctx map[string]any) string {
 	return nprintf(`
 resource "equinix_network_acl_template" "%{resourceName}" {
   name          = "%{name}"
@@ -159,7 +159,7 @@ func testAccNetworkACLTemplateExists(resourceName string, template *ne.ACLTempla
 	}
 }
 
-func testAccNetworkACLTemplateAttributes(template *ne.ACLTemplate, ctx map[string]interface{}) resource.TestCheckFunc {
+func testAccNetworkACLTemplateAttributes(template *ne.ACLTemplate, ctx map[string]any) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		if v, ok := ctx["name"]; ok && ne.StringValue(template.Name) != v.(string) {
 			return fmt.Errorf("name does not match %v - %v", ne.StringValue(template.Name), v)

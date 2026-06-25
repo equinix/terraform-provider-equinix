@@ -29,7 +29,7 @@ func TestSubsets_negative(t *testing.T) {
 
 func TestIsEmpty(t *testing.T) {
 	// given
-	input := []interface{}{
+	input := []any{
 		"test",
 		"",
 		nil,

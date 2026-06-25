@@ -25,7 +25,7 @@ Additional Documentation:
 	}
 }
 
-func dataSourceRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func dataSourceRead(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	uuid := d.Get("route_filter_id").(string)
 	d.SetId(uuid)
 	return resourceRead(ctx, d, meta)
@@ -44,7 +44,7 @@ Additional Documentation:
 	}
 }
 
-func dataSourceGetAllFilters(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func dataSourceGetAllFilters(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	client := meta.(*config.Config).NewFabricClientForSDK(ctx, d)
 	connectionID := d.Get("connection_id").(string)
 	connectionRouteFilters, _, err := client.RouteFiltersApi.GetConnectionRouteFilters(ctx, connectionID).Execute()

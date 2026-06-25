@@ -217,7 +217,7 @@ func createNetworkDeviceLinkMetroResourceSchema() map[string]*schema.Schema {
 	}
 }
 
-func resourceNetworkDeviceLinkCreate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func resourceNetworkDeviceLinkCreate(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
 	client := m.(*config.Config).Ne
 	m.(*config.Config).AddModuleToNEUserAgent(&client, d)
 	var diags diag.Diagnostics
@@ -239,7 +239,7 @@ func resourceNetworkDeviceLinkCreate(ctx context.Context, d *schema.ResourceData
 	return diags
 }
 
-func resourceNetworkDeviceLinkRead(_ context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func resourceNetworkDeviceLinkRead(_ context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
 	client := m.(*config.Config).Ne
 	m.(*config.Config).AddModuleToNEUserAgent(&client, d)
 	var diags diag.Diagnostics
@@ -263,7 +263,7 @@ func resourceNetworkDeviceLinkRead(_ context.Context, d *schema.ResourceData, m 
 	return diags
 }
 
-func resourceNetworkDeviceLinkUpdate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func resourceNetworkDeviceLinkUpdate(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
 	client := m.(*config.Config).Ne
 	m.(*config.Config).AddModuleToNEUserAgent(&client, d)
 	var diags diag.Diagnostics
@@ -303,7 +303,7 @@ func resourceNetworkDeviceLinkUpdate(ctx context.Context, d *schema.ResourceData
 	return diags
 }
 
-func resourceNetworkDeviceLinkDelete(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func resourceNetworkDeviceLinkDelete(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
 	client := m.(*config.Config).Ne
 	m.(*config.Config).AddModuleToNEUserAgent(&client, d)
 	var diags diag.Diagnostics
@@ -379,7 +379,7 @@ func expandNetworkDeviceLinkDevices(devices *schema.Set) []ne.DeviceLinkGroupDev
 	deviceList := devices.List()
 	transformed := make([]ne.DeviceLinkGroupDevice, len(deviceList))
 	for i := range deviceList {
-		deviceMap := deviceList[i].(map[string]interface{})
+		deviceMap := deviceList[i].(map[string]any)
 		transformed[i] = ne.DeviceLinkGroupDevice{
 			DeviceID:    ne.String(deviceMap[networkDeviceLinkDeviceSchemaNames["DeviceID"]].(string)),
 			ASN:         ne.Int(deviceMap[networkDeviceLinkDeviceSchemaNames["ASN"]].(int)),
@@ -389,10 +389,10 @@ func expandNetworkDeviceLinkDevices(devices *schema.Set) []ne.DeviceLinkGroupDev
 	return transformed
 }
 
-func flattenNetworkDeviceLinkDevices(_ *schema.Set, devices []ne.DeviceLinkGroupDevice) interface{} {
-	transformed := make([]interface{}, 0, len(devices))
+func flattenNetworkDeviceLinkDevices(_ *schema.Set, devices []ne.DeviceLinkGroupDevice) any {
+	transformed := make([]any, 0, len(devices))
 	for i := range devices {
-		transformedDevice := map[string]interface{}{
+		transformedDevice := map[string]any{
 			networkDeviceLinkDeviceSchemaNames["DeviceID"]:    devices[i].DeviceID,
 			networkDeviceLinkDeviceSchemaNames["InterfaceID"]: devices[i].InterfaceID,
 			networkDeviceLinkDeviceSchemaNames["Status"]:      devices[i].Status,
@@ -408,7 +408,7 @@ func expandNetworkDeviceLinkMetroLinks(connections *schema.Set) []ne.DeviceLinkG
 	connectionList := connections.List()
 	transformed := make([]ne.DeviceLinkGroupMetroLink, len(connectionList))
 	for i := range connectionList {
-		connectionMap := connectionList[i].(map[string]interface{})
+		connectionMap := connectionList[i].(map[string]any)
 		transformed[i] = ne.DeviceLinkGroupMetroLink{
 			AccountNumber:  ne.String(connectionMap[networkDeviceLinkMetroSchemaNames["AccountNumber"]].(string)),
 			MetroCode:      ne.String(connectionMap[networkDeviceLinkMetroSchemaNames["MetroCode"]].(string)),
@@ -419,19 +419,19 @@ func expandNetworkDeviceLinkMetroLinks(connections *schema.Set) []ne.DeviceLinkG
 	return transformed
 }
 
-func flattenNetworkDeviceLinkMetroLinks(currentConnections *schema.Set, connections []ne.DeviceLinkGroupMetroLink) interface{} {
-	transformed := make([]interface{}, 0, len(connections))
+func flattenNetworkDeviceLinkMetroLinks(currentConnections *schema.Set, connections []ne.DeviceLinkGroupMetroLink) any {
+	transformed := make([]any, 0, len(connections))
 	currentConnectionsMap := schemaSetToMap(currentConnections)
 
 	for i := range connections {
-		transformedConnection := map[string]interface{}{
+		transformedConnection := map[string]any{
 			networkDeviceLinkMetroSchemaNames["Throughput"]:     *connections[i].Throughput,
 			networkDeviceLinkMetroSchemaNames["ThroughputUnit"]: *connections[i].ThroughputUnit,
 			networkDeviceLinkMetroSchemaNames["MetroCode"]:      *connections[i].MetroCode,
 		}
 
 		if v, ok := currentConnectionsMap[networkDeviceLinkMetroLinkHash(connections[i])]; ok {
-			currentConnectionMap := v.(map[string]interface{})
+			currentConnectionMap := v.(map[string]any)
 			transformedConnection[networkDeviceLinkMetroSchemaNames["AccountNumber"]] = currentConnectionMap[networkDeviceLinkMetroSchemaNames["AccountNumber"]]
 		}
 
@@ -454,7 +454,7 @@ func createDeviceLinkStatusProvisioningWaitConfiguration(fetchFunc getDeviceLink
 		Timeout:    timeout,
 		Delay:      0,
 		MinTimeout: delay,
-		Refresh: func() (interface{}, string, error) {
+		Refresh: func() (any, string, error) {
 			resp, err := fetchFunc(id)
 			if err != nil {
 				return nil, "", err
@@ -475,7 +475,7 @@ func createDeviceLinkStatusDeleteWaitConfiguration(fetchFunc getDeviceLinkGroup,
 		Timeout:    timeout,
 		Delay:      0,
 		MinTimeout: delay,
-		Refresh: func() (interface{}, string, error) {
+		Refresh: func() (any, string, error) {
 			resp, err := fetchFunc(id)
 			if err != nil {
 				if equinix_errors.IsRestNotFoundError(err) {
@@ -488,11 +488,11 @@ func createDeviceLinkStatusDeleteWaitConfiguration(fetchFunc getDeviceLinkGroup,
 	}
 }
 
-func networkDeviceLinkDeviceKey(v interface{}) string {
+func networkDeviceLinkDeviceKey(v any) string {
 	if v, ok := v.(ne.DeviceLinkGroupDevice); ok {
 		return fmt.Sprintf("%s-%d", ne.StringValue(v.DeviceID), ne.IntValue(v.InterfaceID))
 	}
-	if v, ok := v.(map[string]interface{}); ok {
+	if v, ok := v.(map[string]any); ok {
 		return fmt.Sprintf("%s-%d",
 			v[networkDeviceLinkDeviceSchemaNames["DeviceID"]],
 			v[networkDeviceLinkDeviceSchemaNames["InterfaceID"]])
@@ -500,18 +500,18 @@ func networkDeviceLinkDeviceKey(v interface{}) string {
 	return fmt.Sprintf("%v", v)
 }
 
-func networkDeviceLinkDeviceHash(v interface{}) int {
+func networkDeviceLinkDeviceHash(v any) int {
 	return hashcode.String(networkDeviceLinkDeviceKey(v))
 }
 
-func networkDeviceLinkMetroLinkKey(v interface{}) string {
+func networkDeviceLinkMetroLinkKey(v any) string {
 	if v, ok := v.(ne.DeviceLinkGroupMetroLink); ok {
 		return fmt.Sprintf("%s-%s-%s",
 			ne.StringValue(v.MetroCode),
 			ne.StringValue(v.Throughput),
 			ne.StringValue(v.ThroughputUnit))
 	}
-	if v, ok := v.(map[string]interface{}); ok {
+	if v, ok := v.(map[string]any); ok {
 		return fmt.Sprintf("%s-%s-%s",
 			v[networkDeviceLinkMetroSchemaNames["MetroCode"]],
 			v[networkDeviceLinkMetroSchemaNames["Throughput"]],
@@ -520,12 +520,12 @@ func networkDeviceLinkMetroLinkKey(v interface{}) string {
 	return fmt.Sprintf("%v", v)
 }
 
-func networkDeviceLinkMetroLinkHash(v interface{}) int {
+func networkDeviceLinkMetroLinkHash(v any) int {
 	return hashcode.String(networkDeviceLinkMetroLinkKey(v))
 }
 
-func schemaSetToMap(set *schema.Set) map[int]interface{} {
-	transformed := make(map[int]interface{})
+func schemaSetToMap(set *schema.Set) map[int]any {
+	transformed := make(map[int]any)
 	if set != nil {
 		list := set.List()
 		for i := range list {

@@ -41,7 +41,7 @@ Additional Documentation:
 	}
 }
 
-func resourceRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func resourceRead(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	client := meta.(*config.Config).NewFabricClientForSDK(ctx, d)
 	routeFilter, _, err := client.RouteFiltersApi.GetRouteFilterByUuid(ctx, d.Id()).Execute()
 	if err != nil {
@@ -55,7 +55,7 @@ func resourceRead(ctx context.Context, d *schema.ResourceData, meta interface{})
 	return setRouteFilterMap(d, routeFilter)
 }
 
-func resourceCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func resourceCreate(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	client := meta.(*config.Config).NewFabricClientForSDK(ctx, d)
 	createRequest := buildCreateRequest(d)
 
@@ -74,7 +74,7 @@ func resourceCreate(ctx context.Context, d *schema.ResourceData, meta interface{
 	return resourceRead(ctx, d, meta)
 }
 
-func resourceUpdate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func resourceUpdate(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	client := meta.(*config.Config).NewFabricClientForSDK(ctx, d)
 	updateRequest := buildUpdateRequest(d)
 
@@ -92,7 +92,7 @@ func resourceUpdate(ctx context.Context, d *schema.ResourceData, meta interface{
 	return setRouteFilterMap(d, routeFilter)
 }
 
-func resourceDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func resourceDelete(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	diags := diag.Diagnostics{}
 	client := meta.(*config.Config).NewFabricClientForSDK(ctx, d)
 
@@ -117,7 +117,7 @@ func resourceDelete(ctx context.Context, d *schema.ResourceData, meta interface{
 	return diags
 }
 
-func waitForStability(ctx context.Context, uuid string, meta interface{}, d *schema.ResourceData, timeout time.Duration) error {
+func waitForStability(ctx context.Context, uuid string, meta any, d *schema.ResourceData, timeout time.Duration) error {
 	log.Printf("Waiting for route filter to be stable, uuid %s", uuid)
 	stateConf := &retry.StateChangeConf{
 		Pending: []string{
@@ -127,7 +127,7 @@ func waitForStability(ctx context.Context, uuid string, meta interface{}, d *sch
 		Target: []string{
 			string(fabricv4.ROUTEFILTERSTATE_PROVISIONED),
 		},
-		Refresh: func() (interface{}, string, error) {
+		Refresh: func() (any, string, error) {
 			client := meta.(*config.Config).NewFabricClientForSDK(ctx, d)
 			routeFilter, _, err := client.RouteFiltersApi.GetRouteFilterByUuid(ctx, uuid).Execute()
 			if err != nil {
@@ -146,7 +146,7 @@ func waitForStability(ctx context.Context, uuid string, meta interface{}, d *sch
 }
 
 // WaitForDeletion waits until the route filter policy is deleted.
-func WaitForDeletion(ctx context.Context, uuid string, meta interface{}, d *schema.ResourceData, timeout time.Duration) error {
+func WaitForDeletion(ctx context.Context, uuid string, meta any, d *schema.ResourceData, timeout time.Duration) error {
 	log.Printf("Waiting for route filter to be deleted, uuid %s", uuid)
 	stateConf := &retry.StateChangeConf{
 		Pending: []string{
@@ -156,7 +156,7 @@ func WaitForDeletion(ctx context.Context, uuid string, meta interface{}, d *sche
 		Target: []string{
 			string(fabricv4.ROUTEFILTERSTATE_DEPROVISIONED),
 		},
-		Refresh: func() (interface{}, string, error) {
+		Refresh: func() (any, string, error) {
 			client := meta.(*config.Config).NewFabricClientForSDK(ctx, d)
 			routeFilter, body, err := client.RouteFiltersApi.GetRouteFilterByUuid(ctx, uuid).Execute()
 			if err != nil {

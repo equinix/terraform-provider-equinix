@@ -13,7 +13,7 @@ import (
 )
 
 func TestAccNetworkFile_VSRX(t *testing.T) {
-	context := map[string]interface{}{
+	context := map[string]any{
 		"resourceName":   "test",
 		"fileName":       fmt.Sprintf("%s-%s", tstResourcePrefix, acctest.RandString(6)) + ".lic",
 		"content":        acctest.RandString(50),
@@ -48,7 +48,7 @@ func TestAccNetworkFile_VSRX(t *testing.T) {
 	})
 }
 
-func testAccNetworkFile(ctx map[string]interface{}) string {
+func testAccNetworkFile(ctx map[string]any) string {
 	return nprintf(`
 resource "equinix_network_file" "%{resourceName}" {
   file_name        = "%{fileName}"
@@ -81,7 +81,7 @@ func testAccNetworkFileExists(resourceName string, file *ne.File) resource.TestC
 	}
 }
 
-func testAccNetworkFileAttributes(file *ne.File, ctx map[string]interface{}) resource.TestCheckFunc {
+func testAccNetworkFileAttributes(file *ne.File, ctx map[string]any) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		if v, ok := ctx["fileName"]; ok && ne.StringValue(file.FileName) != v.(string) {
 			return fmt.Errorf("file_name does not match %v - %v", ne.StringValue(file.FileName), v)

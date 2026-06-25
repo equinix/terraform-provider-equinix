@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"strings"
 
+	"github.com/equinix/terraform-provider-equinix/internal/comparisons"
 	"github.com/equinix/terraform-provider-equinix/internal/config"
 	"github.com/equinix/terraform-provider-equinix/internal/converters"
 	equinix_validation "github.com/equinix/terraform-provider-equinix/internal/validation"
@@ -84,7 +85,7 @@ func dataSourceNetworkDeviceType() *schema.Resource {
 	}
 }
 
-func dataSourceNetworkDeviceTypeRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func dataSourceNetworkDeviceTypeRead(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
 	conf := m.(*config.Config)
 	var diags diag.Diagnostics
 	types, err := conf.Ne.GetDeviceTypes()
@@ -106,7 +107,7 @@ func dataSourceNetworkDeviceTypeRead(ctx context.Context, d *schema.ResourceData
 		if category != "" && !strings.EqualFold(ne.StringValue(deviceType.Category), category) {
 			continue
 		}
-		if !stringsFound(metroCodes, deviceType.MetroCodes) {
+		if !comparisons.Subsets(metroCodes, deviceType.MetroCodes) {
 			continue
 		}
 		filtered = append(filtered, deviceType)

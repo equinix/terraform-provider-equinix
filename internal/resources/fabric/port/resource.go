@@ -537,7 +537,7 @@ func getCreateUpdateWaiter(ctx context.Context, client *fabricv4.APIClient, id s
 			string(fabricv4.PORTSTATE_ACTIVE),
 			string(fabricv4.PORTSTATE_PENDING_CROSS_CONNECT),
 		},
-		Refresh: func() (interface{}, string, error) {
+		Refresh: func() (any, string, error) {
 			port, resp, err := client.PortsApi.GetPortByUuid(ctx, id).Execute()
 			if err != nil {
 				if resp != nil && resp.StatusCode == http.StatusBadRequest && strings.Contains(err.Error(), "Invalid PortUUID") {
@@ -573,7 +573,7 @@ func getDeleteWaiter(ctx context.Context, client *fabricv4.APIClient, id string,
 			string(fabricv4.PORTSTATE_TO_BE_DELETED),
 			string(fabricv4.PORTSTATE_DEPROVISIONED),
 		},
-		Refresh: func() (interface{}, string, error) {
+		Refresh: func() (any, string, error) {
 			port, resp, err := client.PortsApi.GetPortByUuid(ctx, id).Execute()
 			if err != nil {
 				if resp != nil && slices.Contains([]int{http.StatusForbidden, http.StatusNotFound}, resp.StatusCode) {

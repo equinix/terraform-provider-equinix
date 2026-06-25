@@ -39,10 +39,10 @@ func sortSchema(allowedAttributes []string) *schema.Schema {
 	}
 }
 
-func expandSorts(rawSorts []interface{}) []commonSort {
+func expandSorts(rawSorts []any) []commonSort {
 	expandedSorts := make([]commonSort, len(rawSorts))
 	for i, rawSort := range rawSorts {
-		f := rawSort.(map[string]interface{})
+		f := rawSort.(map[string]any)
 
 		expandedSort := commonSort{
 			attribute: f["attribute"].(string),
@@ -54,7 +54,7 @@ func expandSorts(rawSorts []interface{}) []commonSort {
 	return expandedSorts
 }
 
-func applySorts(recordSchema map[string]*schema.Schema, records []map[string]interface{}, sorts []commonSort) []map[string]interface{} {
+func applySorts(recordSchema map[string]*schema.Schema, records []map[string]any, sorts []commonSort) []map[string]any {
 	sort.Slice(records, func(_i, _j int) bool {
 		for _, s := range sorts {
 			// Handle multiple sorts by applying them in order

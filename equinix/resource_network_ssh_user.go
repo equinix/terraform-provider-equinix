@@ -76,7 +76,7 @@ func createNetworkSSHUserResourceSchema() map[string]*schema.Schema {
 	}
 }
 
-func resourceNetworkSSHUserCreate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func resourceNetworkSSHUserCreate(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
 	client := m.(*config.Config).Ne
 	m.(*config.Config).AddModuleToNEUserAgent(&client, d)
 
@@ -104,7 +104,7 @@ func resourceNetworkSSHUserCreate(ctx context.Context, d *schema.ResourceData, m
 	return diags
 }
 
-func resourceNetworkSSHUserRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func resourceNetworkSSHUserRead(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
 	client := m.(*config.Config).Ne
 	m.(*config.Config).AddModuleToNEUserAgent(&client, d)
 	var diags diag.Diagnostics
@@ -118,7 +118,7 @@ func resourceNetworkSSHUserRead(ctx context.Context, d *schema.ResourceData, m i
 	return diags
 }
 
-func resourceNetworkSSHUserUpdate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func resourceNetworkSSHUserUpdate(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
 	client := m.(*config.Config).Ne
 	m.(*config.Config).AddModuleToNEUserAgent(&client, d)
 	var diags diag.Diagnostics
@@ -139,7 +139,7 @@ func resourceNetworkSSHUserUpdate(ctx context.Context, d *schema.ResourceData, m
 	return diags
 }
 
-func resourceNetworkSSHUserDelete(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func resourceNetworkSSHUserDelete(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
 	client := m.(*config.Config).Ne
 	m.(*config.Config).AddModuleToNEUserAgent(&client, d)
 	var diags diag.Diagnostics

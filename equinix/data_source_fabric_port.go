@@ -19,7 +19,7 @@ Additional documentation:
 	}
 }
 
-func dataSourceFabricPortRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func dataSourceFabricPortRead(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	uuid, _ := d.Get("uuid").(string)
 	d.SetId(uuid)
 	return resourceFabricPortRead(ctx, d, meta)
@@ -37,6 +37,6 @@ Additional documentation:
 	}
 }
 
-func dataSourceFabricGetPortsByNameResponseRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func dataSourceFabricGetPortsByNameResponseRead(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	return resourceFabricPortGetByPortName(ctx, d, meta)
 }

@@ -43,7 +43,7 @@ func TestNetworkDeviceLink_createFromResourceData(t *testing.T) {
 		},
 	}
 
-	rawData := map[string]interface{}{
+	rawData := map[string]any{
 		networkDeviceLinkSchemaNames["Name"]:           ne.StringValue(expected.Name),
 		networkDeviceLinkSchemaNames["Subnet"]:         ne.StringValue(expected.Subnet),
 		networkDeviceLinkSchemaNames["ProjectID"]:      ne.StringValue(expected.ProjectID),
@@ -97,7 +97,7 @@ func TestNetworkDeviceLink_updateResourceData(t *testing.T) {
 			},
 		},
 	}
-	d := schema.TestResourceDataRaw(t, createNetworkDeviceLinkResourceSchema(), make(map[string]interface{}))
+	d := schema.TestResourceDataRaw(t, createNetworkDeviceLinkResourceSchema(), make(map[string]any))
 	// when
 	err := updateNetworkDeviceLinkResource(&input, d)
 	// then

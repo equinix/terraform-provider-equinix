@@ -185,7 +185,7 @@ func networkACLTemplateDeviceDetailsSchema() map[string]*schema.Schema {
 	}
 }
 
-func resourceNetworkACLTemplateCreate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func resourceNetworkACLTemplateCreate(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
 	client := m.(*config.Config).Ne
 	m.(*config.Config).AddModuleToNEUserAgent(&client, d)
 	var diags diag.Diagnostics
@@ -199,7 +199,7 @@ func resourceNetworkACLTemplateCreate(ctx context.Context, d *schema.ResourceDat
 	return diags
 }
 
-func resourceNetworkACLTemplateRead(_ context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func resourceNetworkACLTemplateRead(_ context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
 	client := m.(*config.Config).Ne
 	m.(*config.Config).AddModuleToNEUserAgent(&client, d)
 	var diags diag.Diagnostics
@@ -219,7 +219,7 @@ func resourceNetworkACLTemplateRead(_ context.Context, d *schema.ResourceData, m
 	return diags
 }
 
-func resourceNetworkACLTemplateUpdate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func resourceNetworkACLTemplateUpdate(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
 	client := m.(*config.Config).Ne
 	m.(*config.Config).AddModuleToNEUserAgent(&client, d)
 	var diags diag.Diagnostics
@@ -231,7 +231,7 @@ func resourceNetworkACLTemplateUpdate(ctx context.Context, d *schema.ResourceDat
 	return diags
 }
 
-func resourceNetworkACLTemplateDelete(_ context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func resourceNetworkACLTemplateDelete(_ context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
 	client := m.(*config.Config).Ne
 	m.(*config.Config).AddModuleToNEUserAgent(&client, d)
 	var diags diag.Diagnostics
@@ -253,7 +253,7 @@ func createACLTemplate(d *schema.ResourceData) ne.ACLTemplate {
 		template.ProjectID = ne.String(v.(string))
 	}
 	if v, ok := d.GetOk(networkACLTemplateSchemaNames["InboundRules"]); ok {
-		template.InboundRules = expandACLTemplateInboundRules(v.([]interface{}))
+		template.InboundRules = expandACLTemplateInboundRules(v.([]any))
 	}
 	return template
 }
@@ -284,10 +284,10 @@ func updateACLTemplateResource(template *ne.ACLTemplate, d *schema.ResourceData)
 	return nil
 }
 
-func expandACLTemplateInboundRules(rules []interface{}) []ne.ACLTemplateInboundRule {
+func expandACLTemplateInboundRules(rules []any) []ne.ACLTemplateInboundRule {
 	transformed := make([]ne.ACLTemplateInboundRule, len(rules))
 	for i := range rules {
-		ruleMap := rules[i].(map[string]interface{})
+		ruleMap := rules[i].(map[string]any)
 		rule := ne.ACLTemplateInboundRule{}
 		rule.SeqNo = ne.Int(i + 1)
 		if v, ok := ruleMap[networkACLTemplateInboundRuleSchemaNames["Subnet"]]; ok {
@@ -310,10 +310,10 @@ func expandACLTemplateInboundRules(rules []interface{}) []ne.ACLTemplateInboundR
 	return transformed
 }
 
-func flattenACLTemplateInboundRules(rules []ne.ACLTemplateInboundRule) interface{} {
-	transformed := make([]interface{}, len(rules))
+func flattenACLTemplateInboundRules(rules []ne.ACLTemplateInboundRule) any {
+	transformed := make([]any, len(rules))
 	for i := range rules {
-		transformedTemplate := make(map[string]interface{})
+		transformedTemplate := make(map[string]any)
 		transformedTemplate[networkACLTemplateInboundRuleSchemaNames["SeqNo"]] = rules[i].SeqNo
 		transformedTemplate[networkACLTemplateInboundRuleSchemaNames["Protocol"]] = rules[i].Protocol
 		transformedTemplate[networkACLTemplateInboundRuleSchemaNames["SrcPort"]] = rules[i].SrcPort
@@ -325,10 +325,10 @@ func flattenACLTemplateInboundRules(rules []ne.ACLTemplateInboundRule) interface
 	return transformed
 }
 
-func flattenACLTemplateDeviceDetails(rules []ne.ACLTemplateDeviceDetails) interface{} {
-	transformed := make([]interface{}, len(rules))
+func flattenACLTemplateDeviceDetails(rules []ne.ACLTemplateDeviceDetails) any {
+	transformed := make([]any, len(rules))
 	for i := range rules {
-		transformed[i] = map[string]interface{}{
+		transformed[i] = map[string]any{
 			networkACLTemplateDeviceDetailSchemaNames["UUID"]:      rules[i].UUID,
 			networkACLTemplateDeviceDetailSchemaNames["Name"]:      rules[i].Name,
 			networkACLTemplateDeviceDetailSchemaNames["ACLStatus"]: rules[i].ACLStatus,

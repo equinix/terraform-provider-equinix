@@ -8,7 +8,7 @@ import (
 )
 
 func TestAccDataSourceNetworkDeviceSoftware_versionRegex(t *testing.T) {
-	context := map[string]interface{}{
+	context := map[string]any{
 		"resourceName":  "csrLatest",
 		"device_type":   "CSR1000V",
 		"version_regex": "^16.09.+",
@@ -35,7 +35,7 @@ func TestAccDataSourceNetworkDeviceSoftware_versionRegex(t *testing.T) {
 	})
 }
 
-func testAccDataSourceNetworkDeviceSoftwareConfig_versionRegex(ctx map[string]interface{}) string {
+func testAccDataSourceNetworkDeviceSoftwareConfig_versionRegex(ctx map[string]any) string {
 	return nprintf(`
 data "equinix_network_device_software" "%{resourceName}" {
   device_type   = "%{device_type}"

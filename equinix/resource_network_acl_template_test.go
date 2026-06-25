@@ -24,7 +24,7 @@ func TestNetworkACLTemplate_createFromResourceData(t *testing.T) {
 			},
 		},
 	}
-	rawData := map[string]interface{}{
+	rawData := map[string]any{
 		networkACLTemplateSchemaNames["Name"]:        ne.StringValue(expected.Name),
 		networkACLTemplateSchemaNames["Description"]: ne.StringValue(expected.Description),
 		networkACLTemplateSchemaNames["ProjectID"]:   ne.StringValue(expected.ProjectID),
@@ -53,7 +53,7 @@ func TestNetworkACLTemplate_updateResourceData(t *testing.T) {
 			},
 		},
 	}
-	rawData := map[string]interface{}{
+	rawData := map[string]any{
 		networkACLTemplateSchemaNames["Name"]:        ne.StringValue(initial.Name),
 		networkACLTemplateSchemaNames["Description"]: ne.StringValue(initial.Description),
 	}
@@ -89,19 +89,19 @@ func TestNetworkACLTemplate_updateResourceData(t *testing.T) {
 	assert.Nil(t, err, "Update of resource data does not return error")
 	assert.Equal(t, ne.StringValue(input.Name), d.Get(networkACLTemplateSchemaNames["Name"]), "Name matches")
 	assert.Equal(t, ne.StringValue(input.Description), d.Get(networkACLTemplateSchemaNames["Description"]), "Description matches")
-	assert.Equal(t, input.InboundRules, expandACLTemplateInboundRules(d.Get(networkACLTemplateSchemaNames["InboundRules"]).([]interface{})), "InboundRules matches")
+	assert.Equal(t, input.InboundRules, expandACLTemplateInboundRules(d.Get(networkACLTemplateSchemaNames["InboundRules"]).([]any)), "InboundRules matches")
 }
 
 func TestNetworkACLTemplate_expandInboundRules(t *testing.T) {
 	// given
-	input := []interface{}{
-		map[string]interface{}{
+	input := []any{
+		map[string]any{
 			networkACLTemplateInboundRuleSchemaNames["Protocol"]:    "TCP",
 			networkACLTemplateInboundRuleSchemaNames["SrcPort"]:     "any",
 			networkACLTemplateInboundRuleSchemaNames["DstPort"]:     "8080",
 			networkACLTemplateInboundRuleSchemaNames["Description"]: "description of inbound rule",
 		},
-		map[string]interface{}{
+		map[string]any{
 			networkACLTemplateInboundRuleSchemaNames["Subnet"]:   "3.3.3.3/32",
 			networkACLTemplateInboundRuleSchemaNames["Protocol"]: "IP",
 			networkACLTemplateInboundRuleSchemaNames["SrcPort"]:  "any",
@@ -115,17 +115,17 @@ func TestNetworkACLTemplate_expandInboundRules(t *testing.T) {
 		{
 			SeqNo:       ne.Int(1),
 			Subnet:      nilSubnet,
-			Protocol:    ne.String(input[0].(map[string]interface{})[networkACLTemplateInboundRuleSchemaNames["Protocol"]].(string)),
-			SrcPort:     ne.String(input[0].(map[string]interface{})[networkACLTemplateInboundRuleSchemaNames["SrcPort"]].(string)),
-			DstPort:     ne.String(input[0].(map[string]interface{})[networkACLTemplateInboundRuleSchemaNames["DstPort"]].(string)),
-			Description: ne.String(input[0].(map[string]interface{})[networkACLTemplateInboundRuleSchemaNames["Description"]].(string)),
+			Protocol:    ne.String(input[0].(map[string]any)[networkACLTemplateInboundRuleSchemaNames["Protocol"]].(string)),
+			SrcPort:     ne.String(input[0].(map[string]any)[networkACLTemplateInboundRuleSchemaNames["SrcPort"]].(string)),
+			DstPort:     ne.String(input[0].(map[string]any)[networkACLTemplateInboundRuleSchemaNames["DstPort"]].(string)),
+			Description: ne.String(input[0].(map[string]any)[networkACLTemplateInboundRuleSchemaNames["Description"]].(string)),
 		},
 		{
 			SeqNo:    ne.Int(2),
-			Subnet:   ne.String(input[1].(map[string]interface{})[networkACLTemplateInboundRuleSchemaNames["Subnet"]].(string)),
-			Protocol: ne.String(input[1].(map[string]interface{})[networkACLTemplateInboundRuleSchemaNames["Protocol"]].(string)),
-			SrcPort:  ne.String(input[1].(map[string]interface{})[networkACLTemplateInboundRuleSchemaNames["SrcPort"]].(string)),
-			DstPort:  ne.String(input[1].(map[string]interface{})[networkACLTemplateInboundRuleSchemaNames["DstPort"]].(string)),
+			Subnet:   ne.String(input[1].(map[string]any)[networkACLTemplateInboundRuleSchemaNames["Subnet"]].(string)),
+			Protocol: ne.String(input[1].(map[string]any)[networkACLTemplateInboundRuleSchemaNames["Protocol"]].(string)),
+			SrcPort:  ne.String(input[1].(map[string]any)[networkACLTemplateInboundRuleSchemaNames["SrcPort"]].(string)),
+			DstPort:  ne.String(input[1].(map[string]any)[networkACLTemplateInboundRuleSchemaNames["DstPort"]].(string)),
 		},
 	}
 	// when
@@ -152,8 +152,8 @@ func TestNetworkACLTemplate_flattenInboundRules(t *testing.T) {
 			DstPort:  ne.String("any"),
 		},
 	}
-	expected := []interface{}{
-		map[string]interface{}{
+	expected := []any{
+		map[string]any{
 			networkACLTemplateInboundRuleSchemaNames["SeqNo"]:       input[0].SeqNo,
 			networkACLTemplateInboundRuleSchemaNames["Subnet"]:      input[0].Subnet,
 			networkACLTemplateInboundRuleSchemaNames["Protocol"]:    input[0].Protocol,
@@ -161,7 +161,7 @@ func TestNetworkACLTemplate_flattenInboundRules(t *testing.T) {
 			networkACLTemplateInboundRuleSchemaNames["DstPort"]:     input[0].DstPort,
 			networkACLTemplateInboundRuleSchemaNames["Description"]: input[0].Description,
 		},
-		map[string]interface{}{
+		map[string]any{
 			networkACLTemplateInboundRuleSchemaNames["SeqNo"]:       input[1].SeqNo,
 			networkACLTemplateInboundRuleSchemaNames["Subnet"]:      input[1].Subnet,
 			networkACLTemplateInboundRuleSchemaNames["Protocol"]:    input[1].Protocol,
@@ -189,13 +189,13 @@ func TestNetworkACLTemplate_flattenDeviceDetails(t *testing.T) {
 			ACLStatus: ne.String("Provisioning"),
 		},
 	}
-	expected := []interface{}{
-		map[string]interface{}{
+	expected := []any{
+		map[string]any{
 			networkACLTemplateDeviceDetailSchemaNames["UUID"]:      input[0].UUID,
 			networkACLTemplateDeviceDetailSchemaNames["Name"]:      input[0].Name,
 			networkACLTemplateDeviceDetailSchemaNames["ACLStatus"]: input[0].ACLStatus,
 		},
-		map[string]interface{}{
+		map[string]any{
 			networkACLTemplateDeviceDetailSchemaNames["UUID"]:      input[1].UUID,
 			networkACLTemplateDeviceDetailSchemaNames["Name"]:      input[1].Name,
 			networkACLTemplateDeviceDetailSchemaNames["ACLStatus"]: input[1].ACLStatus,

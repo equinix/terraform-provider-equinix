@@ -37,7 +37,7 @@ Additional documentation:
 	}
 }
 
-func dataSourceFabricCloudRouterRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func dataSourceFabricCloudRouterRead(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	uuid, _ := d.Get("uuid").(string)
 	d.SetId(uuid)
 	return resourceFabricCloudRouterRead(ctx, d, meta)

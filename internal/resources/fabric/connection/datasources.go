@@ -28,7 +28,7 @@ Additional documentation:
 	}
 }
 
-func dataSourceFabricConnectionRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func dataSourceFabricConnectionRead(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	uuid, _ := d.Get("uuid").(string)
 	d.SetId(uuid)
 	return resourceFabricConnectionRead(ctx, d, meta)
@@ -47,15 +47,15 @@ Additional documentation:
 	}
 }
 
-func dataSourceFabricConnectionSearch(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func dataSourceFabricConnectionSearch(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	return resourceFabricConnectionSearch(ctx, d, meta)
 }
 
-func resourceFabricConnectionSearch(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func resourceFabricConnectionSearch(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	client := meta.(*config.Config).NewFabricClientForSDK(ctx, d)
 	connectionSearchRequest := fabricv4.SearchRequest{}
 
-	schemaFilters := d.Get("filter").([]interface{})
+	schemaFilters := d.Get("filter").([]any)
 	schemaOuterOperator := d.Get("outer_operator").(string)
 	filter, err := connectionFiltersTerraformToGo(schemaFilters, schemaOuterOperator)
 	if err != nil {
@@ -70,7 +70,7 @@ func resourceFabricConnectionSearch(ctx context.Context, d *schema.ResourceData,
 	}
 
 	if schemaSort, ok := d.GetOk("sort"); ok {
-		sort := connectionSortTerraformToGo(schemaSort.([]interface{}))
+		sort := connectionSortTerraformToGo(schemaSort.([]any))
 		connectionSearchRequest.SetSort(sort)
 	}
 
@@ -89,7 +89,7 @@ func resourceFabricConnectionSearch(ctx context.Context, d *schema.ResourceData,
 
 func setConnectionsData(d *schema.ResourceData, connections *fabricv4.ConnectionSearchResponse) diag.Diagnostics {
 	diags := diag.Diagnostics{}
-	mappedConnections := make([]map[string]interface{}, len(connections.Data))
+	mappedConnections := make([]map[string]any, len(connections.Data))
 	if connections.Data != nil {
 		for index, connection := range connections.Data {
 			mappedConnections[index] = connectionMap(&connection)
@@ -97,7 +97,7 @@ func setConnectionsData(d *schema.ResourceData, connections *fabricv4.Connection
 	} else {
 		mappedConnections = nil
 	}
-	err := equinix_schema.SetMap(d, map[string]interface{}{
+	err := equinix_schema.SetMap(d, map[string]any{
 		"data": mappedConnections,
 	})
 	if err != nil {
@@ -106,7 +106,7 @@ func setConnectionsData(d *schema.ResourceData, connections *fabricv4.Connection
 	return diags
 }
 
-func connectionFiltersTerraformToGo(filters []interface{}, outerOperator string) (fabricv4.Expression, error) {
+func connectionFiltersTerraformToGo(filters []any, outerOperator string) (fabricv4.Expression, error) {
 	if len(filters) == 0 {
 		return fabricv4.Expression{}, fmt.Errorf("no filters passed to filtersTerraformToGoMethod")
 	}
@@ -115,7 +115,7 @@ func connectionFiltersTerraformToGo(filters []interface{}, outerOperator string)
 	groups := make(map[string]fabricv4.Expression)
 
 	for _, filter := range filters {
-		filterMap := filter.(map[string]interface{})
+		filterMap := filter.(map[string]any)
 		expression := fabricv4.Expression{}
 		if property, ok := filterMap["property"]; ok {
 			expression.SetProperty(fabricv4.SearchFieldName(property.(string)))
@@ -124,7 +124,7 @@ func connectionFiltersTerraformToGo(filters []interface{}, outerOperator string)
 			expression.SetOperator(fabricv4.ExpressionOperator(operator.(string)))
 		}
 		if values, ok := filterMap["values"]; ok {
-			stringValues := converters.IfArrToStringArr(values.([]interface{}))
+			stringValues := converters.IfArrToStringArr(values.([]any))
 			expression.SetValues(stringValues)
 		}
 
@@ -174,13 +174,13 @@ func connectionFiltersTerraformToGo(filters []interface{}, outerOperator string)
 	return outerExpression, nil
 }
 
-func connectionPaginationTerraformToGo(pagination []interface{}) fabricv4.PaginationRequest {
+func connectionPaginationTerraformToGo(pagination []any) fabricv4.PaginationRequest {
 	if len(pagination) == 0 {
 		return fabricv4.PaginationRequest{}
 	}
 	paginationRequest := fabricv4.PaginationRequest{}
 	for _, page := range pagination {
-		pageMap := page.(map[string]interface{})
+		pageMap := page.(map[string]any)
 		if offset, ok := pageMap["offset"]; ok {
 			paginationRequest.SetOffset(int32(offset.(int)))
 		}
@@ -192,14 +192,14 @@ func connectionPaginationTerraformToGo(pagination []interface{}) fabricv4.Pagina
 	return paginationRequest
 }
 
-func connectionSortTerraformToGo(sort []interface{}) []fabricv4.SortCriteria {
+func connectionSortTerraformToGo(sort []any) []fabricv4.SortCriteria {
 	if len(sort) == 0 {
 		return []fabricv4.SortCriteria{}
 	}
 	sortCriteria := make([]fabricv4.SortCriteria, len(sort))
 	for index, item := range sort {
 		sortItem := fabricv4.SortCriteria{}
-		pageMap := item.(map[string]interface{})
+		pageMap := item.(map[string]any)
 		if direction, ok := pageMap["direction"]; ok {
 			sortItem.SetDirection(fabricv4.SortDirection(direction.(string)))
 		}

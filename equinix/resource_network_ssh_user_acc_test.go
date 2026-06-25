@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"log"
 
+	"github.com/equinix/terraform-provider-equinix/internal/comparisons"
 	"github.com/equinix/terraform-provider-equinix/internal/config"
 
 	"github.com/equinix/ne-go"
@@ -49,7 +50,7 @@ func testSweepNetworkSSHUser(region string) error {
 	return nil
 }
 
-func testAccNetworkDeviceUser(ctx map[string]interface{}) string {
+func testAccNetworkDeviceUser(ctx map[string]any) string {
 	config := nprintf(`
 resource "equinix_network_ssh_user" "%{user-resourceName}" {
   username = "%{user-username}"
@@ -90,7 +91,7 @@ func testAccNeSSHUserExists(resourceName string, user *ne.SSHUser) resource.Test
 	}
 }
 
-func testAccNeSSHUserAttributes(user *ne.SSHUser, devices []*ne.Device, ctx map[string]interface{}) resource.TestCheckFunc {
+func testAccNeSSHUserAttributes(user *ne.SSHUser, devices []*ne.Device, ctx map[string]any) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		if v, ok := ctx["username"]; ok && ne.StringValue(user.Username) != v.(string) {
 			return fmt.Errorf("name does not match %v - %v", ne.StringValue(user.Username), v)
@@ -99,7 +100,7 @@ func testAccNeSSHUserAttributes(user *ne.SSHUser, devices []*ne.Device, ctx map[
 		for i := range devices {
 			deviceIDs[i] = ne.StringValue(devices[i].UUID)
 		}
-		if !slicesMatch(deviceIDs, user.DeviceUUIDs) {
+		if !comparisons.SlicesMatch(deviceIDs, user.DeviceUUIDs) {
 			return fmt.Errorf("device_ids does not match %v - %v", deviceIDs, user.DeviceUUIDs)
 		}
 		return nil

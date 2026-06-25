@@ -80,10 +80,10 @@ func buildUpdateRequest(d *schema.ResourceData) ([][]fabricv4.ServiceTokenChange
 
 	if oldNotifications != nil {
 		for _, notification := range oldNotifications.(*schema.Set).List() {
-			notificationMap := notification.(map[string]interface{})
+			notificationMap := notification.(map[string]any)
 
 			if emails, ok := notificationMap["emails"]; ok {
-				oldEmailInterface := emails.([]interface{})
+				oldEmailInterface := emails.([]any)
 				if len(oldEmailInterface) > 0 {
 					oldNotificationEmails = converters.IfArrToStringArr(oldEmailInterface)
 				}
@@ -92,10 +92,10 @@ func buildUpdateRequest(d *schema.ResourceData) ([][]fabricv4.ServiceTokenChange
 	}
 	if newNotifications != nil {
 		for _, notification := range newNotifications.(*schema.Set).List() {
-			notificationMap := notification.(map[string]interface{})
+			notificationMap := notification.(map[string]any)
 
 			if emails, ok := notificationMap["emails"]; ok {
-				newEmailInterface := emails.([]interface{})
+				newEmailInterface := emails.([]any)
 				if len(newEmailInterface) > 0 {
 					newNotificationEmails = converters.IfArrToStringArr(newEmailInterface)
 				}
@@ -117,7 +117,7 @@ func buildUpdateRequest(d *schema.ResourceData) ([][]fabricv4.ServiceTokenChange
 
 	if oldServiceTokenConnection != nil {
 		for _, connection := range oldServiceTokenConnection.(*schema.Set).List() {
-			oldBandwidthLimitMap := connection.(map[string]interface{})
+			oldBandwidthLimitMap := connection.(map[string]any)
 
 			if bandwidth, ok := oldBandwidthLimitMap["bandwidth_limit"]; ok {
 				if bandwidthLimitValue, ok := bandwidth.(int); ok {
@@ -129,7 +129,7 @@ func buildUpdateRequest(d *schema.ResourceData) ([][]fabricv4.ServiceTokenChange
 
 	if newServiceTokenConnection != nil {
 		for _, connection := range newServiceTokenConnection.(*schema.Set).List() {
-			newBandwidthLimitMap := connection.(map[string]interface{})
+			newBandwidthLimitMap := connection.(map[string]any)
 
 			if bandwidth, ok := newBandwidthLimitMap["bandwidth_limit"]; ok {
 				if bandwidthLimitValue, ok := bandwidth.(int); ok {
@@ -151,10 +151,10 @@ func buildUpdateRequest(d *schema.ResourceData) ([][]fabricv4.ServiceTokenChange
 
 	if oldServiceTokenConnection != nil {
 		for _, connection := range oldServiceTokenConnection.(*schema.Set).List() {
-			olSupportedBandwidthMap := connection.(map[string]interface{})
+			olSupportedBandwidthMap := connection.(map[string]any)
 
 			if bandwidth, ok := olSupportedBandwidthMap["supported_bandwidths"]; ok {
-				oldSupportedBandwidth := bandwidth.([]interface{})
+				oldSupportedBandwidth := bandwidth.([]any)
 				if len(oldSupportedBandwidth) > 0 {
 					oldZsideBandwidth = converters.IfArrToIntArr(oldSupportedBandwidth)
 				}
@@ -164,10 +164,10 @@ func buildUpdateRequest(d *schema.ResourceData) ([][]fabricv4.ServiceTokenChange
 
 	if newServiceTokenConnection != nil {
 		for _, connection := range newServiceTokenConnection.(*schema.Set).List() {
-			newSupportedBandwidthMap := connection.(map[string]interface{})
+			newSupportedBandwidthMap := connection.(map[string]any)
 
 			if bandwidth, ok := newSupportedBandwidthMap["supported_bandwidths"]; ok {
-				newSupportedBandwidth := bandwidth.([]interface{})
+				newSupportedBandwidth := bandwidth.([]any)
 				if len(newSupportedBandwidth) > 0 {
 					newZsideBandwidth = converters.IfArrToIntArr(newSupportedBandwidth)
 
@@ -207,7 +207,7 @@ func areSlicesEqual(a, b []int) bool {
 func buildSearchRequest(d *schema.ResourceData) fabricv4.ServiceTokenSearchRequest {
 	searchRequest := fabricv4.ServiceTokenSearchRequest{}
 
-	schemaFilters := d.Get("filter").([]interface{})
+	schemaFilters := d.Get("filter").([]any)
 	filter := filtersTerraformToGo(schemaFilters)
 	searchRequest.SetFilter(filter)
 
@@ -230,7 +230,7 @@ func setServiceTokenMap(d *schema.ResourceData, serviceToken *fabricv4.ServiceTo
 
 func setServiceTokensData(d *schema.ResourceData, routeFilters *fabricv4.ServiceTokens) diag.Diagnostics {
 	diags := diag.Diagnostics{}
-	mappedRouteFilters := make([]map[string]interface{}, len(routeFilters.Data))
+	mappedRouteFilters := make([]map[string]any, len(routeFilters.Data))
 	pagination := routeFilters.GetPagination()
 	if routeFilters.Data != nil {
 		for index, routeFilter := range routeFilters.Data {
@@ -239,7 +239,7 @@ func setServiceTokensData(d *schema.ResourceData, routeFilters *fabricv4.Service
 	} else {
 		mappedRouteFilters = nil
 	}
-	err := equinix_schema.SetMap(d, map[string]interface{}{
+	err := equinix_schema.SetMap(d, map[string]any{
 		"data":       mappedRouteFilters,
 		"pagination": paginationGoToTerraform(&pagination),
 	})
@@ -249,8 +249,8 @@ func setServiceTokensData(d *schema.ResourceData, routeFilters *fabricv4.Service
 	return diags
 }
 
-func serviceTokenResponseMap(token *fabricv4.ServiceToken) map[string]interface{} {
-	serviceToken := make(map[string]interface{})
+func serviceTokenResponseMap(token *fabricv4.ServiceToken) map[string]any {
+	serviceToken := make(map[string]any)
 	serviceToken["type"] = string(token.GetType())
 	expirationDateTime := token.GetExpirationDateTime()
 	const TimeFormat = "2006-01-02T15:04:05.000Z"
@@ -297,14 +297,14 @@ func serviceTokenResponseMap(token *fabricv4.ServiceToken) map[string]interface{
 	return serviceToken
 }
 
-func connectionTerraformToGo(connectionTerraform []interface{}) fabricv4.ServiceTokenConnection {
+func connectionTerraformToGo(connectionTerraform []any) fabricv4.ServiceTokenConnection {
 	if len(connectionTerraform) == 0 {
 		return fabricv4.ServiceTokenConnection{}
 	}
 
 	var connection fabricv4.ServiceTokenConnection
 
-	connectionMap := connectionTerraform[0].(map[string]interface{})
+	connectionMap := connectionTerraform[0].(map[string]any)
 
 	typeVal := connectionMap["type"].(string)
 	if typeVal != "" {
@@ -326,7 +326,7 @@ func connectionTerraformToGo(connectionTerraform []interface{}) fabricv4.Service
 		connection.SetBandwidthLimit(int32(bandwidthLimit))
 	}
 
-	supportedBandwidths := connectionMap["supported_bandwidths"].([]interface{})
+	supportedBandwidths := connectionMap["supported_bandwidths"].([]any)
 	if len(supportedBandwidths) > 0 {
 		int32Bandwidths := make([]int32, len(supportedBandwidths))
 		for i, v := range supportedBandwidths {
@@ -351,15 +351,15 @@ func connectionTerraformToGo(connectionTerraform []interface{}) fabricv4.Service
 	return connection
 }
 
-func accessPointTerraformToGo(accessPoint []interface{}) fabricv4.ServiceTokenSide {
+func accessPointTerraformToGo(accessPoint []any) fabricv4.ServiceTokenSide {
 	if len(accessPoint) == 0 {
 		return fabricv4.ServiceTokenSide{}
 	}
 
 	var apSide fabricv4.ServiceTokenSide
 
-	accessPointMap := accessPoint[0].(map[string]interface{})
-	accessPointSelectors := accessPointMap["access_point_selectors"].([]interface{})
+	accessPointMap := accessPoint[0].(map[string]any)
+	accessPointSelectors := accessPointMap["access_point_selectors"].([]any)
 	if len(accessPointSelectors) != 0 {
 		aps := accessPointSelectorsTerraformToGo(accessPointSelectors)
 		apSide.SetAccessPointSelectors(aps)
@@ -367,14 +367,14 @@ func accessPointTerraformToGo(accessPoint []interface{}) fabricv4.ServiceTokenSi
 	return apSide
 }
 
-func accessPointSelectorsTerraformToGo(accessPointSelectors []interface{}) []fabricv4.AccessPointSelector {
+func accessPointSelectorsTerraformToGo(accessPointSelectors []any) []fabricv4.AccessPointSelector {
 	if len(accessPointSelectors) == 0 {
 		return []fabricv4.AccessPointSelector{}
 	}
 
 	var apSelectors fabricv4.AccessPointSelector
 
-	apSelectorsMap := accessPointSelectors[0].(map[string]interface{})
+	apSelectorsMap := accessPointSelectors[0].(map[string]any)
 	typeVal := apSelectorsMap["type"].(string)
 	apSelectors.SetType(fabricv4.AccessPointSelectorType(typeVal))
 	portList := apSelectorsMap["port"].(*schema.Set).List()
@@ -411,12 +411,12 @@ func accessPointSelectorsTerraformToGo(accessPointSelectors []interface{}) []fab
 	return []fabricv4.AccessPointSelector{apSelectors}
 }
 
-func portTerraformToGo(portList []interface{}) fabricv4.SimplifiedMetadataEntity {
+func portTerraformToGo(portList []any) fabricv4.SimplifiedMetadataEntity {
 	if len(portList) == 0 {
 		return fabricv4.SimplifiedMetadataEntity{}
 	}
 	var port fabricv4.SimplifiedMetadataEntity
-	portListMap := portList[0].(map[string]interface{})
+	portListMap := portList[0].(map[string]any)
 	uuid := portListMap["uuid"].(string)
 	href := portListMap["href"].(string)
 	portType := portListMap["type"].(string)
@@ -461,12 +461,12 @@ func portTerraformToGo(portList []interface{}) fabricv4.SimplifiedMetadataEntity
 	return port
 }
 
-func linkProtocolTerraformToGo(linkProtocolList []interface{}) fabricv4.SimplifiedLinkProtocol {
+func linkProtocolTerraformToGo(linkProtocolList []any) fabricv4.SimplifiedLinkProtocol {
 	if len(linkProtocolList) == 0 {
 		return fabricv4.SimplifiedLinkProtocol{}
 	}
 	var linkProtocol fabricv4.SimplifiedLinkProtocol
-	lpMap := linkProtocolList[0].(map[string]interface{})
+	lpMap := linkProtocolList[0].(map[string]any)
 	lpType := lpMap["type"].(string)
 	lpVlanSTag := int32(lpMap["vlan_s_tag"].(int))
 	lpVlanTag := int32(lpMap["vlan_tag"].(int))
@@ -486,13 +486,13 @@ func linkProtocolTerraformToGo(linkProtocolList []interface{}) fabricv4.Simplifi
 	return linkProtocol
 }
 
-func virtualDeviceTerraformToGo(virtualDeviceList []interface{}) fabricv4.SimplifiedVirtualDevice {
+func virtualDeviceTerraformToGo(virtualDeviceList []any) fabricv4.SimplifiedVirtualDevice {
 	if len(virtualDeviceList) == 0 {
 		return fabricv4.SimplifiedVirtualDevice{}
 	}
 
 	var virtualDevice fabricv4.SimplifiedVirtualDevice
-	virtualDeviceMap := virtualDeviceList[0].(map[string]interface{})
+	virtualDeviceMap := virtualDeviceList[0].(map[string]any)
 	href := virtualDeviceMap["href"].(string)
 	virtualDeviceType := virtualDeviceMap["type"].(string)
 	uuid := virtualDeviceMap["uuid"].(string)
@@ -516,13 +516,13 @@ func virtualDeviceTerraformToGo(virtualDeviceList []interface{}) fabricv4.Simpli
 	return virtualDevice
 }
 
-func interfaceTerraformToGo(interfaceList []interface{}) fabricv4.VirtualDeviceInterface {
+func interfaceTerraformToGo(interfaceList []any) fabricv4.VirtualDeviceInterface {
 	if len(interfaceList) == 0 {
 		return fabricv4.VirtualDeviceInterface{}
 	}
 
 	var interfaceInfo fabricv4.VirtualDeviceInterface
-	interfaceMap := interfaceList[0].(map[string]interface{})
+	interfaceMap := interfaceList[0].(map[string]any)
 	uuid := interfaceMap["uuid"].(string)
 	interfaceType := interfaceMap["type"].(string)
 	id := interfaceMap["id"].(int)
@@ -538,12 +538,12 @@ func interfaceTerraformToGo(interfaceList []interface{}) fabricv4.VirtualDeviceI
 	return interfaceInfo
 }
 
-func networkTerraformToGo(networkList []interface{}) fabricv4.SimplifiedTokenNetwork {
+func networkTerraformToGo(networkList []any) fabricv4.SimplifiedTokenNetwork {
 	if len(networkList) == 0 {
 		return fabricv4.SimplifiedTokenNetwork{}
 	}
 	var network fabricv4.SimplifiedTokenNetwork
-	networkListMap := networkList[0].(map[string]interface{})
+	networkListMap := networkList[0].(map[string]any)
 	uuid := networkListMap["uuid"].(string)
 	href := networkListMap["href"].(string)
 	networkType := networkListMap["type"].(string)
@@ -571,7 +571,7 @@ func networkTerraformToGo(networkList []interface{}) fabricv4.SimplifiedTokenNet
 	return network
 }
 
-func filtersTerraformToGo(tokens []interface{}) fabricv4.ServiceTokenSearchExpression {
+func filtersTerraformToGo(tokens []any) fabricv4.ServiceTokenSearchExpression {
 	if tokens == nil {
 		return fabricv4.ServiceTokenSearchExpression{}
 	}
@@ -579,7 +579,7 @@ func filtersTerraformToGo(tokens []interface{}) fabricv4.ServiceTokenSearchExpre
 	searchTokensList := make([]fabricv4.ServiceTokenSearchExpression, 0)
 
 	for _, filter := range tokens {
-		filterMap := filter.(map[string]interface{})
+		filterMap := filter.(map[string]any)
 		filterItem := fabricv4.ServiceTokenSearchExpression{}
 		if property, ok := filterMap["property"]; ok {
 			filterItem.SetProperty(fabricv4.ServiceTokenSearchFieldName(property.(string)))
@@ -588,7 +588,7 @@ func filtersTerraformToGo(tokens []interface{}) fabricv4.ServiceTokenSearchExpre
 			filterItem.SetOperator(fabricv4.ServiceTokenSearchExpressionOperator(operator.(string)))
 		}
 		if values, ok := filterMap["values"]; ok {
-			stringValues := converters.IfArrToStringArr(values.([]interface{}))
+			stringValues := converters.IfArrToStringArr(values.([]any))
 			filterItem.SetValues(stringValues)
 		}
 		searchTokensList = append(searchTokensList, filterItem)
@@ -600,13 +600,13 @@ func filtersTerraformToGo(tokens []interface{}) fabricv4.ServiceTokenSearchExpre
 	return searchTokens
 }
 
-func paginationTerraformToGo(pagination []interface{}) fabricv4.PaginationRequest {
+func paginationTerraformToGo(pagination []any) fabricv4.PaginationRequest {
 	if pagination == nil {
 		return fabricv4.PaginationRequest{}
 	}
 	paginationRequest := fabricv4.PaginationRequest{}
 	for _, page := range pagination {
-		pageMap := page.(map[string]interface{})
+		pageMap := page.(map[string]any)
 		if offset, ok := pageMap["offset"]; ok {
 			paginationRequest.SetOffset(int32(offset.(int)))
 		}
@@ -619,7 +619,7 @@ func paginationTerraformToGo(pagination []interface{}) fabricv4.PaginationReques
 }
 
 func connectionGoToTerraform(connection *fabricv4.ServiceTokenConnection) *schema.Set {
-	mappedConnection := make(map[string]interface{})
+	mappedConnection := make(map[string]any)
 	if connection.Type != nil {
 		mappedConnection["type"] = string(connection.GetType())
 	}
@@ -627,7 +627,7 @@ func connectionGoToTerraform(connection *fabricv4.ServiceTokenConnection) *schem
 	mappedConnection["allow_custom_bandwidth"] = connection.GetAllowCustomBandwidth()
 	if connection.SupportedBandwidths != nil {
 		supportedBandwidths := connection.GetSupportedBandwidths()
-		interfaceBandwidths := make([]interface{}, len(supportedBandwidths))
+		interfaceBandwidths := make([]any, len(supportedBandwidths))
 
 		for i, v := range supportedBandwidths {
 			interfaceBandwidths[i] = int(v) // Convert each int32 to interface{}
@@ -652,7 +652,7 @@ func connectionGoToTerraform(connection *fabricv4.ServiceTokenConnection) *schem
 	}
 	connectionSet := schema.NewSet(
 		schema.HashResource(serviceTokenConnectionSch()),
-		[]interface{}{mappedConnection},
+		[]any{mappedConnection},
 	)
 	return connectionSet
 }
@@ -660,16 +660,16 @@ func connectionGoToTerraform(connection *fabricv4.ServiceTokenConnection) *schem
 func accessPointGoToTerraform(accessPoint *fabricv4.ServiceTokenSide) *schema.Set {
 	return schema.NewSet(
 		schema.HashResource(serviceTokenAccessPointSch()),
-		[]interface{}{map[string]interface{}{
+		[]any{map[string]any{
 			"access_point_selectors": accessPointSelectorsGoToTerraform(accessPoint.GetAccessPointSelectors()),
 		}},
 	)
 }
 
-func accessPointSelectorsGoToTerraform(apSelectors []fabricv4.AccessPointSelector) []interface{} {
-	mappedSelectors := make([]interface{}, len(apSelectors))
+func accessPointSelectorsGoToTerraform(apSelectors []fabricv4.AccessPointSelector) []any {
+	mappedSelectors := make([]any, len(apSelectors))
 	for index, selector := range apSelectors {
-		mappedAccessPointSelector := make(map[string]interface{})
+		mappedAccessPointSelector := make(map[string]any)
 		if selector.Type != nil {
 			mappedAccessPointSelector["type"] = string(selector.GetType())
 		}
@@ -703,7 +703,7 @@ func portGoToTerraform(port *fabricv4.SimplifiedMetadataEntity) *schema.Set {
 	if port == nil {
 		return nil
 	}
-	mappedPort := make(map[string]interface{})
+	mappedPort := make(map[string]any)
 	if href := port.GetHref(); href != "" {
 		mappedPort["href"] = href
 	}
@@ -738,14 +738,14 @@ func portGoToTerraform(port *fabricv4.SimplifiedMetadataEntity) *schema.Set {
 
 	portSet := schema.NewSet(
 		schema.HashResource(portSch()),
-		[]interface{}{mappedPort},
+		[]any{mappedPort},
 	)
 	return portSet
 }
 
 func linkedProtocolGoToTerraform(linkedProtocol *fabricv4.SimplifiedLinkProtocol) *schema.Set {
 
-	mappedLinkedProtocol := make(map[string]interface{})
+	mappedLinkedProtocol := make(map[string]any)
 	mappedLinkedProtocol["type"] = string(linkedProtocol.GetType())
 	mappedLinkedProtocol["vlan_tag"] = int(linkedProtocol.GetVlanTag())
 	mappedLinkedProtocol["vlan_s_tag"] = int(linkedProtocol.GetVlanSTag())
@@ -753,7 +753,7 @@ func linkedProtocolGoToTerraform(linkedProtocol *fabricv4.SimplifiedLinkProtocol
 
 	linkedProtocolSet := schema.NewSet(
 		schema.HashResource(linkProtocolSch()),
-		[]interface{}{mappedLinkedProtocol},
+		[]any{mappedLinkedProtocol},
 	)
 	return linkedProtocolSet
 }
@@ -762,7 +762,7 @@ func virtualDeviceGoToTerraform(virtualDevice *fabricv4.SimplifiedVirtualDevice)
 	if virtualDevice == nil {
 		return nil
 	}
-	mappedVirtualDevice := make(map[string]interface{})
+	mappedVirtualDevice := make(map[string]any)
 	if name := virtualDevice.GetName(); name != "" {
 		mappedVirtualDevice["name"] = name
 	}
@@ -780,7 +780,7 @@ func virtualDeviceGoToTerraform(virtualDevice *fabricv4.SimplifiedVirtualDevice)
 	}
 	virtualDeviceSet := schema.NewSet(
 		schema.HashResource(virtualDeviceSch()),
-		[]interface{}{mappedVirtualDevice},
+		[]any{mappedVirtualDevice},
 	)
 	return virtualDeviceSet
 }
@@ -789,14 +789,14 @@ func interfaceGoToTerraform(mInterface *fabricv4.VirtualDeviceInterface) *schema
 	if mInterface == nil {
 		return nil
 	}
-	mappedMInterface := make(map[string]interface{})
+	mappedMInterface := make(map[string]any)
 	mappedMInterface["id"] = int(mInterface.GetId())
 	mappedMInterface["type"] = string(mInterface.GetType())
 	mappedMInterface["uuid"] = mInterface.GetUuid()
 
 	mInterfaceSet := schema.NewSet(
 		schema.HashResource(interfaceSch()),
-		[]interface{}{mappedMInterface},
+		[]any{mappedMInterface},
 	)
 	return mInterfaceSet
 }
@@ -806,7 +806,7 @@ func networkGoToTerraform(network *fabricv4.SimplifiedTokenNetwork) *schema.Set 
 		return nil
 	}
 
-	mappedNetwork := make(map[string]interface{})
+	mappedNetwork := make(map[string]any)
 	if uuid := network.GetUuid(); uuid != "" {
 		mappedNetwork["uuid"] = uuid
 	}
@@ -828,7 +828,7 @@ func networkGoToTerraform(network *fabricv4.SimplifiedTokenNetwork) *schema.Set 
 	}
 	return schema.NewSet(
 		schema.HashResource(networkSch()),
-		[]interface{}{mappedNetwork},
+		[]any{mappedNetwork},
 	)
 }
 
@@ -836,7 +836,7 @@ func paginationGoToTerraform(pagination *fabricv4.Pagination) *schema.Set {
 	if pagination == nil {
 		return nil
 	}
-	mappedPagination := make(map[string]interface{})
+	mappedPagination := make(map[string]any)
 	mappedPagination["offset"] = int(pagination.GetOffset())
 	mappedPagination["limit"] = int(pagination.GetLimit())
 	mappedPagination["total"] = int(pagination.GetTotal())
@@ -845,6 +845,6 @@ func paginationGoToTerraform(pagination *fabricv4.Pagination) *schema.Set {
 
 	return schema.NewSet(
 		schema.HashResource(paginationSchema()),
-		[]interface{}{mappedPagination},
+		[]any{mappedPagination},
 	)
 }

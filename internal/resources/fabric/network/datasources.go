@@ -30,7 +30,7 @@ Additional documentation:
 	}
 }
 
-func dataSourceFabricNetworkRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func dataSourceFabricNetworkRead(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	uuid, _ := d.Get("uuid").(string)
 	d.SetId(uuid)
 	return resourceFabricNetworkRead(ctx, d, meta)
@@ -49,15 +49,15 @@ Additional documentation:
 	}
 }
 
-func dataSourceFabricNetworkSearch(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func dataSourceFabricNetworkSearch(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	return resourceFabricNetworkSearch(ctx, d, meta)
 }
 
-func resourceFabricNetworkSearch(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func resourceFabricNetworkSearch(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	client := meta.(*config.Config).NewFabricClientForSDK(ctx, d)
 	networkSearchRequest := fabricv4.NetworkSearchRequest{}
 
-	schemaFilters := d.Get("filter").([]interface{})
+	schemaFilters := d.Get("filter").([]any)
 	schemaOuterOperator := d.Get("outer_operator").(string)
 	filter, err := networkFiltersTerraformToGo(schemaFilters, schemaOuterOperator)
 	if err != nil {
@@ -72,7 +72,7 @@ func resourceFabricNetworkSearch(ctx context.Context, d *schema.ResourceData, me
 	}
 
 	if schemaSort, ok := d.GetOk("sort"); ok {
-		sort := networkSortTerraformToGo(schemaSort.([]interface{}))
+		sort := networkSortTerraformToGo(schemaSort.([]any))
 		networkSearchRequest.SetSort(sort)
 	}
 
@@ -91,7 +91,7 @@ func resourceFabricNetworkSearch(ctx context.Context, d *schema.ResourceData, me
 
 func setNetworksData(d *schema.ResourceData, networks *fabricv4.NetworkSearchResponse) diag.Diagnostics {
 	diags := diag.Diagnostics{}
-	mappedConnections := make([]map[string]interface{}, len(networks.Data))
+	mappedConnections := make([]map[string]any, len(networks.Data))
 	if networks.Data != nil {
 		for index, network := range networks.Data {
 			mappedConnections[index] = networkMap(&network)
@@ -99,7 +99,7 @@ func setNetworksData(d *schema.ResourceData, networks *fabricv4.NetworkSearchRes
 	} else {
 		mappedConnections = nil
 	}
-	err := equinix_schema.SetMap(d, map[string]interface{}{
+	err := equinix_schema.SetMap(d, map[string]any{
 		"data": mappedConnections,
 	})
 	if err != nil {
@@ -108,7 +108,7 @@ func setNetworksData(d *schema.ResourceData, networks *fabricv4.NetworkSearchRes
 	return diags
 }
 
-func networkFiltersTerraformToGo(filters []interface{}, outerOperator string) (fabricv4.NetworkFilter, error) {
+func networkFiltersTerraformToGo(filters []any, outerOperator string) (fabricv4.NetworkFilter, error) {
 	if len(filters) == 0 {
 		return fabricv4.NetworkFilter{}, fmt.Errorf("no filters passed to filtersTerraformToGoMethod")
 	}
@@ -117,7 +117,7 @@ func networkFiltersTerraformToGo(filters []interface{}, outerOperator string) (f
 	groups := make(map[string]fabricv4.NetworkFilter)
 
 	for _, filter := range filters {
-		filterMap := filter.(map[string]interface{})
+		filterMap := filter.(map[string]any)
 		networkFilter := fabricv4.NetworkFilter{}
 		if property, ok := filterMap["property"]; ok {
 			networkFilter.SetProperty(fabricv4.NetworkSearchFieldName(property.(string)))
@@ -126,7 +126,7 @@ func networkFiltersTerraformToGo(filters []interface{}, outerOperator string) (f
 			networkFilter.SetOperator(fabricv4.NetworkFilterOperator(operator.(string)))
 		}
 		if values, ok := filterMap["values"]; ok {
-			stringValues := converters.IfArrToStringArr(values.([]interface{}))
+			stringValues := converters.IfArrToStringArr(values.([]any))
 			networkFilter.SetValues(stringValues)
 		}
 
@@ -176,13 +176,13 @@ func networkFiltersTerraformToGo(filters []interface{}, outerOperator string) (f
 	return outerNetworkFilter, nil
 }
 
-func networkPaginationTerraformToGo(pagination []interface{}) fabricv4.PaginationRequest {
+func networkPaginationTerraformToGo(pagination []any) fabricv4.PaginationRequest {
 	if len(pagination) == 0 {
 		return fabricv4.PaginationRequest{}
 	}
 	paginationRequest := fabricv4.PaginationRequest{}
 	for _, page := range pagination {
-		pageMap := page.(map[string]interface{})
+		pageMap := page.(map[string]any)
 		if offset, ok := pageMap["offset"]; ok {
 			paginationRequest.SetOffset(int32(offset.(int)))
 		}
@@ -194,14 +194,14 @@ func networkPaginationTerraformToGo(pagination []interface{}) fabricv4.Paginatio
 	return paginationRequest
 }
 
-func networkSortTerraformToGo(sort []interface{}) []fabricv4.NetworkSortCriteria {
+func networkSortTerraformToGo(sort []any) []fabricv4.NetworkSortCriteria {
 	if len(sort) == 0 {
 		return []fabricv4.NetworkSortCriteria{}
 	}
 	sortCriteria := make([]fabricv4.NetworkSortCriteria, len(sort))
 	for index, item := range sort {
 		sortItem := fabricv4.NetworkSortCriteria{}
-		pageMap := item.(map[string]interface{})
+		pageMap := item.(map[string]any)
 		if direction, ok := pageMap["direction"]; ok {
 			sortItem.SetDirection(fabricv4.NetworkSortDirection(direction.(string)))
 		}

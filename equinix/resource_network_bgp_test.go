@@ -20,7 +20,7 @@ func TestNetworkBGP_createFromResourceData(t *testing.T) {
 		RemoteASN:         ne.Int(60421),
 		AuthenticationKey: ne.String("secret"),
 	}
-	rawData := map[string]interface{}{
+	rawData := map[string]any{
 		networkBGPSchemaNames["ConnectionUUID"]:    ne.StringValue(expected.ConnectionUUID),
 		networkBGPSchemaNames["LocalIPAddress"]:    ne.StringValue(expected.LocalIPAddress),
 		networkBGPSchemaNames["LocalASN"]:          ne.IntValue(expected.LocalASN),
@@ -49,7 +49,7 @@ func TestNetworkBGP_updateResourceData(t *testing.T) {
 		State:              ne.String("established"),
 		ProvisioningStatus: ne.String(ne.BGPProvisioningStatusProvisioned),
 	}
-	d := schema.TestResourceDataRaw(t, createNetworkBGPResourceSchema(), make(map[string]interface{}))
+	d := schema.TestResourceDataRaw(t, createNetworkBGPResourceSchema(), make(map[string]any))
 	// when
 	err := updateNetworkBGPResource(&input, d)
 	// then
@@ -68,7 +68,7 @@ func TestNetworkBGP_updateResourceData(t *testing.T) {
 
 type mockedBGPUpdateRequest struct {
 	uuid string
-	data map[string]interface{}
+	data map[string]any
 }
 
 func (r *mockedBGPUpdateRequest) WithLocalIPAddress(v string) ne.BGPUpdateRequest {
@@ -102,7 +102,7 @@ func (r *mockedBGPUpdateRequest) Execute() error {
 
 func TestNetworkBGP_createUpdateRequest(t *testing.T) {
 	// given
-	req := &mockedBGPUpdateRequest{data: make(map[string]interface{})}
+	req := &mockedBGPUpdateRequest{data: make(map[string]any)}
 	f := func(uuid string) ne.BGPUpdateRequest {
 		req.uuid = uuid
 		return req

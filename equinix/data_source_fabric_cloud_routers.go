@@ -127,15 +127,15 @@ Additional documentation:
 	}
 }
 
-func dataSourceFabricGetCloudRoutersRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func dataSourceFabricGetCloudRoutersRead(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	return resourceFabricCloudRoutersSearch(ctx, d, meta)
 }
 
-func resourceFabricCloudRoutersSearch(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func resourceFabricCloudRoutersSearch(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	client := meta.(*config.Config).NewFabricClientForSDK(ctx, d)
 	cloudRouterSearchRequest := fabricv4.CloudRouterSearchRequest{}
 
-	schemaFilters := d.Get("filter").([]interface{})
+	schemaFilters := d.Get("filter").([]any)
 	filters, err := cloudRouterFiltersTerraformToGo(schemaFilters)
 	if err != nil {
 		return diag.FromErr(err)
@@ -149,7 +149,7 @@ func resourceFabricCloudRoutersSearch(ctx context.Context, d *schema.ResourceDat
 	}
 
 	if schemaSort, ok := d.GetOk("sort"); ok {
-		sort := cloudRouterSortTerraformToGo(schemaSort.([]interface{}))
+		sort := cloudRouterSortTerraformToGo(schemaSort.([]any))
 		cloudRouterSearchRequest.SetSort(sort)
 	}
 
@@ -167,7 +167,7 @@ func resourceFabricCloudRoutersSearch(ctx context.Context, d *schema.ResourceDat
 	return setFabricCloudRoutersData(d, cloudRouters)
 }
 
-func cloudRouterFiltersTerraformToGo(filters []interface{}) (fabricv4.CloudRouterFilters, error) {
+func cloudRouterFiltersTerraformToGo(filters []any) (fabricv4.CloudRouterFilters, error) {
 	if len(filters) == 0 {
 		return fabricv4.CloudRouterFilters{}, fmt.Errorf("no filters passed to filtersTerraformToGoMethod")
 	}
@@ -175,7 +175,7 @@ func cloudRouterFiltersTerraformToGo(filters []interface{}) (fabricv4.CloudRoute
 	cloudRouterOrFilter := fabricv4.CloudRouterOrFilter{}
 
 	for _, filter := range filters {
-		filterMap := filter.(map[string]interface{})
+		filterMap := filter.(map[string]any)
 		cloudRouterFilter := fabricv4.CloudRouterFilter{}
 		filterExpression := fabricv4.CloudRouterSimpleExpression{}
 		if property, ok := filterMap["property"]; ok {
@@ -185,7 +185,7 @@ func cloudRouterFiltersTerraformToGo(filters []interface{}) (fabricv4.CloudRoute
 			filterExpression.SetOperator(operator.(string))
 		}
 		if values, ok := filterMap["values"]; ok {
-			stringValues := converters.IfArrToStringArr(values.([]interface{}))
+			stringValues := converters.IfArrToStringArr(values.([]any))
 			filterExpression.SetValues(stringValues)
 		}
 
@@ -220,13 +220,13 @@ func cloudRouterFiltersTerraformToGo(filters []interface{}) (fabricv4.CloudRoute
 	return cloudRouterFilters, nil
 }
 
-func cloudRouterPaginationTerraformToGo(pagination []interface{}) fabricv4.PaginationRequest {
+func cloudRouterPaginationTerraformToGo(pagination []any) fabricv4.PaginationRequest {
 	if len(pagination) == 0 {
 		return fabricv4.PaginationRequest{}
 	}
 	paginationRequest := fabricv4.PaginationRequest{}
 	for _, page := range pagination {
-		pageMap := page.(map[string]interface{})
+		pageMap := page.(map[string]any)
 		if offset, ok := pageMap["offset"]; ok {
 			paginationRequest.SetOffset(int32(offset.(int)))
 		}
@@ -238,14 +238,14 @@ func cloudRouterPaginationTerraformToGo(pagination []interface{}) fabricv4.Pagin
 	return paginationRequest
 }
 
-func cloudRouterSortTerraformToGo(sort []interface{}) []fabricv4.CloudRouterSortCriteria {
+func cloudRouterSortTerraformToGo(sort []any) []fabricv4.CloudRouterSortCriteria {
 	if len(sort) == 0 {
 		return []fabricv4.CloudRouterSortCriteria{}
 	}
 	sortCriteria := make([]fabricv4.CloudRouterSortCriteria, len(sort))
 	for index, item := range sort {
 		sortItem := fabricv4.CloudRouterSortCriteria{}
-		pageMap := item.(map[string]interface{})
+		pageMap := item.(map[string]any)
 		if direction, ok := pageMap["direction"]; ok {
 			sortItem.SetDirection(fabricv4.CloudRouterSortDirection(direction.(string)))
 		}
@@ -259,7 +259,7 @@ func cloudRouterSortTerraformToGo(sort []interface{}) []fabricv4.CloudRouterSort
 
 func setFabricCloudRoutersData(d *schema.ResourceData, cloudRouters *fabricv4.SearchResponse) diag.Diagnostics {
 	diags := diag.Diagnostics{}
-	mappedCloudRouters := make([]map[string]interface{}, len(cloudRouters.Data))
+	mappedCloudRouters := make([]map[string]any, len(cloudRouters.Data))
 	if cloudRouters.Data != nil {
 		for index, cloudRouter := range cloudRouters.Data {
 			mappedCloudRouters[index] = fabricCloudRouterMap(&cloudRouter)
@@ -267,7 +267,7 @@ func setFabricCloudRoutersData(d *schema.ResourceData, cloudRouters *fabricv4.Se
 	} else {
 		mappedCloudRouters = nil
 	}
-	err := equinix_schema.SetMap(d, map[string]interface{}{
+	err := equinix_schema.SetMap(d, map[string]any{
 		"data": mappedCloudRouters,
 	})
 	if err != nil {

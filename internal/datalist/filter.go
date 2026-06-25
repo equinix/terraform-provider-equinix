@@ -16,7 +16,7 @@ var (
 
 type commonFilter struct {
 	attribute string
-	values    []interface{}
+	values    []any
 	all       bool
 	matchBy   string
 }
@@ -58,11 +58,11 @@ func filterSchema(allowedAttributes []string) *schema.Schema {
 	}
 }
 
-func expandFilters(recordSchema map[string]*schema.Schema, rawFilters []interface{}) ([]commonFilter, error) {
+func expandFilters(recordSchema map[string]*schema.Schema, rawFilters []any) ([]commonFilter, error) {
 	expandedFilters := make([]commonFilter, len(rawFilters))
 
 	for i, rawFilter := range rawFilters {
-		f := rawFilter.(map[string]interface{})
+		f := rawFilter.(map[string]any)
 
 		attr := f["attribute"].(string)
 		s, ok := recordSchema[attr]
@@ -75,7 +75,7 @@ func expandFilters(recordSchema map[string]*schema.Schema, rawFilters []interfac
 			matchBy = v
 		}
 
-		expandedFilterValues, err := expandFilterValues(f["values"].([]interface{}), s, matchBy)
+		expandedFilterValues, err := expandFilterValues(f["values"].([]any), s, matchBy)
 		if err != nil {
 			return nil, err
 		}
@@ -125,8 +125,8 @@ func expandPrimitiveFilterValue(
 	filterValue string,
 	fieldType schema.ValueType,
 	matchBy string,
-) (interface{}, error) {
-	var expandedValue interface{}
+) (any, error) {
+	var expandedValue any
 
 	switch fieldType {
 	case schema.TypeString:
@@ -174,15 +174,15 @@ func expandPrimitiveFilterValue(
 // Takes the "raw" set of strings provided by the Terraform SDK and converts the values
 // into the actual Go types used for comparisons when filtering.
 func expandFilterValues(
-	rawFilterValues []interface{},
+	rawFilterValues []any,
 	fieldSchema *schema.Schema,
 	matchBy string,
-) ([]interface{}, error) {
-	expandedFilterValues := make([]interface{}, len(rawFilterValues))
+) ([]any, error) {
+	expandedFilterValues := make([]any, len(rawFilterValues))
 
 	for i, rawFilterValue := range rawFilterValues {
 		filterValue := rawFilterValue.(string)
-		var expandedValue interface{}
+		var expandedValue any
 
 		if isPrimitiveType(fieldSchema.Type) {
 			ev, err := expandPrimitiveFilterValue(filterValue, fieldSchema.Type, matchBy)
@@ -212,12 +212,12 @@ func expandFilterValues(
 	return expandedFilterValues, nil
 }
 
-func applyFilters(recordSchema map[string]*schema.Schema, records []map[string]interface{}, filters []commonFilter) []map[string]interface{} {
+func applyFilters(recordSchema map[string]*schema.Schema, records []map[string]any, filters []commonFilter) []map[string]any {
 	for _, f := range filters {
 		// Handle multiple filters by applying them in order
-		var filteredRecords []map[string]interface{}
+		var filteredRecords []map[string]any
 
-		filterFunc := func(record map[string]interface{}) bool {
+		filterFunc := func(record map[string]any) bool {
 			result := f.all
 
 			for _, filterValue := range f.values {

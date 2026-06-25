@@ -87,7 +87,7 @@ func createNetworkSSHKeyResourceSchema() map[string]*schema.Schema {
 	}
 }
 
-func resourceNetworkSSHKeyCreate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func resourceNetworkSSHKeyCreate(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
 	client := m.(*config.Config).Ne
 	m.(*config.Config).AddModuleToNEUserAgent(&client, d)
 	var diags diag.Diagnostics
@@ -101,7 +101,7 @@ func resourceNetworkSSHKeyCreate(ctx context.Context, d *schema.ResourceData, m 
 	return diags
 }
 
-func resourceNetworkSSHKeyRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func resourceNetworkSSHKeyRead(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
 	client := m.(*config.Config).Ne
 	m.(*config.Config).AddModuleToNEUserAgent(&client, d)
 	var diags diag.Diagnostics
@@ -121,7 +121,7 @@ func resourceNetworkSSHKeyRead(ctx context.Context, d *schema.ResourceData, m in
 	return diags
 }
 
-func resourceNetworkSSHKeyDelete(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func resourceNetworkSSHKeyDelete(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
 	client := m.(*config.Config).Ne
 	m.(*config.Config).AddModuleToNEUserAgent(&client, d)
 	var diags diag.Diagnostics

@@ -26,7 +26,7 @@ func TestAccNetworkBGP_CSR1000V_Single_AWS(t *testing.T) {
 	authKey, _ := schema.EnvDefaultFunc(awsAuthKeyEnvVar, "123456789012")()
 	accountName, _ := schema.EnvDefaultFunc(networkDeviceAccountNameEnvVar, "")()
 	projectId, _ := schema.EnvDefaultFunc(networkDeviceProjectId, "")()
-	context := map[string]interface{}{
+	context := map[string]any{
 		"device-resourceName":           "test",
 		"device-account_name":           accountName.(string),
 		"device-self_managed":           false,
@@ -102,7 +102,7 @@ func (t *testAccConfig) withBGP() *testAccConfig {
 	return t
 }
 
-func testAccNetworkBGP(ctx map[string]interface{}) string {
+func testAccNetworkBGP(ctx map[string]any) string {
 	var config string
 	config += nprintf(`
 resource "equinix_network_bgp" "%{bgp-resourceName}" {
@@ -154,7 +154,7 @@ func testAccNeBGPExists(resourceName string, bgpConfig *ne.BGPConfiguration) res
 	}
 }
 
-func testAccNeBGPAttributes(bgpConfig *ne.BGPConfiguration, ctx map[string]interface{}) resource.TestCheckFunc {
+func testAccNeBGPAttributes(bgpConfig *ne.BGPConfiguration, ctx map[string]any) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		if v, ok := ctx["bgp-local_ip_address"]; ok && ne.StringValue(bgpConfig.LocalIPAddress) != v.(string) {
 			return fmt.Errorf("local_ip_address does not match %v - %v", ne.StringValue(bgpConfig.LocalIPAddress), v)
@@ -195,7 +195,7 @@ func testAccNeBGPAttributes(bgpConfig *ne.BGPConfiguration, ctx map[string]inter
 	}
 }
 
-func testAccVDFabricL2Connection(ctx map[string]interface{}) string {
+func testAccVDFabricL2Connection(ctx map[string]any) string {
 	var config string
 	if _, ok := ctx["zside-service_token"]; !ok {
 		if _, ok := ctx["connection-profile_uuid"]; !ok {
