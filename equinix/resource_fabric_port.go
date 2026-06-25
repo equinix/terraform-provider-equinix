@@ -7,6 +7,7 @@ import (
 	"log"
 	"runtime/debug"
 	"strings"
+	"time"
 
 	"github.com/equinix/equinix-sdk-go/services/fabricv4"
 
@@ -454,6 +455,43 @@ func setPortsListMap(d *schema.ResourceData, portResponse *fabricv4.AllPortsResp
 	return diags
 }
 
+func setFabricPortVlansMap(d *schema.ResourceData, linkProtocolResp *fabricv4.LinkProtocolGetResponse) diag.Diagnostics {
+	if err := equinix_schema.SetMap(d, fabricPortVlansMap(linkProtocolResp)); err != nil {
+		return diag.FromErr(err)
+	}
+	return diag.Diagnostics{}
+}
+
+func fabricPortVlansMap(res *fabricv4.LinkProtocolGetResponse) map[string]any {
+	vlans := []map[string]any{}
+
+	for _, linkProtocol := range res.Data {
+		changelog := linkProtocol.GetChangeLog()
+		vlan := map[string]any{
+			"uuid":       linkProtocol.GetUuid(),
+			"href":       linkProtocol.GetHref(),
+			"type":       string(linkProtocol.GetType()),
+			"state":      string(linkProtocol.GetState()),
+			"vlan_tag":   linkProtocol.GetVlanTag(),
+			"vlan_s_tag": linkProtocol.GetVlanSTag(),
+			"vlan_c_tag": linkProtocol.GetVlanCTag(),
+			"change_log": equinix_fabric_schema.ChangeLogGoToTerraform(&changelog),
+		}
+
+		if asset, ok := linkProtocol.GetAssetOk(); ok {
+			vlan["asset_uuid"] = asset.GetUuid()
+			vlan["asset_href"] = asset.GetHref()
+			vlan["asset_type"] = asset.GetType()
+			vlan["asset_bandwidth"] = asset.GetBandwidth()
+
+		}
+
+		vlans = append(vlans, vlan)
+	}
+
+	return map[string]any{"vlans": vlans}
+}
+
 // Returns a slice of filter objects (property, operator, value) from the new filter block, or falls back to legacy filters block
 func getPortFilterParam(d *schema.ResourceData) []map[string]string {
 	var filters []map[string]string
@@ -544,4 +582,105 @@ func resourceFabricPortGetByPortName(ctx context.Context, d *schema.ResourceData
 	}
 
 	return diag.FromErr(fmt.Errorf("advanced filtering is not yet supported by the Equinix Terraform provider. Only a single filter for /name or /uuid with '=' is currently supported"))
+}
+
+func resourceFabricPortVlansRead(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
+	client := meta.(*config.Config).NewFabricClientForSDK(ctx, d)
+	resp, _, err := client.PortsApi.GetVlans(ctx, d.Get("port_uuid").(string)).Execute()
+	if err != nil {
+		log.Printf("[WARN] Port %s not found, error %s", d.Id(), err)
+		if !strings.Contains(err.Error(), "500") {
+			d.SetId("")
+		}
+		return diag.FromErr(equinix_errors.FormatFabricError(err))
+	}
+
+	d.SetId(fmt.Sprintf("%s-%d", d.Id(), time.Now().Unix()))
+
+	return setFabricPortVlansMap(d, resp)
+}
+
+func readFabricPortVlansResponseSchema() map[string]*schema.Schema {
+	return map[string]*schema.Schema{
+		"port_uuid": {
+			Type:        schema.TypeString,
+			Required:    true,
+			Description: "Equinix-assigned port identifier",
+		},
+		"vlans": {
+			Type:        schema.TypeList,
+			Computed:    true,
+			Description: "List of VLANs",
+			Elem: &schema.Resource{
+				Schema: map[string]*schema.Schema{
+					"uuid": {
+						Type:        schema.TypeString,
+						Computed:    true,
+						Description: "Equinix-assigned VLAN identifier",
+					},
+					"href": {
+						Type:        schema.TypeString,
+						Computed:    true,
+						Description: "VLAN URI information",
+					},
+					"type": {
+						Type:        schema.TypeString,
+						Computed:    true,
+						Description: "VLAN type",
+					},
+					"state": {
+						Type:        schema.TypeString,
+						Computed:    true,
+						Description: "VLAN state",
+					},
+
+					"vlan_tag": {
+						Type:        schema.TypeInt,
+						Computed:    true,
+						Description: "VLAN tag",
+					},
+					"vlan_s_tag": {
+						Type:        schema.TypeInt,
+						Computed:    true,
+						Description: "VLAN S tag",
+					},
+					"vlan_c_tag": {
+						Type:        schema.TypeInt,
+						Computed:    true,
+						Description: "VLAN C tag",
+					},
+
+					"change_log": {
+						Type:        schema.TypeSet,
+						Computed:    true,
+						Description: "Captures port lifecycle change information",
+						Elem: &schema.Resource{
+							Schema: equinix_fabric_schema.ChangeLogSch(),
+						},
+					},
+
+					"asset_uuid": {
+						Type:        schema.TypeString,
+						Computed:    true,
+						Description: "Equinix-assigned asset identifier",
+					},
+					"asset_href": {
+						Type:        schema.TypeString,
+						Computed:    true,
+						Description: "Asset href",
+					},
+					"asset_type": {
+						Type:        schema.TypeString,
+						Computed:    true,
+						Description: "Asset type",
+					},
+					"asset_bandwidth": {
+						Type:        schema.TypeInt,
+						Computed:    true,
+						Description: "Asset bandwidth",
+					},
+				},
+			},
+		},
+	}
 }

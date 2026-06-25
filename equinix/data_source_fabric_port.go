@@ -40,3 +40,19 @@ Additional documentation:
 func dataSourceFabricGetPortsByNameResponseRead(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	return resourceFabricPortGetByPortName(ctx, d, meta)
 }
+
+func dataSourceFabricGetPortVlans() *schema.Resource {
+	return &schema.Resource{
+		ReadContext: dataSourceFabricPortVlansRead,
+		Schema:      readFabricPortVlansResponseSchema(),
+		Description: `Fabric V4 API compatible data resource that allow user to fetch the vlans of a given port
+
+Additional documentation:
+* Getting Started: https://docs.equinix.com/fabric/ports/managing-fabric-ports/
+* API: https://docs.equinix.com/api-catalog/fabricv4/#tag/Ports`,
+	}
+}
+
+func dataSourceFabricPortVlansRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+	return resourceFabricPortVlansRead(ctx, d, meta)
+}
