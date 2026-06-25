@@ -100,22 +100,21 @@ resource "equinix_fabric_port" "order" {
 - `physical_ports_type` (String) Physical Ports Type
 - `project` (Attributes) Port order project details (see [below for nested schema](#nestedatt--project))
 - `redundancy` (Attributes) Port redundancy settings (see [below for nested schema](#nestedatt--redundancy))
-- `settings` (Attributes) Port order configuration settings (see [below for nested schema](#nestedatt--settings))
 - `type` (String) Type of the port order request
 
 ### Optional
 
-- `additional_info` (Attributes List) List of key/value objects to provide additional context to the Port order (see [below for nested schema](#nestedatt--additional_info))
-- `device` (Attributes) Port device configuration (see [below for nested schema](#nestedatt--device))
-- `name` (String) Designated name of the port
 - `order` (Attributes) Details of the Port Order such as purchaseOrder details and signature (see [below for nested schema](#nestedatt--order))
 - `timeouts` (Attributes) (see [below for nested schema](#nestedatt--timeouts))
 
 ### Read-Only
 
+- `additional_info` (Attributes List) List of key/value objects to provide additional context to the Port order (see [below for nested schema](#nestedatt--additional_info))
 - `change_log` (Attributes) Details of the last change on the port resource (see [below for nested schema](#nestedatt--change_log))
+- `device` (Attributes) Port device configuration (see [below for nested schema](#nestedatt--device))
 - `href` (String) Equinix assigned URI of the port resource
 - `id` (String) The unique identifier of the resource
+- `name` (String) Designated name of the port
 - `state` (String) Value representing provisioning status for the port resource
 - `uuid` (String) Equinix assigned unique identifier of the port resource
 
@@ -207,42 +206,6 @@ Required:
 - `priority` (String) Port redundancy priority value
 
 
-<a id="nestedatt--settings"></a>
-### Nested Schema for `settings`
-
-Required:
-
-- `package_type` (String) Billing package for the port being ordered
-- `shared_port_type` (Boolean) Indicates whether this is a dedicated customer cage or a shared neutral cage
-
-
-<a id="nestedatt--additional_info"></a>
-### Nested Schema for `additional_info`
-
-Required:
-
-- `key` (String) The key name of the key/value pair
-- `value` (String) The value of the key/value pair
-
-
-<a id="nestedatt--device"></a>
-### Nested Schema for `device`
-
-Optional:
-
-- `name` (String) Device name for the port
-- `redundancy` (Attributes) Device redundancy configuration (see [below for nested schema](#nestedatt--device--redundancy))
-
-<a id="nestedatt--device--redundancy"></a>
-### Nested Schema for `device.redundancy`
-
-Optional:
-
-- `group` (String) Redundancy group identifier
-- `priority` (String) Redundancy priority (PRIMARY or SECONDARY)
-
-
-
 <a id="nestedatt--order"></a>
 ### Nested Schema for `order`
 
@@ -251,12 +214,6 @@ Optional:
 - `customer_reference_id` (String) Customer order reference Id
 - `purchase_order` (Attributes) Purchase order details (see [below for nested schema](#nestedatt--order--purchase_order))
 - `signature` (Attributes) Port order confirmation signature details (see [below for nested schema](#nestedatt--order--signature))
-
-Read-Only:
-
-- `order_id` (String) Order Identification
-- `order_number` (String) Order Reference Number
-- `uuid` (String) Equinix-assigned order identifier, this is a derived response attribute
 
 <a id="nestedatt--order--purchase_order"></a>
 ### Nested Schema for `order.purchase_order`
@@ -305,6 +262,15 @@ Optional:
 - `update` (String) A string that can be [parsed as a duration](https://pkg.go.dev/time#ParseDuration) consisting of numbers and unit suffixes, such as "30s" or "2h45m". Valid time units are "s" (seconds), "m" (minutes), "h" (hours).
 
 
+<a id="nestedatt--additional_info"></a>
+### Nested Schema for `additional_info`
+
+Read-Only:
+
+- `key` (String) The key name of the key/value pair
+- `value` (String) The value of the key/value pair
+
+
 <a id="nestedatt--change_log"></a>
 ### Nested Schema for `change_log`
 
@@ -322,3 +288,20 @@ Read-Only:
 - `updated_by_email` (String) Email of last updater of the port resource
 - `updated_by_full_name` (String) Legal name of last updater of the port resource
 - `updated_date_time` (String) Last update time of the port resource
+
+
+<a id="nestedatt--device"></a>
+### Nested Schema for `device`
+
+Read-Only:
+
+- `name` (String) Device name for the port
+- `redundancy` (Attributes) Device redundancy configuration (see [below for nested schema](#nestedatt--device--redundancy))
+
+<a id="nestedatt--device--redundancy"></a>
+### Nested Schema for `device.redundancy`
+
+Optional:
+
+- `group` (String) Redundancy group identifier
+- `priority` (String) Redundancy priority (PRIMARY or SECONDARY)

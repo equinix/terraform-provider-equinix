@@ -32,7 +32,7 @@ subcategory: "Fabric"
 Required:
 
 - `operator` (String) Operators to use on your filtered field with the values given. One of [ =, !=, >, >=, <, <=, BETWEEN, NOT BETWEEN, LIKE, NOT LIKE, IN, NOT IN, IS NOT NULL, IS NULL]
-- `property` (String) possible field names to use on filters. One of [/type /name /project/projectId /uuid /state]
+- `property` (String) possible field names to use on filters. One of /type, /state, /prefix, /nextHop, /*
 - `values` (List of String) The values that you want to apply the property+operator combination to in order to filter your data search
 
 
