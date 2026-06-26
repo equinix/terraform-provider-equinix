@@ -44,16 +44,15 @@ func (r *DataSourceSearchRouteAggregationRules) Read(ctx context.Context, reques
 		return
 	}
 
-	var sort []*sortModel
+	var sort []sortModel
 	if !data.Sort.IsNull() && !data.Sort.IsUnknown() {
 		if diags := data.Sort.ElementsAs(ctx, &sort, false); diags.HasError() {
 			response.Diagnostics.Append(diags...)
-			return
 		}
 	}
 
 	params.SetSort(slice.Map(sort,
-		func(s *sortModel) fabricv4.RouteAggregationRuleSortCriteria {
+		func(s sortModel) fabricv4.RouteAggregationRuleSortCriteria {
 			sortCriteria := fabricv4.NewRouteAggregationRuleSortCriteria()
 			if !s.Direction.IsNull() {
 				sortCriteria.SetDirection(
@@ -71,7 +70,6 @@ func (r *DataSourceSearchRouteAggregationRules) Read(ctx context.Context, reques
 	if !data.Filter.IsNull() && !data.Filter.IsUnknown() {
 		if diags := data.Filter.ElementsAs(ctx, &filter, false); diags.HasError() {
 			response.Diagnostics.Append(diags...)
-			return
 		}
 	}
 
@@ -112,7 +110,6 @@ func (r *DataSourceSearchRouteAggregationRules) Read(ctx context.Context, reques
 		diags := data.Pagination.As(ctx, &tfpagination, basetypes.ObjectAsOptions{})
 		if diags.HasError() {
 			response.Diagnostics.Append(diags...)
-			return
 		}
 	}
 
@@ -134,6 +131,10 @@ func (r *DataSourceSearchRouteAggregationRules) Read(ctx context.Context, reques
 	}
 
 	params.SetPagination(*pagination)
+
+	if response.Diagnostics.HasError() {
+		return
+	}
 
 	routeAggregations, _, err := routeAggregationRequest.RouteAggregationRulesSearchRequest(*params).Execute()
 
