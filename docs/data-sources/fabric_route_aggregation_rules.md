@@ -85,7 +85,7 @@ Read-Only:
 
 Optional:
 
-- `direction` (String) The sorting direction. Can be one of: [DESC, ASC], Defaults to DESC
+- `direction` (String) The sorting direction. Can be one of: [DESC ASC], Defaults to DESC
 - `property` (String) The property name to use in sorting. One of [/type /uuid /name /state /prefix /prefixMatch /changeLog/createdDateTime /changeLog/updatedDateTime]. Defaults to /changeLog/updatedDateTime
 
 

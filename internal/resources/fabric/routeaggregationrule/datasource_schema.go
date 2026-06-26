@@ -72,15 +72,17 @@ Additional Documentation:
 				NestedObject: schema.NestedAttributeObject{
 					Attributes: map[string]schema.Attribute{
 						"direction": schema.StringAttribute{
-							Description: "The sorting direction. Can be one of: [DESC, ASC], Defaults to DESC",
+							Description: fmt.Sprintf("The sorting direction. Can be one of: %v, Defaults to DESC", fabricv4.AllowedRouteAggregationRuleSortDirectionEnumValues),
 							Optional:    true,
-							Validators:  []validator.String{stringvalidator.OneOf("ASC", "DESC")},
+							Validators: []validator.String{stringvalidator.OneOf(
+								slice.Map(fabricv4.AllowedRouteAggregationRuleSortDirectionEnumValues, func(r fabricv4.RouteAggregationRuleSortDirection) string { return string(r) })...,
+							)},
 						},
 						"property": schema.StringAttribute{
 							Description: fmt.Sprintf("The property name to use in sorting. One of %v. Defaults to /changeLog/updatedDateTime", fabricv4.AllowedRouteFilterRuleSortByEnumValues),
 							Optional:    true,
 							Validators: []validator.String{stringvalidator.OneOf(
-								slice.Map(fabricv4.AllowedRouteFilterRuleSortByEnumValues, func(r fabricv4.RouteFilterRuleSortBy) string {
+								slice.Map(fabricv4.AllowedRouteAggregationRuleSortByEnumValues, func(r fabricv4.RouteAggregationRuleSortBy) string {
 									return string(r)
 								})...,
 							)},
