@@ -64,7 +64,7 @@ resource "equinix_fabric_service_profile" "new_service_profile" {
 - `notifications` (Block List) Preferences for notifications on connection configuration or status changes (see [below for nested schema](#nestedblock--notifications))
 - `ports` (Block List) Ports (see [below for nested schema](#nestedblock--ports))
 - `project` (Block Set, Max: 1) Project information (see [below for nested schema](#nestedblock--project))
-- `self_profile` (Boolean) Self Profile indicating if the profile is created for customer's  self use
+- `self_profile` (Boolean) Self Profile indicating if the profile is created for customer's self use
 - `state` (String) Service profile state - ACTIVE, PENDING_APPROVAL, DELETED, REJECTED
 - `tags` (List of String) Tags attached to the connection
 - `timeouts` (Block, Optional) (see [below for nested schema](#nestedblock--timeouts))

@@ -130,7 +130,7 @@ func fabricServiceProfileSchema() map[string]*schema.Schema {
 		"self_profile": {
 			Type:        schema.TypeBool,
 			Optional:    true,
-			Description: "Self Profile indicating if the profile is created for customer's  self use",
+			Description: "Self Profile indicating if the profile is created for customer's self use",
 		},
 		"state": {
 			Type:        schema.TypeString,
