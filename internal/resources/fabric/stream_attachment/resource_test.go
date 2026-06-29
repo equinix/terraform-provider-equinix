@@ -48,7 +48,7 @@ func testAccFabricStreamAttachmentConfig() string {
 		  name = "Attachment_Test_PFCR"
 		  description = "Testing Stream Attachment resource"
 		  project = {
-			project_id = "291639000636552"
+			project_id = "33ec651f-cc99-48e0-94d3-47466899cdc7"
 		  }
 		}
 
@@ -72,7 +72,7 @@ func testAccFabricStreamAttachmentConfig() string {
 				]
 			}
 			project{
-				project_id = "291639000636552"
+				project_id = "33ec651f-cc99-48e0-94d3-47466899cdc7"
 			}
 			account {
 				account_number = 201257

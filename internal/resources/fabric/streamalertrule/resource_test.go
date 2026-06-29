@@ -132,6 +132,7 @@ func testAccFabricStreamAlertRuleConfig(uri, event_index, metric_index, source, 
 		  type               = "METRIC_ALERT"
 		  description        = "%s"
 		  detection_method = {
+			type               = "THRESHOLD"
 			operand            = "ABOVE"
 		  	window_size        = "PT15M"
 		  	warning_threshold  = "35000000"
