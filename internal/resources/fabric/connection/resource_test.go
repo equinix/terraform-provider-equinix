@@ -43,7 +43,7 @@ func TestAccFabricCreatePort2SPConnection_PPDS(t *testing.T) {
 					resource.TestCheckResourceAttr(
 						"equinix_fabric_connection.test", "order.0.purchase_order_number", "1-323292"),
 					resource.TestCheckResourceAttr(
-						"equinix_fabric_connection.test", "geo_scope", "CH"),
+						"equinix_fabric_connection.test", "geo_scope", "CONUS"),
 					resource.TestCheckResourceAttr(
 						"equinix_fabric_connection.test", "a_side.0.access_point.0.type", "COLO"),
 					resource.TestCheckResourceAttr(
@@ -80,7 +80,7 @@ func TestAccFabricCreatePort2SPConnection_PFCR(t *testing.T) {
 		CheckDestroy: CheckConnectionDelete,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccFabricCreatePort2SPConnectionConfig(publicSPName, "port2sp_PFCR", portUUID, "SV"),
+				Config: testAccFabricCreatePort2SPConnectionConfig(publicSPName, "port2sp_PFCR", portUUID, "DC"),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttrSet("equinix_fabric_connection.test", "id"),
 					resource.TestCheckResourceAttr(
@@ -98,7 +98,7 @@ func TestAccFabricCreatePort2SPConnection_PFCR(t *testing.T) {
 					resource.TestCheckResourceAttr(
 						"equinix_fabric_connection.test", "a_side.0.access_point.0.link_protocol.0.type", "DOT1Q"),
 					resource.TestCheckResourceAttr(
-						"equinix_fabric_connection.test", "a_side.0.access_point.0.link_protocol.0.vlan_tag", "1500"),
+						"equinix_fabric_connection.test", "a_side.0.access_point.0.link_protocol.0.vlan_tag", "1569"),
 					resource.TestCheckResourceAttr(
 						"equinix_fabric_connection.test", "z_side.0.access_point.0.type", "SP"),
 					resource.TestCheckResourceAttr(
@@ -106,7 +106,7 @@ func TestAccFabricCreatePort2SPConnection_PFCR(t *testing.T) {
 					resource.TestCheckResourceAttr(
 						"equinix_fabric_connection.test", "z_side.0.access_point.0.profile.0.name", publicSPName),
 					resource.TestCheckResourceAttr(
-						"equinix_fabric_connection.test", "z_side.0.access_point.0.location.0.metro_code", "SV"),
+						"equinix_fabric_connection.test", "z_side.0.access_point.0.location.0.metro_code", "DC"),
 				),
 				ExpectNonEmptyPlan: true,
 			},
@@ -135,7 +135,7 @@ func testAccFabricCreatePort2SPConnectionConfig(spName, name, portUUID, zSideMet
 			emails=["example@equinix.com"]
 		} 
 		bandwidth = 50
-		geo_scope = "CH"
+		geo_scope = "CONUS"
 		redundancy {priority= "PRIMARY"}
 		order {
 			purchase_order_number= "1-323292"
@@ -148,7 +148,7 @@ func testAccFabricCreatePort2SPConnectionConfig(spName, name, portUUID, zSideMet
 				}
 				link_protocol {
 					type= "DOT1Q"
-					vlan_tag= "1500"
+					vlan_tag= "1569"
 				}
 			}
 		}

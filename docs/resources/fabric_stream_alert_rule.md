@@ -15,15 +15,16 @@ Additional Documentation:
 
 ```terraform
 resource "equinix_fabric_stream_alert_rule" "new_stream_alert_rule" {
-  stream_id          = "<stream_id>"
-  name               = "<name>"
-  type               = "METRIC_ALERT"
-  description        = "<description>"
-  enabled            = true
+  stream_id   = "<stream_id>"
+  name        = "<name>"
+  type        = "METRIC_ALERT"
+  description = "<description>"
+  enabled     = true
   metric_selector = {
     include = ["equinix.fabric.connection.bandwidth_tx.usage"]
   }
   detection_method = {
+    type               = "THRESHOLD"
     operand            = "ABOVE"
     window_size        = "<window_size>"
     warning_threshold  = "<warning_threshold>"

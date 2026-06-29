@@ -10,17 +10,22 @@ import (
 
 func testAccFabricStreamDataSourcesConfig(name, description string) string {
 	return fmt.Sprintf(`
-	
 		resource "equinix_fabric_stream" "new_stream_1" {
 		  type = "TELEMETRY_STREAM"
 		  name = "%[1]s"
 		  description = "%[2]s"
+		  project = {
+			project_id = "291639000636552"
+		  }
 		}
 
 		resource "equinix_fabric_stream" "new_stream_2" {
 		  type = "TELEMETRY_STREAM"
 		  name = "%[1]s"
 		  description = "%[2]s"
+		  project = {
+			project_id = "291639000636552"
+		  }
 		}
 		
 		resource "equinix_fabric_stream" "new_stream_3" {
