@@ -16,7 +16,7 @@ import (
 func AddTestSweeper() {
 	resource.AddTestSweepers("equinix_fabric_cloud_router", &resource.Sweeper{
 		Name:         "equinix_fabric_cloud_router",
-		Dependencies: []string{},
+		Dependencies: []string{"equinix_fabric_connection"},
 		F:            testSweepCloudRouters,
 	})
 }
