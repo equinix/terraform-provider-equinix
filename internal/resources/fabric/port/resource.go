@@ -262,9 +262,8 @@ func buildCreateRequest(ctx context.Context, plan resourceModel) (fabricv4.PortR
 		request.SetConnectivitySourceType(fabricv4.PortConnectivitySourceType(plan.ConnectivitySourceType.ValueString()))
 	}
 	request.SetLagEnabled(plan.LagEnabled.ValueBool())
-	request.SetName(plan.Name.ValueString())
 	request.SetPhysicalPortsSpeed(plan.PhysicalPortsSpeed.ValueInt32())
-	request.SetPhysicalPortsType(fabricv4.PortPhysicalPortsType(plan.PhysicalPortsType.ValueString()))
+	request.SetPhysicalPortsType(fabricv4.PortRequestPhysicalPortsType(plan.PhysicalPortsType.ValueString()))
 	request.SetPhysicalPortsCount(plan.PhysicalPortsCount.ValueInt32())
 	request.SetDemarcationPointIbx(plan.DemarcationPointIbx.ValueString())
 
@@ -275,22 +274,9 @@ func buildCreateRequest(ctx context.Context, plan resourceModel) (fabricv4.PortR
 			mDiags.Append(diags...)
 			return fabricv4.PortRequest{}, mDiags
 		}
-		simplifiedLocation := fabricv4.SimplifiedLocation{}
+		simplifiedLocation := fabricv4.SimplifiedLocationRequest{}
 		simplifiedLocation.SetMetroCode(location.MetroCode.ValueString())
 		request.SetLocation(simplifiedLocation)
-	}
-
-	if !plan.Settings.IsNull() && !plan.Settings.IsUnknown() {
-		var settings settingsModel
-		diags := plan.Settings.As(ctx, &settings, basetypes.ObjectAsOptions{})
-		if diags.HasError() {
-			mDiags.Append(diags...)
-			return fabricv4.PortRequest{}, mDiags
-		}
-		portSettings := fabricv4.PortSettings{}
-		portSettings.SetPackageType(fabricv4.PortSettingsPackageType(settings.PackageType.ValueString()))
-		portSettings.SetSharedPortType(settings.SharedPortType.ValueBool())
-		request.SetSettings(portSettings)
 	}
 
 	if !plan.Encapsulation.IsNull() && !plan.Encapsulation.IsUnknown() {
@@ -313,14 +299,8 @@ func buildCreateRequest(ctx context.Context, plan resourceModel) (fabricv4.PortR
 			mDiags.Append(diags...)
 			return fabricv4.PortRequest{}, mDiags
 		}
-		simplifiedAccount := fabricv4.SimplifiedAccount{}
+		simplifiedAccount := fabricv4.SimplifiedAccountRequest{}
 		simplifiedAccount.SetAccountNumber(account.AccountNumber.ValueInt64())
-		if !account.AccountName.IsNull() && !account.AccountName.IsUnknown() {
-			simplifiedAccount.SetAccountName(account.AccountName.ValueString())
-		}
-		if !account.UcmID.IsNull() && !account.UcmID.IsUnknown() {
-			simplifiedAccount.SetUcmId(account.UcmID.ValueString())
-		}
 		request.SetAccount(simplifiedAccount)
 	}
 
@@ -344,33 +324,6 @@ func buildCreateRequest(ctx context.Context, plan resourceModel) (fabricv4.PortR
 		portRedundancy := fabricv4.PortRedundancy{}
 		portRedundancy.SetPriority(fabricv4.PortPriority(redundancy.Priority.ValueString()))
 		request.SetRedundancy(portRedundancy)
-	}
-
-	if !plan.Device.IsNull() && !plan.Device.IsUnknown() {
-		var deviceModel deviceModel
-		diags := plan.Device.As(ctx, &deviceModel, basetypes.ObjectAsOptions{})
-		if diags.HasError() {
-			mDiags.Append(diags...)
-			return fabricv4.PortRequest{}, mDiags
-		}
-		portDevice := fabricv4.PortDevice{}
-		portDevice.SetName(deviceModel.Name.ValueString())
-
-		if !deviceModel.Redundancy.IsNull() && !deviceModel.Redundancy.IsUnknown() {
-			var deviceRedundancy deviceRedundancyModel
-			diags := deviceModel.Redundancy.As(ctx, &deviceRedundancy, basetypes.ObjectAsOptions{})
-			if diags.HasError() {
-				mDiags.Append(diags...)
-				return fabricv4.PortRequest{}, mDiags
-			}
-			portDeviceRedundancy := fabricv4.PortDeviceRedundancy{}
-			portDeviceRedundancy.SetPriority(fabricv4.PortDeviceRedundancyPriority(deviceRedundancy.Priority.ValueString()))
-			if !deviceRedundancy.Group.IsNull() && !deviceRedundancy.Group.IsUnknown() {
-				portDeviceRedundancy.SetGroup(deviceRedundancy.Group.ValueString())
-			}
-			portDevice.SetRedundancy(portDeviceRedundancy)
-		}
-		request.SetDevice(portDevice)
 	}
 
 	if !plan.PhysicalPorts.IsNull() && !plan.PhysicalPorts.IsUnknown() {
@@ -410,21 +363,6 @@ func buildCreateRequest(ctx context.Context, plan resourceModel) (fabricv4.PortR
 			portNotifications[i].SetRegisteredUsers(registeredUsers)
 		}
 		request.SetNotifications(portNotifications)
-	}
-
-	if !plan.AdditionalInfo.IsNull() && !plan.AdditionalInfo.IsUnknown() {
-		additionalInfo := make([]additionalInfoModel, len(plan.AdditionalInfo.Elements()))
-		diags := plan.AdditionalInfo.ElementsAs(ctx, &additionalInfo, false)
-		if diags.HasError() {
-			mDiags.Append(diags...)
-			return fabricv4.PortRequest{}, mDiags
-		}
-		portAdditionalInfo := make([]fabricv4.PortAdditionalInfo, len(additionalInfo))
-		for i, v := range additionalInfo {
-			portAdditionalInfo[i].SetKey(v.Key.ValueString())
-			portAdditionalInfo[i].SetValue(v.Value.ValueString())
-		}
-		request.SetAdditionalInfo(portAdditionalInfo)
 	}
 
 	return request, mDiags
@@ -479,8 +417,6 @@ func buildOrder(ctx context.Context, orderObject fwtypes.ObjectValueOf[orderMode
 	}
 
 	portOrder := fabricv4.PortOrder{}
-	portOrder.SetOrderNumber(order.OrderNumber.ValueString())
-	portOrder.SetOrderId(order.OrderID.ValueString())
 	portOrder.SetCustomerReferenceId(order.CustomerReferenceID.ValueString())
 
 	var purchaseOrder purchaseOrderModel
@@ -494,10 +430,8 @@ func buildOrder(ctx context.Context, orderObject fwtypes.ObjectValueOf[orderMode
 	portPurchaseOrder.SetAmount(purchaseOrder.Amount.ValueString())
 	portPurchaseOrder.SetAttachmentId(purchaseOrder.AttachmentID.ValueString())
 	portPurchaseOrder.SetNumber(purchaseOrder.Number.ValueString())
-	startTime, _ := time.Parse(time.RFC3339Nano, purchaseOrder.StartDate.ValueString())
-	endTime, _ := time.Parse(time.RFC3339Nano, purchaseOrder.EndDate.ValueString())
-	portPurchaseOrder.SetStartDate(startTime)
-	portPurchaseOrder.SetEndDate(endTime)
+	portPurchaseOrder.SetStartDate(purchaseOrder.StartDate.ValueString())
+	portPurchaseOrder.SetEndDate(purchaseOrder.EndDate.ValueString())
 
 	portOrder.SetPurchaseOrder(portPurchaseOrder)
 

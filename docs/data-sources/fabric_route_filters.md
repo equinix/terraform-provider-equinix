@@ -99,12 +99,12 @@ Optional:
 
 - `limit` (Number) Number of elements to be requested per page. Number must be between 1 and 100. Default is 20
 - `offset` (Number) The page offset for the pagination request. Index of the first element. Default is 0.
-- `total` (Number) Total number of elements returned.
 
 Read-Only:
 
 - `next` (String) URL relative to the last item in the response.
 - `previous` (String) URL relative to the first item in the response.
+- `total` (Number) Total number of elements returned.
 
 
 <a id="nestedblock--sort"></a>

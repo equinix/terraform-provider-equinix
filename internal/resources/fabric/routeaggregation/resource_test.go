@@ -9,26 +9,30 @@ import (
 	"github.com/equinix/terraform-provider-equinix/internal/config"
 
 	"github.com/equinix/terraform-provider-equinix/internal/acceptance"
+	tfconfig "github.com/hashicorp/terraform-plugin-testing/config"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
+	"github.com/hashicorp/terraform-plugin-testing/knownvalue"
+	"github.com/hashicorp/terraform-plugin-testing/statecheck"
 	"github.com/hashicorp/terraform-plugin-testing/terraform"
+	"github.com/hashicorp/terraform-plugin-testing/tfjsonpath"
 )
 
-func testAccFabricRouteAggregationConfig(name string) string {
-	return fmt.Sprintf(`
-		resource "equinix_fabric_route_aggregation" "test" {
-		  type = "BGP_IPv4_PREFIX_AGGREGATION"
-		  name = "%s"
-		  description = "Test Route Aggregation"
-		  project = {
-			project_id = "33ec651f-cc99-48e0-94d3-47466899cdc7"
-		  }
-		}
-	`, name)
+var resourceConfig = `
+resource "equinix_fabric_route_aggregation" "test" {
+  type        = "BGP_IPv4_PREFIX_AGGREGATION"
+  name        = var.name
+  description = "Test Route Aggregation"
+  project = {
+    project_id = "33ec651f-cc99-48e0-94d3-47466899cdc7"
+  }
 }
 
+variable "name" {
+  type = string
+}
+`
+
 func TestAccFabricRouteAggregation_PFCR(t *testing.T) {
-	routeAggregationName := "stream_PFCR"
-	upRouteAggregationName := "stream_up_PFCR"
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:                 func() { acceptance.TestAccPreCheck(t); acceptance.TestAccPreCheckProviderConfigured(t) },
 		ExternalProviders:        acceptance.TestExternalProviders,
@@ -36,32 +40,42 @@ func TestAccFabricRouteAggregation_PFCR(t *testing.T) {
 		CheckDestroy:             CheckRouteAggregationDelete,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccFabricRouteAggregationConfig(routeAggregationName),
-				Check: resource.ComposeTestCheckFunc(
-					resource.TestCheckResourceAttr(
-						"equinix_fabric_route_aggregation.test", "name", routeAggregationName),
-					resource.TestCheckResourceAttrSet("equinix_fabric_route_aggregation.test", "uuid"),
-					resource.TestCheckResourceAttrSet("equinix_fabric_route_aggregation.test", "state"),
-					resource.TestCheckResourceAttrSet("equinix_fabric_route_aggregation.test", "href"),
-					resource.TestCheckResourceAttrSet("equinix_fabric_route_aggregation.test", "project.project_id"),
-					resource.TestCheckResourceAttr("equinix_fabric_route_aggregation.test", "name", routeAggregationName),
-					resource.TestCheckResourceAttr("equinix_fabric_route_aggregation.test", "type", "BGP_IPv4_PREFIX_AGGREGATION"),
-					resource.TestCheckResourceAttr("equinix_fabric_route_aggregation.test", "description", "Test Route Aggregation"),
-				),
+				Config: resourceConfig,
+				ConfigVariables: tfconfig.Variables{
+					"name": tfconfig.StringVariable("route_agg_PFCR"),
+				},
+				ConfigStateChecks: []statecheck.StateCheck{
+					statecheck.ExpectKnownValue("equinix_fabric_route_aggregation.test", tfjsonpath.New("uuid"), knownvalue.NotNull()),
+					statecheck.ExpectKnownValue("equinix_fabric_route_aggregation.test", tfjsonpath.New("state"), knownvalue.NotNull()),
+					statecheck.ExpectKnownValue("equinix_fabric_route_aggregation.test", tfjsonpath.New("href"), knownvalue.NotNull()),
+					statecheck.ExpectKnownValue("equinix_fabric_route_aggregation.test", tfjsonpath.New("name"), knownvalue.StringExact("route_agg_PFCR")),
+					statecheck.ExpectKnownValue("equinix_fabric_route_aggregation.test", tfjsonpath.New("description"), knownvalue.StringExact("Test Route Aggregation")),
+					statecheck.ExpectKnownValue("equinix_fabric_route_aggregation.test", tfjsonpath.New("type"), knownvalue.StringExact("BGP_IPv4_PREFIX_AGGREGATION")),
+					statecheck.ExpectKnownValue("equinix_fabric_route_aggregation.test", tfjsonpath.New("project"),
+						knownvalue.ObjectPartial(map[string]knownvalue.Check{
+							"project_id": knownvalue.StringExact("33ec651f-cc99-48e0-94d3-47466899cdc7"),
+						}),
+					),
+				},
 			},
 			{
-				Config: testAccFabricRouteAggregationConfig(upRouteAggregationName),
-				Check: resource.ComposeTestCheckFunc(
-					resource.TestCheckResourceAttr(
-						"equinix_fabric_route_aggregation.test", "name", upRouteAggregationName),
-					resource.TestCheckResourceAttrSet("equinix_fabric_route_aggregation.test", "uuid"),
-					resource.TestCheckResourceAttrSet("equinix_fabric_route_aggregation.test", "state"),
-					resource.TestCheckResourceAttrSet("equinix_fabric_route_aggregation.test", "href"),
-					resource.TestCheckResourceAttrSet("equinix_fabric_route_aggregation.test", "project.project_id"),
-					resource.TestCheckResourceAttr("equinix_fabric_route_aggregation.test", "name", upRouteAggregationName),
-					resource.TestCheckResourceAttr("equinix_fabric_route_aggregation.test", "type", "BGP_IPv4_PREFIX_AGGREGATION"),
-					resource.TestCheckResourceAttr("equinix_fabric_route_aggregation.test", "description", "Test Route Aggregation"),
-				),
+				Config: resourceConfig,
+				ConfigVariables: tfconfig.Variables{
+					"name": tfconfig.StringVariable("route_agg_up_PFCR"),
+				},
+				ConfigStateChecks: []statecheck.StateCheck{
+					statecheck.ExpectKnownValue("equinix_fabric_route_aggregation.test", tfjsonpath.New("uuid"), knownvalue.NotNull()),
+					statecheck.ExpectKnownValue("equinix_fabric_route_aggregation.test", tfjsonpath.New("state"), knownvalue.NotNull()),
+					statecheck.ExpectKnownValue("equinix_fabric_route_aggregation.test", tfjsonpath.New("href"), knownvalue.NotNull()),
+					statecheck.ExpectKnownValue("equinix_fabric_route_aggregation.test", tfjsonpath.New("name"), knownvalue.StringExact("route_agg_up_PFCR")),
+					statecheck.ExpectKnownValue("equinix_fabric_route_aggregation.test", tfjsonpath.New("description"), knownvalue.StringExact("Test Route Aggregation")),
+					statecheck.ExpectKnownValue("equinix_fabric_route_aggregation.test", tfjsonpath.New("type"), knownvalue.StringExact("BGP_IPv4_PREFIX_AGGREGATION")),
+					statecheck.ExpectKnownValue("equinix_fabric_route_aggregation.test", tfjsonpath.New("project"),
+						knownvalue.ObjectPartial(map[string]knownvalue.Check{
+							"project_id": knownvalue.StringExact("33ec651f-cc99-48e0-94d3-47466899cdc7"),
+						}),
+					),
+				},
 			},
 		},
 	})

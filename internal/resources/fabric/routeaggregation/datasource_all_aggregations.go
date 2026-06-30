@@ -43,11 +43,10 @@ func (r *DataSourceAllRouteAggregations) Read(ctx context.Context, request datas
 	}
 
 	var tffilter FilterModel
-
-	diags := data.Filter.As(ctx, &tffilter, basetypes.ObjectAsOptions{})
-	if diags.HasError() {
+	if diags := data.Filter.As(ctx, &tffilter, basetypes.ObjectAsOptions{}); diags.HasError() {
 		return
 	}
+
 	values := []string{}
 	if len(tffilter.Values) > 0 {
 		for _, strVal := range tffilter.Values {
@@ -57,63 +56,62 @@ func (r *DataSourceAllRouteAggregations) Read(ctx context.Context, request datas
 		}
 	}
 
-	propertyValue := fabricv4.RouteFiltersSearchFilterItemProperty(tffilter.Property.ValueString())
-
-	filterItem := fabricv4.RouteAggregationsSearchFilterItem{
-		Property: &propertyValue,
+	filterItem := fabricv4.SearchSimpleExpression{
+		Property: tffilter.Property.ValueString(),
 	}
 
-	if !tffilter.Operator.IsNull() && !tffilter.Operator.IsUnknown() {
-		filterItem.Operator = tffilter.Operator.ValueStringPointer()
-	}
+	filterItem.Operator = fabricv4.SearchSimpleExpressionOperator(tffilter.Operator.ValueString())
 
 	if len(values) > 0 {
 		filterItem.Values = values
 	}
 
-	filter := fabricv4.RouteAggregationsSearchBaseFilter{
-		And: []fabricv4.RouteAggregationsSearchFilterItem{filterItem},
+	filter := fabricv4.SearchFilter{
+		SearchAndExpression: &fabricv4.SearchAndExpression{
+			And: []fabricv4.SearchFilterExpression{
+				{SearchSimpleExpression: &filterItem},
+			},
+		},
 	}
 
 	var tfpagination PaginationModel
-	diags = data.Pagination.As(ctx, &tfpagination, basetypes.ObjectAsOptions{})
-	if diags.HasError() {
+	if diags := data.Pagination.As(ctx, &tfpagination, basetypes.ObjectAsOptions{}); diags.HasError() {
 		return
 	}
+
 	offset := tfpagination.Offset.ValueInt32()
 	limit := tfpagination.Limit.ValueInt32()
 	if limit == 0 {
 		limit = 20
 	}
 
-	pagination := fabricv4.Pagination{
+	pagination := fabricv4.PaginationRequest{
 		Offset: &offset,
-		Limit:  limit,
+		Limit:  &limit,
 	}
 
 	var tfsort SortModel
-	diags = data.Sort.As(ctx, &tfsort, basetypes.ObjectAsOptions{})
-	if diags.HasError() {
+	if diags := data.Sort.As(ctx, &tfsort, basetypes.ObjectAsOptions{}); diags.HasError() {
 		return
 	}
 	direction := tfsort.Direction.ValueString()
 	property := tfsort.Property.ValueString()
 
-	pValue := fabricv4.RouteAggregationSortItemProperty(property)
-	dValue := fabricv4.SortItemDirection(direction)
+	pValue := fabricv4.RouteAggregationSortBy(property)
+	dValue := fabricv4.RouteAggregationSortDirection(direction)
 
-	sort := fabricv4.RouteAggregationSortItem{
-		Property:  &pValue,
-		Direction: &dValue,
-	}
-
-	routeAggregationsSearch := fabricv4.RouteAggregationsSearchBase{
+	routeAggregationsSearch := fabricv4.RouteAggregationsSearchRequest{
 		Filter:     &filter,
 		Pagination: &pagination,
-		Sort:       []fabricv4.RouteAggregationSortItem{sort},
+		Sort: []fabricv4.RouteAggregationSortCriteria{
+			{
+				Property:  &pValue,
+				Direction: &dValue,
+			},
+		},
 	}
 
-	routeAggregations, _, err := client.RouteAggregationsApi.SearchRouteAggregations(ctx).RouteAggregationsSearchBase(routeAggregationsSearch).Execute()
+	routeAggregations, _, err := client.RouteAggregationsApi.SearchRouteAggregations(ctx).RouteAggregationsSearchRequest(routeAggregationsSearch).Execute()
 
 	if err != nil {
 		response.State.RemoveResource(ctx)
