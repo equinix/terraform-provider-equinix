@@ -27,6 +27,10 @@ func IsSweepableTestResource(namePrefix string) bool {
 
 func IsSweepableFabricTestResource(resourceName string) bool {
 	for _, suffix := range FabricTestResourceSuffixes {
+		if strings.Contains(resourceName, "DO_NOT_DELETE") {
+			return false
+		}
+
 		if strings.HasSuffix(resourceName, suffix) {
 			return true
 		}
