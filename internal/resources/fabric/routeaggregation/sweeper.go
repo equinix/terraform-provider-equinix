@@ -35,50 +35,54 @@ func testSweepRouteAggregations(_ string) error {
 	}
 	fabric := meta.NewFabricClientForTesting(ctx)
 
-	name := fabricv4.ROUTEFILTERSSEARCHFILTERITEMPROPERTY_NAME
-	equinixState := fabricv4.ROUTEFILTERSSEARCHFILTERITEMPROPERTY_STATE
-	likeOperator := string(fabricv4.EXPRESSIONOPERATOR_LIKE)
-	equalOperator := "="
-	pfcrRouteAggregationsSearch := fabricv4.RouteAggregationsSearchBase{
-		Filter: &fabricv4.RouteAggregationsSearchBaseFilter{
-			And: []fabricv4.RouteAggregationsSearchFilterItem{
-				{
-					Property: &name,
-					Operator: &likeOperator,
-					Values:   []string{"%_PFCR"},
-				},
-				{
-					Property: &equinixState,
-					Operator: &equalOperator,
-					Values:   []string{string(fabricv4.ROUTEFILTERSTATE_PROVISIONED)},
+	pfcrRouteAggregationsSearch := fabricv4.RouteAggregationsSearchRequest{
+		Filter: &fabricv4.SearchFilter{
+			SearchAndExpression: &fabricv4.SearchAndExpression{
+				And: []fabricv4.SearchFilterExpression{
+					{
+						SearchSimpleExpression: &fabricv4.SearchSimpleExpression{
+							Property: "/name",
+							Operator: "LIKE",
+							Values:   []string{"%_PFCR"},
+						}},
+					{
+						SearchSimpleExpression: &fabricv4.SearchSimpleExpression{
+							Property: "/state",
+							Operator: "=",
+							Values:   []string{string(fabricv4.ROUTEFILTERSTATE_PROVISIONED)},
+						}},
 				},
 			},
 		},
 	}
 
-	pfcrRouteAggr, _, err := fabric.RouteAggregationsApi.SearchRouteAggregations(ctx).RouteAggregationsSearchBase(pfcrRouteAggregationsSearch).Execute()
+	pfcrRouteAggr, _, err := fabric.RouteAggregationsApi.SearchRouteAggregations(ctx).RouteAggregationsSearchRequest(pfcrRouteAggregationsSearch).Execute()
 	if err != nil {
 		return fmt.Errorf("error getting route aggregations list for sweeping fabric route aggregations: %s", err)
 	}
 
-	pnfvRouteAggregationsSearch := fabricv4.RouteAggregationsSearchBase{
-		Filter: &fabricv4.RouteAggregationsSearchBaseFilter{
-			And: []fabricv4.RouteAggregationsSearchFilterItem{
-				{
-					Property: &name,
-					Operator: &likeOperator,
-					Values:   []string{"%_PNFV"},
-				},
-				{
-					Property: &equinixState,
-					Operator: &equalOperator,
-					Values:   []string{string(fabricv4.ROUTEFILTERSTATE_PROVISIONED)},
+	pnfvRouteAggregationsSearch := fabricv4.RouteAggregationsSearchRequest{
+		Filter: &fabricv4.SearchFilter{
+			SearchAndExpression: &fabricv4.SearchAndExpression{
+				And: []fabricv4.SearchFilterExpression{
+					{
+						SearchSimpleExpression: &fabricv4.SearchSimpleExpression{
+							Property: "/name",
+							Operator: "LIKE",
+							Values:   []string{"%_PNFV"},
+						}},
+					{
+						SearchSimpleExpression: &fabricv4.SearchSimpleExpression{
+							Property: "/state",
+							Operator: "=",
+							Values:   []string{string(fabricv4.ROUTEFILTERSTATE_PROVISIONED)},
+						}},
 				},
 			},
 		},
 	}
 
-	pnfvRouteAggr, _, err := fabric.RouteAggregationsApi.SearchRouteAggregations(ctx).RouteAggregationsSearchBase(pnfvRouteAggregationsSearch).Execute()
+	pnfvRouteAggr, _, err := fabric.RouteAggregationsApi.SearchRouteAggregations(ctx).RouteAggregationsSearchRequest(pnfvRouteAggregationsSearch).Execute()
 	if err != nil {
 		return fmt.Errorf("error getting route aggregations list for sweeping fabric route aggregations: %s", err)
 	}

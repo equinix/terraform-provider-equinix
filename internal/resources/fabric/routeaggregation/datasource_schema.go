@@ -2,9 +2,7 @@ package routeaggregation
 
 import (
 	"context"
-	"fmt"
 
-	"github.com/equinix/equinix-sdk-go/services/fabricv4"
 	"github.com/equinix/terraform-provider-equinix/internal/framework"
 	fwtypes "github.com/equinix/terraform-provider-equinix/internal/framework/types"
 	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
@@ -34,7 +32,7 @@ Additional Documentation:
 				Required:    true,
 				Attributes: map[string]schema.Attribute{
 					"property": schema.StringAttribute{
-						Description: fmt.Sprintf("possible field names to use on filters. One of %v", fabricv4.AllowedRouteFiltersSearchFilterItemPropertyEnumValues),
+						Description: "Field name to use on filters",
 						Required:    true,
 					},
 					"operator": schema.StringAttribute{
@@ -90,7 +88,7 @@ Additional Documentation:
 						},
 					},
 					"property": schema.StringAttribute{
-						Description: fmt.Sprintf("The property name to use in sorting. One of %v Defaults to /name", fabricv4.AllowedRouteFiltersSearchFilterItemPropertyEnumValues),
+						Description: "The property name to use in sorting. One of \"/type\" \"/uuid\" \"/name\" \"/project/projectId\" \"/state\" \"/changeLog/createdDateTime\" \"/changeLog/updatedDateTime\" \"/changeLog/deletedDateTime\" Defaults to \"/changeLog/updatedDateTime\"",
 						Optional:    true,
 					},
 				},

@@ -64,8 +64,8 @@ func buildUpdateRequest(d *schema.ResourceData) []fabricv4.RouteFiltersPatchRequ
 	return patches
 }
 
-func buildSearchRequest(d *schema.ResourceData) fabricv4.RouteFiltersSearchBase {
-	searchRequest := fabricv4.RouteFiltersSearchBase{}
+func buildSearchRequest(d *schema.ResourceData) fabricv4.RouteFiltersSearchRequest {
+	searchRequest := fabricv4.RouteFiltersSearchRequest{}
 
 	schemaFilters := d.Get("filter").([]any)
 	filter := filtersTerraformToGo(schemaFilters)
@@ -184,40 +184,41 @@ func changeGoToTerraform(change *fabricv4.RouteFiltersChange) *schema.Set {
 	return changeSet
 }
 
-func filtersTerraformToGo(filters []any) fabricv4.RouteFiltersSearchBaseFilter {
+func filtersTerraformToGo(filters []any) fabricv4.SearchFilter {
 	if filters == nil {
-		return fabricv4.RouteFiltersSearchBaseFilter{}
+		return fabricv4.SearchFilter{}
 	}
 
-	searchFiltersList := make([]fabricv4.RouteFiltersSearchFilterItem, 0)
+	searchFiltersList := make([]fabricv4.SearchFilterExpression, 0)
 
 	for _, filter := range filters {
 		filterMap := filter.(map[string]any)
-		filterItem := fabricv4.RouteFiltersSearchFilterItem{}
+		filterItem := fabricv4.SearchSimpleExpression{}
 		if property, ok := filterMap["property"]; ok {
-			filterItem.SetProperty(fabricv4.RouteFiltersSearchFilterItemProperty(property.(string)))
+			filterItem.SetProperty(property.(string))
 		}
 		if operator, ok := filterMap["operator"]; ok {
-			filterItem.SetOperator(operator.(string))
+			filterItem.SetOperator(fabricv4.SearchSimpleExpressionOperator(operator.(string)))
 		}
 		if values, ok := filterMap["values"]; ok {
 			stringValues := converters.IfArrToStringArr(values.([]any))
 			filterItem.SetValues(stringValues)
 		}
-		searchFiltersList = append(searchFiltersList, filterItem)
+		searchFiltersList = append(searchFiltersList, fabricv4.SearchFilterExpression{SearchSimpleExpression: &filterItem})
 	}
 
-	searchFilters := fabricv4.RouteFiltersSearchBaseFilter{}
-	searchFilters.SetAnd(searchFiltersList)
+	searchFilters := fabricv4.SearchFilter{
+		SearchAndExpression: &fabricv4.SearchAndExpression{And: searchFiltersList},
+	}
 
 	return searchFilters
 }
 
-func paginationTerraformToGo(pagination []any) fabricv4.Pagination {
+func paginationTerraformToGo(pagination []any) fabricv4.PaginationRequest {
 	if pagination == nil {
-		return fabricv4.Pagination{}
+		return fabricv4.PaginationRequest{}
 	}
-	paginationRequest := fabricv4.Pagination{}
+	paginationRequest := fabricv4.PaginationRequest{}
 	for _, page := range pagination {
 		pageMap := page.(map[string]any)
 		if offset, ok := pageMap["offset"]; ok {
@@ -225,9 +226,6 @@ func paginationTerraformToGo(pagination []any) fabricv4.Pagination {
 		}
 		if limit, ok := pageMap["limit"]; ok {
 			paginationRequest.SetLimit(int32(limit.(int)))
-		}
-		if total, ok := pageMap["total"]; ok {
-			paginationRequest.SetTotal(int32(total.(int)))
 		}
 	}
 
@@ -251,19 +249,19 @@ func paginationGoToTerraform(pagination *fabricv4.Pagination) *schema.Set {
 	)
 }
 
-func sortTerraformToGo(sort []any) []fabricv4.SortItem {
+func sortTerraformToGo(sort []any) []fabricv4.RouteFilterSortCriteria {
 	if sort == nil {
-		return []fabricv4.SortItem{}
+		return []fabricv4.RouteFilterSortCriteria{}
 	}
-	sortItems := make([]fabricv4.SortItem, len(sort))
+	sortItems := make([]fabricv4.RouteFilterSortCriteria, len(sort))
 	for index, item := range sort {
-		sortItem := fabricv4.SortItem{}
+		sortItem := fabricv4.RouteFilterSortCriteria{}
 		pageMap := item.(map[string]any)
 		if direction, ok := pageMap["direction"]; ok {
-			sortItem.SetDirection(fabricv4.SortItemDirection(direction.(string)))
+			sortItem.SetDirection(fabricv4.RouteFilterSortDirection(direction.(string)))
 		}
 		if property, ok := pageMap["property"]; ok {
-			sortItem.SetProperty(fabricv4.SortItemProperty(property.(string)))
+			sortItem.SetProperty(fabricv4.RouteFilterSortBy(property.(string)))
 		}
 		sortItems[index] = sortItem
 	}
