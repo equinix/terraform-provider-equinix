@@ -129,7 +129,7 @@ func fabricServiceProfileSchema() map[string]*schema.Schema {
 		},
 		"self_profile": {
 			Type:        schema.TypeBool,
-			Optional:    true,
+			Computed:    true,
 			Description: "Self Profile indicating if the profile is created for customer's self use",
 		},
 		"state": {
@@ -642,10 +642,6 @@ func getServiceProfileRequestPayload(d *schema.ResourceData) fabricv4.ServicePro
 	if schemaMetros, ok := d.GetOk("metros"); ok {
 		spMetros := metrosTerraformToGo(schemaMetros.([]any))
 		createRequest.SetMetros(spMetros)
-	}
-
-	if selfProfile, ok := d.GetOk("self_profile"); ok {
-		createRequest.SetSelfProfile(selfProfile.(bool))
 	}
 
 	return createRequest
