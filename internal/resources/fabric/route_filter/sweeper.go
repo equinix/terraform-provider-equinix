@@ -37,28 +37,29 @@ func testSweepRouteFilters(region string) error {
 	}
 	fabric := meta.NewFabricClientForTesting(ctx)
 
-	name := fabricv4.ROUTEFILTERSSEARCHFILTERITEMPROPERTY_NAME
-	equinixState := fabricv4.ROUTEFILTERSSEARCHFILTERITEMPROPERTY_STATE
-	likeOperator := string(fabricv4.EXPRESSIONOPERATOR_LIKE)
-	equalOperator := "="
-	routeFiltersSearchRequest := fabricv4.RouteFiltersSearchBase{
-		Filter: &fabricv4.RouteFiltersSearchBaseFilter{
-			And: []fabricv4.RouteFiltersSearchFilterItem{
+	routeFiltersSearchRequest := fabricv4.RouteFiltersSearchRequest{
+		Filter: &fabricv4.SearchFilter{
+			SearchAndExpression: &fabricv4.SearchAndExpression{And: []fabricv4.SearchFilterExpression{
 				{
-					Property: &name,
-					Operator: &likeOperator,
-					Values:   []string{"%_PFCR"},
+					SearchSimpleExpression: &fabricv4.SearchSimpleExpression{
+						Property: "/name",
+						Operator: "LIKE",
+						Values:   []string{"%_PFCR"},
+					},
 				},
 				{
-					Property: &equinixState,
-					Operator: &equalOperator,
-					Values:   []string{string(fabricv4.ROUTEFILTERSTATE_PROVISIONED)},
+					SearchSimpleExpression: &fabricv4.SearchSimpleExpression{
+						Property: "/state",
+						Operator: "=",
+						Values:   []string{string(fabricv4.ROUTEFILTERSTATE_PROVISIONED)},
+					},
 				},
+			},
 			},
 		},
 	}
 
-	fabricRouteFilters, _, err := fabric.RouteFiltersApi.SearchRouteFilters(ctx).RouteFiltersSearchBase(routeFiltersSearchRequest).Execute()
+	fabricRouteFilters, _, err := fabric.RouteFiltersApi.SearchRouteFilters(ctx).RouteFiltersSearchRequest(routeFiltersSearchRequest).Execute()
 	if err != nil {
 		return fmt.Errorf("error getting route filters list for sweeping fabric route filters: %s", err)
 	}

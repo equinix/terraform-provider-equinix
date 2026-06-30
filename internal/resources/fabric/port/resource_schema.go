@@ -36,7 +36,6 @@ Additional Documentation:
 			}),
 			"name": schema.StringAttribute{
 				Description: "Designated name of the port",
-				Optional:    true,
 				Computed:    true,
 			},
 			"type": schema.StringAttribute{
@@ -54,21 +53,6 @@ Additional Documentation:
 				Attributes: map[string]schema.Attribute{
 					"metro_code": schema.StringAttribute{
 						Description: "Metro code the port will be created in",
-						Required:    true,
-					},
-				},
-			},
-			"settings": schema.SingleNestedAttribute{
-				Description: "Port order configuration settings",
-				Required:    true,
-				CustomType:  fwtypes.NewObjectTypeOf[settingsModel](ctx),
-				Attributes: map[string]schema.Attribute{
-					"package_type": schema.StringAttribute{
-						Description: "Billing package for the port being ordered",
-						Required:    true,
-					},
-					"shared_port_type": schema.BoolAttribute{
-						Description: "Indicates whether this is a dedicated customer cage or a shared neutral cage",
 						Required:    true,
 					},
 				},
@@ -135,16 +119,16 @@ Additional Documentation:
 			},
 			"device": schema.SingleNestedAttribute{
 				Description: "Port device configuration",
-				Optional:    true,
+				Computed:    true,
 				CustomType:  fwtypes.NewObjectTypeOf[deviceModel](ctx),
 				Attributes: map[string]schema.Attribute{
 					"name": schema.StringAttribute{
 						Description: "Device name for the port",
-						Optional:    true,
+						Computed:    true,
 					},
 					"redundancy": schema.SingleNestedAttribute{
 						Description: "Device redundancy configuration",
-						Optional:    true,
+						Computed:    true,
 
 						CustomType: fwtypes.NewObjectTypeOf[deviceRedundancyModel](ctx),
 						Attributes: map[string]schema.Attribute{
@@ -265,18 +249,6 @@ Additional Documentation:
 							},
 						},
 					},
-					"order_number": schema.StringAttribute{
-						Description: "Order Reference Number",
-						Computed:    true,
-					},
-					"order_id": schema.StringAttribute{
-						Description: "Order Identification",
-						Computed:    true,
-					},
-					"uuid": schema.StringAttribute{
-						Description: "Equinix-assigned order identifier, this is a derived response attribute",
-						Computed:    true,
-					},
 					"customer_reference_id": schema.StringAttribute{
 						Description: "Customer order reference Id",
 						Optional:    true,
@@ -333,17 +305,17 @@ Additional Documentation:
 			},
 			"additional_info": schema.ListNestedAttribute{
 				Description: "List of key/value objects to provide additional context to the Port order",
-				Optional:    true,
+				Computed:    true,
 				CustomType:  fwtypes.NewListNestedObjectTypeOf[additionalInfoModel](ctx),
 				NestedObject: schema.NestedAttributeObject{
 					Attributes: map[string]schema.Attribute{
 						"key": schema.StringAttribute{
 							Description: "The key name of the key/value pair",
-							Required:    true,
+							Computed:    true,
 						},
 						"value": schema.StringAttribute{
 							Description: "The value of the key/value pair",
-							Required:    true,
+							Computed:    true,
 						},
 					},
 				},

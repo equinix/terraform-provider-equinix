@@ -64,7 +64,7 @@ output "first_route_aggregation_rules_count" {
 Required:
 
 - `operator` (String) Operators to use on your filtered field with the values given. One of [ =, !=, >, >=, <, <=, BETWEEN, NOT BETWEEN, LIKE, NOT LIKE, IN, NOT IN, IS NOT NULL, IS NULL]
-- `property` (String) possible field names to use on filters. One of [/type /name /project/projectId /uuid /state]
+- `property` (String) Field name to use on filters
 - `values` (List of String) The values that you want to apply the property+operator combination to in order to filter your data search
 
 
@@ -89,7 +89,7 @@ Read-Only:
 Optional:
 
 - `direction` (String) The sorting direction. Can be one of: [DESC, ASC], Defaults to DESC
-- `property` (String) The property name to use in sorting. One of [/type /name /project/projectId /uuid /state] Defaults to /name
+- `property` (String) The property name to use in sorting. One of "/type" "/uuid" "/name" "/project/projectId" "/state" "/changeLog/createdDateTime" "/changeLog/updatedDateTime" "/changeLog/deletedDateTime" Defaults to "/changeLog/updatedDateTime"
 
 
 <a id="nestedatt--data"></a>

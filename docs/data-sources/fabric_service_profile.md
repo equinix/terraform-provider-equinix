@@ -85,7 +85,7 @@ output "allow_over_subscription" {
 - `notifications` (List of Object) Preferences for notifications on connection configuration or status changes (see [below for nested schema](#nestedatt--notifications))
 - `ports` (List of Object) Ports (see [below for nested schema](#nestedatt--ports))
 - `project` (Set of Object) Project information (see [below for nested schema](#nestedatt--project))
-- `self_profile` (Boolean) Self Profile indicating if the profile is created for customer's  self use
+- `self_profile` (Boolean) Self Profile indicating if the profile is created for customer's self use
 - `state` (String) Service profile state - ACTIVE, PENDING_APPROVAL, DELETED, REJECTED
 - `tags` (List of String) Tags attached to the connection
 - `type` (String) Service profile type - L2_PROFILE, L3_PROFILE, ECIA_PROFILE, ECMC_PROFILE, IA_PROFILE, IX_PROFILE

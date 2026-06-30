@@ -123,7 +123,6 @@ func paginationSchema() *schema.Resource {
 			},
 			"total": {
 				Type:        schema.TypeInt,
-				Optional:    true,
 				Computed:    true,
 				Description: "Total number of elements returned.",
 			},
