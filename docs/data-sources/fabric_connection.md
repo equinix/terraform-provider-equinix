@@ -119,7 +119,7 @@ output "access_point_provider_connection_id" {
 - `operation` (Set of Object) Connection type-specific operational data (see [below for nested schema](#nestedatt--operation))
 - `order` (Set of Object) Order details (see [below for nested schema](#nestedatt--order))
 - `project` (Set of Object) Project information (see [below for nested schema](#nestedatt--project))
-- `redundancy` (Set of Object) Connection Redundancy Configuration (see [below for nested schema](#nestedatt--redundancy))
+- `redundancy` (Set of Object) Connection Redundancy Configuration (applicable only for Azure connections) (see [below for nested schema](#nestedatt--redundancy))
 - `state` (String) Connection overall state
 - `type` (String) Defines the connection type like EVPL_VC, EPL_VC, IPWAN_VC, IP_VC, ACCESS_EPL_VC, EVPLAN_VC, EPLAN_VC, EIA_VC, IA_VC, EC_VC
 - `z_side` (Set of Object) Destination or Provider side connection configuration object of the multi-segment connection (see [below for nested schema](#nestedatt--z_side))
