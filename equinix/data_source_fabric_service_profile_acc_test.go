@@ -16,7 +16,6 @@ const testAccFabricReadServiceProfileConfig = `
 resource "equinix_fabric_service_profile" "test" {
   name = "SP_DataSource_PFCR"
   description = "Generic Read SP"
-  self_profile = false
   type = "L2_PROFILE"
   notifications {
       emails = ["opsuser100@equinix.com"]
@@ -125,7 +124,7 @@ func TestAccFabricServiceProfileDataSources_PFCR(t *testing.T) {
 					statecheck.ExpectKnownValue("data.equinix_fabric_service_profile.test", tfjsonpath.New("state"), knownvalue.StringExact("ACTIVE")),
 					statecheck.ExpectKnownValue("data.equinix_fabric_service_profile.test", tfjsonpath.New("visibility"), knownvalue.StringExact("PRIVATE")),
 					statecheck.ExpectKnownValue("data.equinix_fabric_service_profile.test", tfjsonpath.New("href"), knownvalue.NotNull()),
-					statecheck.ExpectKnownValue("data.equinix_fabric_service_profile.test", tfjsonpath.New("self_profile"), knownvalue.Bool(false)),
+					statecheck.ExpectKnownValue("data.equinix_fabric_service_profile.test", tfjsonpath.New("self_profile"), knownvalue.Bool(true)),
 					statecheck.ExpectKnownValue(
 						"data.equinix_fabric_service_profile.test",
 						tfjsonpath.New("access_point_type_configs"),
@@ -163,7 +162,7 @@ func TestAccFabricServiceProfileDataSources_PFCR(t *testing.T) {
 								"state":        knownvalue.StringExact("ACTIVE"),
 								"visibility":   knownvalue.StringExact("PRIVATE"),
 								"href":         knownvalue.NotNull(),
-								"self_profile": knownvalue.Bool(false),
+								"self_profile": knownvalue.Bool(true),
 								"access_point_type_configs": knownvalue.ListExact([]knownvalue.Check{
 									knownvalue.ObjectPartial(map[string]knownvalue.Check{
 										"uuid":                             knownvalue.NotNull(),
