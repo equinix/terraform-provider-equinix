@@ -41,16 +41,29 @@ output "route_aggregation_rule_state" {
 
 ### Required
 
+- `outer_operator` (String) Determines if the filter list will be grouped by AND or by OR. One of [AND, OR]
 - `route_aggregation_id` (String) The uuid of the route aggregation rule this data source should retrieve
 
 ### Optional
 
+- `filter` (Attributes List) Filters for the Data Source Search Request (see [below for nested schema](#nestedatt--filter))
 - `pagination` (Attributes) Pagination details for the returned route aggregation rules list (see [below for nested schema](#nestedatt--pagination))
+- `sort` (Attributes List) Sort criteria for the Data Source Search Request (see [below for nested schema](#nestedatt--sort))
 
 ### Read-Only
 
 - `data` (Attributes List) Returned list of route aggregation rule objects (see [below for nested schema](#nestedatt--data))
 - `id` (String) The unique identifier of the resource
+
+<a id="nestedatt--filter"></a>
+### Nested Schema for `filter`
+
+Required:
+
+- `operator` (String) Operators to use on your filtered field with the values given. One of [ =, !=, LIKE, NOT LIKE, IN, NOT IN, ILIKE]
+- `property` (String) Possible field names to use on filters. One of [ /type, /name, /uuid, /state, /prefix]
+- `values` (List of String) The values that you want to apply the property+operator combination to in order to filter your data search
+
 
 <a id="nestedatt--pagination"></a>
 ### Nested Schema for `pagination`
@@ -65,6 +78,15 @@ Read-Only:
 - `next` (String) The URL relative to the next item in the response
 - `previous` (String) The URL relative to the previous item in the response
 - `total` (Number) The total number of route agrgegation rules available to the user making the request
+
+
+<a id="nestedatt--sort"></a>
+### Nested Schema for `sort`
+
+Optional:
+
+- `direction` (String) The sorting direction. Can be one of: [DESC ASC], Defaults to DESC
+- `property` (String) The property name to use in sorting. One of [/type /uuid /name /state /prefix /prefixMatch /changeLog/createdDateTime /changeLog/updatedDateTime]. Defaults to /changeLog/updatedDateTime
 
 
 <a id="nestedatt--data"></a>

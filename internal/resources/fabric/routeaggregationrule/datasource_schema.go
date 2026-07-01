@@ -2,13 +2,20 @@ package routeaggregationrule
 
 import (
 	"context"
+	"fmt"
 
+	"github.com/equinix/equinix-sdk-go/services/fabricv4"
 	"github.com/equinix/terraform-provider-equinix/internal/framework"
 	fwtypes "github.com/equinix/terraform-provider-equinix/internal/framework/types"
+	"github.com/equinix/terraform-provider-equinix/internal/slice"
+	"github.com/hashicorp/terraform-plugin-framework-validators/listvalidator"
+	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
 	"github.com/hashicorp/terraform-plugin-framework/datasource/schema"
+	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
+	"github.com/hashicorp/terraform-plugin-framework/types"
 )
 
-func dataSourceAllRouteAggregationRulesSchema(ctx context.Context) schema.Schema {
+func dataSourceSearchRouteAggregationRulesSchema(ctx context.Context) schema.Schema {
 	return schema.Schema{
 		Description: `Fabric V4 API compatible data resource that allow user to fetch Equinix Fabric Route Aggregation Rules with pagination details
 Additional Documentation:
@@ -25,6 +32,62 @@ Additional Documentation:
 				CustomType:  fwtypes.NewListNestedObjectTypeOf[baseRouteAggregationRuleModel](ctx),
 				NestedObject: schema.NestedAttributeObject{
 					Attributes: getRouteAggregationRuleSchema(ctx),
+				},
+			},
+			"filter": schema.ListNestedAttribute{
+				Description: "Filters for the Data Source Search Request",
+				Optional:    true,
+				CustomType:  fwtypes.NewListNestedObjectTypeOf[filterModel](ctx),
+				NestedObject: schema.NestedAttributeObject{
+					Attributes: map[string]schema.Attribute{
+						"property": schema.StringAttribute{
+							Required:    true,
+							Description: "Possible field names to use on filters. One of [ /type, /name, /uuid, /state, /prefix]",
+						},
+						"operator": schema.StringAttribute{
+							Required:    true,
+							Description: "Operators to use on your filtered field with the values given. One of [ =, !=, LIKE, NOT LIKE, IN, NOT IN, ILIKE]",
+						},
+						"values": schema.ListAttribute{
+							Required:    true,
+							Description: "The values that you want to apply the property+operator combination to in order to filter your data search",
+							CustomType:  fwtypes.ListOfStringType,
+							ElementType: types.StringType,
+						},
+					},
+				},
+				Validators: []validator.List{
+					listvalidator.SizeAtMost(8),
+				},
+			},
+			"outer_operator": schema.StringAttribute{
+				Description: "Determines if the filter list will be grouped by AND or by OR. One of [AND, OR]",
+				Required:    true,
+				Validators:  []validator.String{stringvalidator.OneOf("AND", "OR")},
+			},
+			"sort": schema.ListNestedAttribute{
+				Description: "Sort criteria for the Data Source Search Request",
+				Optional:    true,
+				CustomType:  fwtypes.NewListNestedObjectTypeOf[sortModel](ctx),
+				NestedObject: schema.NestedAttributeObject{
+					Attributes: map[string]schema.Attribute{
+						"direction": schema.StringAttribute{
+							Description: fmt.Sprintf("The sorting direction. Can be one of: %v, Defaults to DESC", fabricv4.AllowedRouteAggregationRuleSortDirectionEnumValues),
+							Optional:    true,
+							Validators: []validator.String{stringvalidator.OneOf(
+								slice.Map(fabricv4.AllowedRouteAggregationRuleSortDirectionEnumValues, func(r fabricv4.RouteAggregationRuleSortDirection) string { return string(r) })...,
+							)},
+						},
+						"property": schema.StringAttribute{
+							Description: fmt.Sprintf("The property name to use in sorting. One of %v. Defaults to /changeLog/updatedDateTime", fabricv4.AllowedRouteFilterRuleSortByEnumValues),
+							Optional:    true,
+							Validators: []validator.String{stringvalidator.OneOf(
+								slice.Map(fabricv4.AllowedRouteAggregationRuleSortByEnumValues, func(r fabricv4.RouteAggregationRuleSortBy) string {
+									return string(r)
+								})...,
+							)},
+						},
+					},
 				},
 			},
 			"pagination": schema.SingleNestedAttribute{
