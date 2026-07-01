@@ -53,7 +53,7 @@ func fabricConnectionResourceSchema() map[string]*schema.Schema {
 		"redundancy": {
 			Type:        schema.TypeSet,
 			Optional:    true,
-			Description: "Connection Redundancy Configuration",
+			Description: "Connection Redundancy Configuration (applicable only for Azure connections)",
 			MaxItems:    1,
 			Elem: &schema.Resource{
 				Schema: connectionRedundancySch(),

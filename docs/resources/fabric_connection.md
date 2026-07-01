@@ -751,7 +751,7 @@ To accept, delete, or upgrade bandwidth for IBM Connections using the 'ibm_dl_ga
 - `geo_scope` (String) Geographic boundary types
 - `order` (Block Set, Max: 1) Order details (see [below for nested schema](#nestedblock--order))
 - `project` (Block Set, Max: 1) Project information (see [below for nested schema](#nestedblock--project))
-- `redundancy` (Block Set, Max: 1) Connection Redundancy Configuration (see [below for nested schema](#nestedblock--redundancy))
+- `redundancy` (Block Set, Max: 1) Connection Redundancy Configuration (applicable only for Azure connections) (see [below for nested schema](#nestedblock--redundancy))
 - `timeouts` (Block, Optional) (see [below for nested schema](#nestedblock--timeouts))
 
 ### Read-Only
