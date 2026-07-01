@@ -41,18 +41,40 @@ output "first_route_filter_rule_prefix_match" {
 
 ### Required
 
+- `outer_operator` (String) Determines if the filter list will be grouped by AND or by OR. One of [AND, OR]
 - `route_filter_id` (String) UUID of the Route Filter Policy the rule is attached to
 
 ### Optional
 
+- `filter` (Block List, Max: 8) Filters for the Data Source Search Request (see [below for nested schema](#nestedblock--filter))
 - `limit` (Number) Number of elements to be requested per page. Number must be between 1 and 100. Default is 20
 - `offset` (Number) The page offset for the pagination request. Index of the first element. Default is 0.
+- `sort` (Block List) Sort criteria for the Data Source Search Request (see [below for nested schema](#nestedblock--sort))
 
 ### Read-Only
 
 - `data` (List of Object) The list of Rules attached to the given Route Filter Policy UUID (see [below for nested schema](#nestedatt--data))
 - `id` (String) The ID of this resource.
 - `pagination` (Set of Object) Pagination details for the Data Source Search Request (see [below for nested schema](#nestedatt--pagination))
+
+<a id="nestedblock--filter"></a>
+### Nested Schema for `filter`
+
+Required:
+
+- `operator` (String) Operators to use on your filtered field with the values given. One of [ =, !=, LIKE, NOT LIKE, IN, NOT IN, ILIKE]
+- `property` (String) Possible field names to use on filters. One of [ /type, /name, /uuid, /state, /prefix]
+- `values` (List of String) The values that you want to apply the property+operator combination to in order to filter your data search
+
+
+<a id="nestedblock--sort"></a>
+### Nested Schema for `sort`
+
+Optional:
+
+- `direction` (String) The sorting direction. Can be one of: [DESC, ASC], Defaults to DESC
+- `property` (String) The property name to use in sorting. One of [/type /uuid /name /state /prefix /prefixMatch /changeLog/createdDateTime /changeLog/updatedDateTime]. Defaults to /changeLog/updatedDateTime
+
 
 <a id="nestedatt--data"></a>
 ### Nested Schema for `data`
