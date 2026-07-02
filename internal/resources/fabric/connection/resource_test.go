@@ -11,60 +11,13 @@ import (
 	"github.com/equinix/terraform-provider-equinix/internal/resources/fabric/connection"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
+	"github.com/hashicorp/terraform-plugin-testing/config"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
+	"github.com/hashicorp/terraform-plugin-testing/knownvalue"
+	"github.com/hashicorp/terraform-plugin-testing/statecheck"
 	"github.com/hashicorp/terraform-plugin-testing/terraform"
+	"github.com/hashicorp/terraform-plugin-testing/tfjsonpath"
 )
-
-func TestAccFabricCreatePort2SPConnection_PPDS(t *testing.T) {
-	ports := testinghelpers.GetFabricEnvPorts(t)
-	connectionsTestData := testinghelpers.GetFabricEnvConnectionTestData(t)
-	var publicSPName, portUUID string
-	if len(ports) > 0 && len(connectionsTestData) > 0 {
-		publicSPName = connectionsTestData["ppds"]["publicSPName"]
-		portUUID = ports["ppds"]["dot1q"][0].GetUuid()
-	}
-	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:     func() { acceptance.TestAccPreCheck(t); acceptance.TestAccPreCheckProviderConfigured(t) },
-		Providers:    acceptance.TestAccProviders,
-		CheckDestroy: CheckConnectionDelete,
-		Steps: []resource.TestStep{
-			{
-				Config: testAccFabricCreatePort2SPConnectionConfig(publicSPName, "port2sp_PPDS", portUUID, "CH"),
-				Check: resource.ComposeTestCheckFunc(
-					resource.TestCheckResourceAttrSet("equinix_fabric_connection.test", "id"),
-					resource.TestCheckResourceAttr(
-						"equinix_fabric_connection.test", "name", "port2sp_PPDS"),
-					resource.TestCheckResourceAttr(
-						"equinix_fabric_connection.test", "bandwidth", "50"),
-					resource.TestCheckResourceAttr(
-						"equinix_fabric_connection.test", "type", "EVPL_VC"),
-					resource.TestCheckResourceAttr(
-						"equinix_fabric_connection.test", "redundancy.0.priority", "PRIMARY"),
-					resource.TestCheckResourceAttr(
-						"equinix_fabric_connection.test", "order.0.purchase_order_number", "1-323292"),
-					resource.TestCheckResourceAttr(
-						"equinix_fabric_connection.test", "geo_scope", "CONUS"),
-					resource.TestCheckResourceAttr(
-						"equinix_fabric_connection.test", "a_side.0.access_point.0.type", "COLO"),
-					resource.TestCheckResourceAttr(
-						"equinix_fabric_connection.test", "a_side.0.access_point.0.link_protocol.0.type", "DOT1Q"),
-					resource.TestCheckResourceAttr(
-						"equinix_fabric_connection.test", "a_side.0.access_point.0.link_protocol.0.vlan_tag", "2019"),
-					resource.TestCheckResourceAttr(
-						"equinix_fabric_connection.test", "z_side.0.access_point.0.type", "SP"),
-					resource.TestCheckResourceAttr(
-						"equinix_fabric_connection.test", "z_side.0.access_point.0.profile.0.type", "L2_PROFILE"),
-					resource.TestCheckResourceAttr(
-						"equinix_fabric_connection.test", "z_side.0.access_point.0.profile.0.name", publicSPName),
-					resource.TestCheckResourceAttr(
-						"equinix_fabric_connection.test", "z_side.0.access_point.0.location.0.metro_code", "CH"),
-				),
-				ExpectNonEmptyPlan: false,
-			},
-		},
-	})
-
-}
 
 func TestAccFabricCreatePort2SPConnection_PFCR(t *testing.T) {
 	ports := testinghelpers.GetFabricEnvPorts(t)
