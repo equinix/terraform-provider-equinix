@@ -51,7 +51,7 @@ func TestAccFabricCreatePort2SPConnection_PFCR(t *testing.T) {
 					resource.TestCheckResourceAttr(
 						"equinix_fabric_connection.test", "a_side.0.access_point.0.link_protocol.0.type", "DOT1Q"),
 					resource.TestCheckResourceAttr(
-						"equinix_fabric_connection.test", "a_side.0.access_point.0.link_protocol.0.vlan_tag", "1569"),
+						"equinix_fabric_connection.test", "a_side.0.access_point.0.link_protocol.0.vlan_tag", "3569"),
 					resource.TestCheckResourceAttr(
 						"equinix_fabric_connection.test", "z_side.0.access_point.0.type", "SP"),
 					resource.TestCheckResourceAttr(
@@ -101,7 +101,7 @@ func testAccFabricCreatePort2SPConnectionConfig(spName, name, portUUID, zSideMet
 				}
 				link_protocol {
 					type= "DOT1Q"
-					vlan_tag= "1569"
+					vlan_tag= "3569"
 				}
 			}
 		}
@@ -119,6 +119,155 @@ func testAccFabricCreatePort2SPConnectionConfig(spName, name, portUUID, zSideMet
 		}
 	}`, spName, name, portUUID, zSideMetro)
 }
+
+func TestAccFabricCreatePort2NonGenericSPConnection_PFCR(t *testing.T) {
+	ports := testinghelpers.GetFabricEnvPorts(t)
+	connectionsTestData := testinghelpers.GetFabricEnvConnectionTestData(t)
+	var nonGenericSPName, nonGenericSPAuthKey, portUUID string
+	if len(ports) > 0 && len(connectionsTestData) > 0 {
+		nonGenericSPName = connectionsTestData["pfcr"]["nonGenericSPName"]
+		nonGenericSPAuthKey = connectionsTestData["pfcr"]["nonGenericSPAuthKey"]
+		portUUID = ports["pfcr"]["dot1q"][0].GetUuid()
+	}
+	resource.ParallelTest(t, resource.TestCase{
+		PreCheck:     func() { acceptance.TestAccPreCheck(t); acceptance.TestAccPreCheckProviderConfigured(t) },
+		Providers:    acceptance.TestAccProviders,
+		CheckDestroy: CheckConnectionDelete,
+		Steps: []resource.TestStep{
+			{
+				Config: port2NonGenericSPConfig,
+				ConfigVariables: config.Variables{
+					"sp_name":            config.StringVariable(nonGenericSPName),
+					"authentication_key": config.StringVariable(nonGenericSPAuthKey),
+					"port_uuid":          config.StringVariable(portUUID),
+				},
+				ConfigStateChecks: []statecheck.StateCheck{
+					statecheck.ExpectKnownValue("equinix_fabric_connection.test", tfjsonpath.New("id"), knownvalue.NotNull()),
+					statecheck.ExpectKnownValue("equinix_fabric_connection.test", tfjsonpath.New("name"), knownvalue.StringExact("port2nonG_sp_PFCR")),
+					statecheck.ExpectKnownValue("equinix_fabric_connection.test", tfjsonpath.New("bandwidth"), knownvalue.Int32Exact(50)),
+					statecheck.ExpectKnownValue("equinix_fabric_connection.test", tfjsonpath.New("type"), knownvalue.StringExact("EVPL_VC")),
+
+					statecheck.ExpectKnownValue("equinix_fabric_connection.test", tfjsonpath.New("redundancy"),
+						knownvalue.ListExact([]knownvalue.Check{
+							knownvalue.ObjectPartial(map[string]knownvalue.Check{
+								"priority": knownvalue.StringExact("PRIMARY"),
+								"group":    knownvalue.NotNull(),
+							}),
+						}),
+					),
+
+					statecheck.ExpectKnownValue("equinix_fabric_connection.test", tfjsonpath.New("order"),
+						knownvalue.ListExact([]knownvalue.Check{
+							knownvalue.ObjectPartial(map[string]knownvalue.Check{
+								"purchase_order_number": knownvalue.StringExact("1-323292"),
+							}),
+						}),
+					),
+
+					statecheck.ExpectKnownValue("equinix_fabric_connection.test", tfjsonpath.New("a_side"),
+						knownvalue.ListExact([]knownvalue.Check{
+							knownvalue.ObjectPartial(map[string]knownvalue.Check{
+								"access_point": knownvalue.ListExact([]knownvalue.Check{
+									knownvalue.ObjectPartial(map[string]knownvalue.Check{
+										"type": knownvalue.StringExact("COLO"),
+										"link_protocol": knownvalue.ListExact([]knownvalue.Check{
+											knownvalue.ObjectPartial(map[string]knownvalue.Check{
+												"type":     knownvalue.StringExact("DOT1Q"),
+												"vlan_tag": knownvalue.Int32Exact(3769),
+											}),
+										}),
+									}),
+								}),
+							}),
+						})),
+					statecheck.ExpectKnownValue("equinix_fabric_connection.test", tfjsonpath.New("z_side"),
+						knownvalue.ListExact([]knownvalue.Check{
+							knownvalue.ObjectPartial(map[string]knownvalue.Check{
+								"access_point": knownvalue.ListExact([]knownvalue.Check{
+									knownvalue.ObjectPartial(map[string]knownvalue.Check{
+										"type": knownvalue.StringExact("SP"),
+										"profile": knownvalue.ListExact([]knownvalue.Check{
+											knownvalue.ObjectPartial(map[string]knownvalue.Check{
+												"type": knownvalue.StringExact("L2_PROFILE"),
+												"name": knownvalue.StringExact(nonGenericSPName),
+											}),
+										}),
+									}),
+								}),
+							}),
+						})),
+				},
+				ExpectNonEmptyPlan: true,
+			},
+		},
+	})
+
+}
+
+var port2NonGenericSPConfig = `
+variable "sp_name" {
+  type = string
+}
+
+variable "port_uuid" {
+  type = string
+}
+
+variable "authentication_key" {
+  type = string
+  sensitive = true
+}
+
+
+data "equinix_fabric_service_profiles" "this" {
+  filter {
+    property = "/name"
+    operator = "="
+    values   = [var.sp_name]
+  }
+}
+
+resource "equinix_fabric_connection" "test" {
+  name = "port2nonG_sp_PFCR"
+  type = "EVPL_VC"
+  notifications {
+    type   = "ALL"
+    emails = ["example@equinix.com"]
+  }
+  bandwidth = 50
+  geo_scope = "CONUS"
+  redundancy { priority = "PRIMARY" }
+  order {
+    purchase_order_number = "1-323292"
+  }
+  a_side {
+    access_point {
+      type = "COLO"
+      port {
+        uuid = var.port_uuid
+      }
+      link_protocol {
+        type     = "DOT1Q"
+        vlan_tag = 3769
+      }
+    }
+  }
+  z_side {
+    access_point {
+      type               = "SP"
+      authentication_key = var.authentication_key
+      seller_region      = "us-east-1"
+      profile {
+        type = "L2_PROFILE"
+        uuid = data.equinix_fabric_service_profiles.this.data.0.uuid
+      }
+      location {
+        metro_code = "DC"
+      }
+    }
+  }
+}
+`
 
 func TestAccFabricCreatePort2PortConnection_PFCR(t *testing.T) {
 	ports := testinghelpers.GetFabricEnvPorts(t)
