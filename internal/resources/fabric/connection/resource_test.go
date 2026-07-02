@@ -3,7 +3,6 @@ package connection_test
 import (
 	"context"
 	"fmt"
-	"log"
 	"testing"
 	"time"
 
@@ -35,7 +34,7 @@ func TestAccFabricCreatePort2SPConnection_PFCR(t *testing.T) {
 	targetVlan, err := testinghelpers.RandomVlan(portUUID)
 
 	if err != nil {
-		log.Printf("[DEBUG] unable to get a available VLAN: %s", err)
+		t.Fatalf("unable to get a available VLAN: %s", err)
 		return
 	}
 
@@ -139,62 +138,138 @@ func TestAccFabricCreatePort2PortConnection_PFCR(t *testing.T) {
 		aSidePortUUID = ports["pfcr"]["dot1q"][0].GetUuid()
 		zSidePortUUID = ports["pfcr"]["dot1q"][1].GetUuid()
 	}
+
+	asideVlan, err := testinghelpers.RandomVlan(aSidePortUUID)
+	if err != nil {
+		t.Fatalf("unable to get a available VLAN: %s", err)
+		return
+	}
+
+	zsideVlan, err := testinghelpers.RandomVlan(zSidePortUUID)
+	if err != nil {
+		t.Fatalf("unable to get a available VLAN: %s", err)
+		return
+	}
+
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:     func() { acceptance.TestAccPreCheck(t); acceptance.TestAccPreCheckProviderConfigured(t) },
 		Providers:    acceptance.TestAccProviders,
 		CheckDestroy: CheckConnectionDelete,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccFabricCreatePort2PortConnectionConfig(50, aSidePortUUID, zSidePortUUID),
-				Check: resource.ComposeTestCheckFunc(
-					resource.TestCheckResourceAttrSet("equinix_fabric_connection.test", "id"),
-					resource.TestCheckResourceAttr(
-						"equinix_fabric_connection.test", "name", "port_test_PFCR"),
-					resource.TestCheckResourceAttr(
-						"equinix_fabric_connection.test", "bandwidth", "50"),
-					resource.TestCheckResourceAttr(
-						"equinix_fabric_connection.test", "type", "EVPL_VC"),
-					resource.TestCheckResourceAttr(
-						"equinix_fabric_connection.test", "order.0.purchase_order_number", "1-129105284100"),
-					resource.TestCheckResourceAttr(
-						"equinix_fabric_connection.test", "a_side.0.access_point.0.type", "COLO"),
-					resource.TestCheckResourceAttr(
-						"equinix_fabric_connection.test", "a_side.0.access_point.0.link_protocol.0.type", "DOT1Q"),
-					resource.TestCheckResourceAttr(
-						"equinix_fabric_connection.test", "a_side.0.access_point.0.link_protocol.0.vlan_tag", "100"),
-					resource.TestCheckResourceAttr(
-						"equinix_fabric_connection.test", "z_side.0.access_point.0.type", "COLO"),
-					resource.TestCheckResourceAttr(
-						"equinix_fabric_connection.test", "z_side.0.access_point.0.link_protocol.0.type", "DOT1Q"),
-					resource.TestCheckResourceAttr(
-						"equinix_fabric_connection.test", "z_side.0.access_point.0.link_protocol.0.vlan_tag", "101"),
-				),
+				Config: port2PortConnectionConfig,
+				ConfigVariables: config.Variables{
+					"aside_vlan":      config.IntegerVariable(asideVlan),
+					"aside_port_uuid": config.StringVariable(aSidePortUUID),
+					"zside_vlan":      config.IntegerVariable(zsideVlan),
+					"zside_port_uuid": config.StringVariable(zSidePortUUID),
+					"bandwidth":       config.IntegerVariable(50),
+				},
+				ConfigStateChecks: []statecheck.StateCheck{
+					statecheck.ExpectKnownValue("equinix_fabric_connection.test", tfjsonpath.New("id"), knownvalue.NotNull()),
+					statecheck.ExpectKnownValue("equinix_fabric_connection.test", tfjsonpath.New("name"), knownvalue.StringExact("port_test_PFCR")),
+					statecheck.ExpectKnownValue("equinix_fabric_connection.test", tfjsonpath.New("bandwidth"), knownvalue.Int32Exact(50)),
+					statecheck.ExpectKnownValue("equinix_fabric_connection.test", tfjsonpath.New("type"), knownvalue.StringExact("EVPL_VC")),
+
+					statecheck.ExpectKnownValue("equinix_fabric_connection.test", tfjsonpath.New("order"),
+						knownvalue.ListExact([]knownvalue.Check{
+							knownvalue.ObjectPartial(map[string]knownvalue.Check{
+								"purchase_order_number": knownvalue.StringExact("1-129105284100"),
+							}),
+						}),
+					),
+
+					statecheck.ExpectKnownValue("equinix_fabric_connection.test", tfjsonpath.New("a_side"),
+						knownvalue.ListExact([]knownvalue.Check{
+							knownvalue.ObjectPartial(map[string]knownvalue.Check{
+								"access_point": knownvalue.ListExact([]knownvalue.Check{
+									knownvalue.ObjectPartial(map[string]knownvalue.Check{
+										"type": knownvalue.StringExact("COLO"),
+										"link_protocol": knownvalue.ListExact([]knownvalue.Check{
+											knownvalue.ObjectPartial(map[string]knownvalue.Check{
+												"type":     knownvalue.StringExact("DOT1Q"),
+												"vlan_tag": knownvalue.Int32Exact(int32(asideVlan)),
+											}),
+										}),
+									}),
+								}),
+							}),
+						})),
+					statecheck.ExpectKnownValue("equinix_fabric_connection.test", tfjsonpath.New("z_side"),
+						knownvalue.ListExact([]knownvalue.Check{
+							knownvalue.ObjectPartial(map[string]knownvalue.Check{
+								"access_point": knownvalue.ListExact([]knownvalue.Check{
+									knownvalue.ObjectPartial(map[string]knownvalue.Check{
+										"type": knownvalue.StringExact("COLO"),
+										"link_protocol": knownvalue.ListExact([]knownvalue.Check{
+											knownvalue.ObjectPartial(map[string]knownvalue.Check{
+												"type":     knownvalue.StringExact("DOT1Q"),
+												"vlan_tag": knownvalue.Int32Exact(int32(zsideVlan)),
+											}),
+										}),
+									}),
+								}),
+							}),
+						})),
+				},
 				ExpectNonEmptyPlan: true,
 			},
 			{
-				Config: testAccFabricCreatePort2PortConnectionConfig(100, aSidePortUUID, zSidePortUUID),
-				Check: resource.ComposeTestCheckFunc(
-					resource.TestCheckResourceAttr(
-						"equinix_fabric_connection.test", "name", "port_test_PFCR"),
-					resource.TestCheckResourceAttr(
-						"equinix_fabric_connection.test", "bandwidth", "100"),
-					resource.TestCheckResourceAttr(
-						"equinix_fabric_connection.test", "type", "EVPL_VC"),
-					resource.TestCheckResourceAttr(
-						"equinix_fabric_connection.test", "order.0.purchase_order_number", "1-129105284100"),
-					resource.TestCheckResourceAttr(
-						"equinix_fabric_connection.test", "a_side.0.access_point.0.type", "COLO"),
-					resource.TestCheckResourceAttr(
-						"equinix_fabric_connection.test", "a_side.0.access_point.0.link_protocol.0.type", "DOT1Q"),
-					resource.TestCheckResourceAttr(
-						"equinix_fabric_connection.test", "a_side.0.access_point.0.link_protocol.0.vlan_tag", "100"),
-					resource.TestCheckResourceAttr(
-						"equinix_fabric_connection.test", "z_side.0.access_point.0.type", "COLO"),
-					resource.TestCheckResourceAttr(
-						"equinix_fabric_connection.test", "z_side.0.access_point.0.link_protocol.0.type", "DOT1Q"),
-					resource.TestCheckResourceAttr(
-						"equinix_fabric_connection.test", "z_side.0.access_point.0.link_protocol.0.vlan_tag", "101"),
-				),
+				Config: port2PortConnectionConfig,
+				ConfigVariables: config.Variables{
+					"aside_vlan":      config.IntegerVariable(asideVlan),
+					"aside_port_uuid": config.StringVariable(aSidePortUUID),
+					"zside_vlan":      config.IntegerVariable(zsideVlan),
+					"zside_port_uuid": config.StringVariable(zSidePortUUID),
+					"bandwidth":       config.IntegerVariable(100),
+				},
+				ConfigStateChecks: []statecheck.StateCheck{
+					statecheck.ExpectKnownValue("equinix_fabric_connection.test", tfjsonpath.New("id"), knownvalue.NotNull()),
+					statecheck.ExpectKnownValue("equinix_fabric_connection.test", tfjsonpath.New("name"), knownvalue.StringExact("port_test_PFCR")),
+					statecheck.ExpectKnownValue("equinix_fabric_connection.test", tfjsonpath.New("bandwidth"), knownvalue.Int32Exact(100)),
+					statecheck.ExpectKnownValue("equinix_fabric_connection.test", tfjsonpath.New("type"), knownvalue.StringExact("EVPL_VC")),
+
+					statecheck.ExpectKnownValue("equinix_fabric_connection.test", tfjsonpath.New("order"),
+						knownvalue.ListExact([]knownvalue.Check{
+							knownvalue.ObjectPartial(map[string]knownvalue.Check{
+								"purchase_order_number": knownvalue.StringExact("1-129105284100"),
+							}),
+						}),
+					),
+
+					statecheck.ExpectKnownValue("equinix_fabric_connection.test", tfjsonpath.New("a_side"),
+						knownvalue.ListExact([]knownvalue.Check{
+							knownvalue.ObjectPartial(map[string]knownvalue.Check{
+								"access_point": knownvalue.ListExact([]knownvalue.Check{
+									knownvalue.ObjectPartial(map[string]knownvalue.Check{
+										"type": knownvalue.StringExact("COLO"),
+										"link_protocol": knownvalue.ListExact([]knownvalue.Check{
+											knownvalue.ObjectPartial(map[string]knownvalue.Check{
+												"type":     knownvalue.StringExact("DOT1Q"),
+												"vlan_tag": knownvalue.Int32Exact(int32(asideVlan)),
+											}),
+										}),
+									}),
+								}),
+							}),
+						})),
+					statecheck.ExpectKnownValue("equinix_fabric_connection.test", tfjsonpath.New("z_side"),
+						knownvalue.ListExact([]knownvalue.Check{
+							knownvalue.ObjectPartial(map[string]knownvalue.Check{
+								"access_point": knownvalue.ListExact([]knownvalue.Check{
+									knownvalue.ObjectPartial(map[string]knownvalue.Check{
+										"type": knownvalue.StringExact("COLO"),
+										"link_protocol": knownvalue.ListExact([]knownvalue.Check{
+											knownvalue.ObjectPartial(map[string]knownvalue.Check{
+												"type":     knownvalue.StringExact("DOT1Q"),
+												"vlan_tag": knownvalue.Int32Exact(int32(zsideVlan)),
+											}),
+										}),
+									}),
+								}),
+							}),
+						})),
+				},
 				ExpectNonEmptyPlan: true,
 			},
 		},
@@ -202,8 +277,28 @@ func TestAccFabricCreatePort2PortConnection_PFCR(t *testing.T) {
 
 }
 
-func testAccFabricCreatePort2PortConnectionConfig(bandwidth int32, aSidePortUUID, zSidePortUUID string) string {
-	return fmt.Sprintf(`resource "equinix_fabric_connection" "test" {
+var port2PortConnectionConfig = `
+variable "aside_vlan" {
+  type = number
+}
+
+variable "aside_port_uuid" {
+  type = string
+}
+
+variable "zside_vlan" {
+  type = number
+}
+
+variable "zside_port_uuid" {
+  type = string
+}
+
+variable "bandwidth" {
+  type = number
+}
+
+resource "equinix_fabric_connection" "test" {
 		type = "EVPL_VC"
 		name = "port_test_PFCR"
 		notifications{
@@ -213,16 +308,16 @@ func testAccFabricCreatePort2PortConnectionConfig(bandwidth int32, aSidePortUUID
 		order {
 			purchase_order_number = "1-129105284100"
 		}
-		bandwidth = %d
+		bandwidth = var.bandwidth
 		a_side {
 			access_point {
 				type = "COLO"
 				port {
-				 uuid = "%s"
+				 uuid = var.aside_port_uuid
 				}
 				link_protocol {
 					type= "DOT1Q"
-					vlan_tag= 100
+					vlan_tag= var.aside_vlan
 				}
 				location {
 					metro_code = "SV"
@@ -233,19 +328,18 @@ func testAccFabricCreatePort2PortConnectionConfig(bandwidth int32, aSidePortUUID
 			access_point {
 				type = "COLO"
 				port{
-				 uuid = "%s"
+				 uuid = var.zside_port_uuid
 				}
 				link_protocol {
 					type= "DOT1Q"
-					vlan_tag= 101
+					vlan_tag= var.zside_vlan
 				}
 				location {
 					metro_code= "SV"
 				}
 			}
 		}
-	}`, bandwidth, aSidePortUUID, zSidePortUUID)
-}
+	}`
 
 func TestAccFabricCreateCloudRouter2PortConnection_PFCR(t *testing.T) {
 	ports := testinghelpers.GetFabricEnvPorts(t)
@@ -256,7 +350,7 @@ func TestAccFabricCreateCloudRouter2PortConnection_PFCR(t *testing.T) {
 
 	targetVlan, err := testinghelpers.RandomVlan(portUUID)
 	if err != nil {
-		log.Printf("[DEBUG] unable to get a available VLAN: %s", err)
+		t.Fatalf("unable to get a available VLAN: %s", err)
 		return
 	}
 
@@ -268,7 +362,8 @@ func TestAccFabricCreateCloudRouter2PortConnection_PFCR(t *testing.T) {
 			{
 				Config: cloudRouter2PortConnectionConfig,
 				ConfigVariables: config.Variables{
-					"vlan_tag": config.IntegerVariable(targetVlan),
+					"vlan_tag":  config.IntegerVariable(targetVlan),
+					"port_uuid": config.StringVariable(portUUID),
 				},
 				ConfigStateChecks: []statecheck.StateCheck{
 					statecheck.ExpectKnownValue("equinix_fabric_connection.test", tfjsonpath.New("id"), knownvalue.NotNull()),
@@ -306,9 +401,8 @@ func TestAccFabricCreateCloudRouter2PortConnection_PFCR(t *testing.T) {
 								"access_point": knownvalue.ListExact([]knownvalue.Check{
 									knownvalue.ObjectPartial(map[string]knownvalue.Check{
 										"type": knownvalue.StringExact("CLOUD_ROUTER"),
-										"profile": knownvalue.ListExact([]knownvalue.Check{
+										"router": knownvalue.ListExact([]knownvalue.Check{
 											knownvalue.ObjectPartial(map[string]knownvalue.Check{
-												"type": knownvalue.StringExact("COLO"),
 												"uuid": knownvalue.NotNull(),
 											}),
 										}),
@@ -341,7 +435,7 @@ func TestAccFabricCreateCloudRouter2PortConnection_PFCR(t *testing.T) {
 
 var cloudRouter2PortConnectionConfig = `
 variable "vlan_tag" {
-  type = string
+  type = number
 }
 
 variable "port_uuid" {
@@ -528,37 +622,85 @@ func TestAccFabricCreatePort2EtreeNetworkConnection_PFCR(t *testing.T) {
 		portUUID = ports["pfcr"]["dot1q"][1].GetUuid()
 	}
 
+	targetVlan, err := testinghelpers.RandomVlan(portUUID)
+	if err != nil {
+		t.Fatalf("unable to get a available VLAN: %s", err)
+		return
+	}
+
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:     func() { acceptance.TestAccPreCheck(t); acceptance.TestAccPreCheckProviderConfigured(t) },
 		Providers:    acceptance.TestAccProviders,
 		CheckDestroy: CheckConnectionDelete,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccFabricCreatePort2EtreeNetworkConnectionConfig("port2etreenetwork_PFCR", portUUID),
-				Check: resource.ComposeTestCheckFunc(
-					resource.TestCheckResourceAttr(
-						"equinix_fabric_connection.test_etree", "name", "port2etreenetwork_PFCR"),
-					resource.TestCheckResourceAttr(
-						"equinix_fabric_connection.test_etree", "bandwidth", "50"),
-					resource.TestCheckResourceAttr(
-						"equinix_fabric_connection.test_etree", "type", "EVPTREE_VC"),
-					resource.TestCheckResourceAttr(
-						"equinix_fabric_connection.test_etree", "redundancy.0.priority", "PRIMARY"),
-					resource.TestCheckResourceAttr(
-						"equinix_fabric_connection.test_etree", "order.0.purchase_order_number", "123485"),
-					resource.TestCheckResourceAttr(
-						"equinix_fabric_connection.test_etree", "project.0.project_id", "33ec651f-cc99-48e0-94d3-47466899cdc7"),
-					resource.TestCheckResourceAttr(
-						"equinix_fabric_connection.test_etree", "a_side.0.access_point.0.type", "COLO"),
-					resource.TestCheckResourceAttr(
-						"equinix_fabric_connection.test_etree", "a_side.0.access_point.0.port.0.uuid", portUUID),
-					resource.TestCheckResourceAttr(
-						"equinix_fabric_connection.test_etree", "z_side.0.access_point.0.type", "NETWORK"),
-					resource.TestCheckResourceAttrSet(
-						"equinix_fabric_connection.test_etree", "z_side.0.access_point.0.network.0.uuid"),
-					resource.TestCheckResourceAttr(
-						"equinix_fabric_connection.test_etree", "z_side.0.access_point.0.role", "LEAF"),
-				),
+				Config: port2EtreeNetworkConfig,
+				ConfigVariables: config.Variables{
+					"vlan_tag":  config.IntegerVariable(targetVlan),
+					"port_uuid": config.StringVariable(portUUID),
+				},
+				ConfigStateChecks: []statecheck.StateCheck{
+					statecheck.ExpectKnownValue("equinix_fabric_connection.test_etree", tfjsonpath.New("id"), knownvalue.NotNull()),
+					statecheck.ExpectKnownValue("equinix_fabric_connection.test_etree", tfjsonpath.New("name"), knownvalue.StringExact("port2etreenetwork_PFCR")),
+					statecheck.ExpectKnownValue("equinix_fabric_connection.test_etree", tfjsonpath.New("bandwidth"), knownvalue.Int32Exact(50)),
+					statecheck.ExpectKnownValue("equinix_fabric_connection.test_etree", tfjsonpath.New("type"), knownvalue.StringExact("EVPTREE_VC")),
+
+					statecheck.ExpectKnownValue("equinix_fabric_connection.test_etree", tfjsonpath.New("redundancy"),
+						knownvalue.ListExact([]knownvalue.Check{
+							knownvalue.ObjectPartial(map[string]knownvalue.Check{
+								"priority": knownvalue.StringExact("PRIMARY"),
+								"group":    knownvalue.NotNull(),
+							}),
+						}),
+					),
+
+					statecheck.ExpectKnownValue("equinix_fabric_connection.test_etree", tfjsonpath.New("order"),
+						knownvalue.ListExact([]knownvalue.Check{
+							knownvalue.ObjectPartial(map[string]knownvalue.Check{
+								"purchase_order_number": knownvalue.StringExact("123485"),
+							}),
+						}),
+					),
+
+					statecheck.ExpectKnownValue("equinix_fabric_connection.test_etree", tfjsonpath.New("project"),
+						knownvalue.ListExact([]knownvalue.Check{
+							knownvalue.ObjectPartial(map[string]knownvalue.Check{
+								"project_id": knownvalue.StringExact("33ec651f-cc99-48e0-94d3-47466899cdc7"),
+							}),
+						}),
+					),
+					statecheck.ExpectKnownValue("equinix_fabric_connection.test_etree", tfjsonpath.New("a_side"),
+						knownvalue.ListExact([]knownvalue.Check{
+							knownvalue.ObjectPartial(map[string]knownvalue.Check{
+								"access_point": knownvalue.ListExact([]knownvalue.Check{
+									knownvalue.ObjectPartial(map[string]knownvalue.Check{
+										"type": knownvalue.StringExact("COLO"),
+										"port": knownvalue.ListExact([]knownvalue.Check{
+											knownvalue.ObjectPartial(map[string]knownvalue.Check{
+												"uuid": knownvalue.StringExact(portUUID),
+											}),
+										}),
+									}),
+								}),
+							}),
+						})),
+					statecheck.ExpectKnownValue("equinix_fabric_connection.test_etree", tfjsonpath.New("z_side"),
+						knownvalue.ListExact([]knownvalue.Check{
+							knownvalue.ObjectPartial(map[string]knownvalue.Check{
+								"access_point": knownvalue.ListExact([]knownvalue.Check{
+									knownvalue.ObjectPartial(map[string]knownvalue.Check{
+										"type": knownvalue.StringExact("NETWORK"),
+										"role": knownvalue.StringExact("LEAF"),
+										"network": knownvalue.ListExact([]knownvalue.Check{
+											knownvalue.ObjectPartial(map[string]knownvalue.Check{
+												"uuid": knownvalue.NotNull(),
+											}),
+										}),
+									}),
+								}),
+							}),
+						})),
+				},
 				ExpectNonEmptyPlan: true,
 			},
 		},
@@ -566,9 +708,14 @@ func TestAccFabricCreatePort2EtreeNetworkConnection_PFCR(t *testing.T) {
 
 }
 
-func testAccFabricCreatePort2EtreeNetworkConnectionConfig(name, portUUID string) string {
-	return fmt.Sprintf(`
+var port2EtreeNetworkConfig = `
+variable "vlan_tag" {
+  type = number
+}
 
+variable "port_uuid" {
+  type = string
+}
 
 	resource "equinix_fabric_network" "this" {
 		type = "EVPTREE"
@@ -588,7 +735,7 @@ func testAccFabricCreatePort2EtreeNetworkConnectionConfig(name, portUUID string)
 
 	resource "equinix_fabric_connection" "test_etree" {
 		type = "EVPTREE_VC"
-		name = "%s"
+		name = "port2etreenetwork_PFCR"
 		notifications{
 			type = "ALL"
 			emails = ["test@equinix.com","test1@equinix.com"]
@@ -604,11 +751,11 @@ func testAccFabricCreatePort2EtreeNetworkConnectionConfig(name, portUUID string)
 			access_point {
 				type= "COLO"
 				port {
-					uuid= "%s"
+					uuid = var.port_uuid
 				}
 				link_protocol {
 					type= "DOT1Q"
-					vlan_tag= "980"
+					vlan_tag= var.vlan_tag
 				}
 			}
 		}
@@ -621,8 +768,7 @@ func testAccFabricCreatePort2EtreeNetworkConnectionConfig(name, portUUID string)
                 role = "LEAF"
 			}
 		}
-	}`, name, portUUID)
-}
+	}`
 
 func CheckConnectionDelete(s *terraform.State) error {
 	ctx := context.Background()
