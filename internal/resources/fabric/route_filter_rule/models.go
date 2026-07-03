@@ -74,7 +74,7 @@ func setRouteFilterRuleMap(d *schema.ResourceData, routeFilter *fabricv4.RouteFi
 	return diags
 }
 
-func setRouteFilterRulesData(d *schema.ResourceData, routeFilterRules *fabricv4.GetRouteFilterRulesResponse) diag.Diagnostics {
+func setRouteFilterRulesData(d *schema.ResourceData, routeFilterRules *fabricv4.RouteFilterRulesSearchResponse) diag.Diagnostics {
 	diags := diag.Diagnostics{}
 	mappedRouteFilterRules := make([]map[string]any, len(routeFilterRules.Data))
 	pagination := routeFilterRules.GetPagination()

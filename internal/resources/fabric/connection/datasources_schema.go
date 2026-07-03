@@ -110,7 +110,7 @@ func readFabricConnectionSearchSchema() map[string]*schema.Schema {
 		"sort": {
 			Type:        schema.TypeList,
 			Optional:    true,
-			Description: "Filters for the Data Source Search Request",
+			Description: "Sort criteria for the Data Source Search Request",
 			Elem: &schema.Resource{
 				Schema: map[string]*schema.Schema{
 					"direction": {
