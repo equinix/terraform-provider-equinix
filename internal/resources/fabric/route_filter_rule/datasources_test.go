@@ -4,6 +4,7 @@ import (
 	"testing"
 
 	"github.com/equinix/terraform-provider-equinix/internal/acceptance"
+	testinghelpers "github.com/equinix/terraform-provider-equinix/internal/fabric/testing_helpers"
 
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/hashicorp/terraform-plugin-testing/knownvalue"
@@ -133,15 +134,15 @@ func TestAccFabricRouteFilterRule_DataSources_PFCR(t *testing.T) {
 			{
 				Config: config,
 				ConfigStateChecks: []statecheck.StateCheck{
-					statecheck.ExpectKnownValue("data.equinix_fabric_route_filter_rule.rf_rule", tfjsonpath.New("id"), knownvalue.NotNull()),
-					statecheck.ExpectKnownValue("data.equinix_fabric_route_filter_rule.rf_rule", tfjsonpath.New("route_filter_id"), knownvalue.NotNull()),
-					statecheck.ExpectKnownValue("data.equinix_fabric_route_filter_rule.rf_rule", tfjsonpath.New("name"), knownvalue.StringExact("RF_DS_Rule1_PFCR")),
-					statecheck.ExpectKnownValue("data.equinix_fabric_route_filter_rule.rf_rule", tfjsonpath.New("description"), knownvalue.StringExact("Route Filter Rule 1")),
-					statecheck.ExpectKnownValue("data.equinix_fabric_route_filter_rule.rf_rule", tfjsonpath.New("prefix"), knownvalue.StringExact("192.168.0.0/24")),
-					statecheck.ExpectKnownValue("data.equinix_fabric_route_filter_rule.rf_rule", tfjsonpath.New("prefix_match"), knownvalue.StringExact("exact")),
+					testinghelpers.ExpectKnownAttributes("equinix_fabric_route_filter.test", map[string]knownvalue.Check{
+						"id":              knownvalue.NotNull(),
+						"route_filter_id": knownvalue.NotNull(),
+						"name":            knownvalue.StringExact("RF_DS_Rule1_PFCR"),
+						"description":     knownvalue.StringExact("Route Filter Rule 1"),
+						"prefix":          knownvalue.StringExact("192.168.0.0/24"),
+						"prefix_match":    knownvalue.StringExact("exact"),
+					}),
 
-					statecheck.ExpectKnownValue("data.equinix_fabric_route_filter_rules.rf_rules", tfjsonpath.New("id"), knownvalue.NotNull()),
-					statecheck.ExpectKnownValue("data.equinix_fabric_route_filter_rules.rf_rules", tfjsonpath.New("route_filter_id"), knownvalue.NotNull()),
 					statecheck.ExpectKnownValue(
 						"data.equinix_fabric_route_filter_rules.rf_rules",
 						tfjsonpath.New("data"),
@@ -163,8 +164,11 @@ func TestAccFabricRouteFilterRule_DataSources_PFCR(t *testing.T) {
 						}),
 					),
 
-					statecheck.ExpectKnownValue("data.equinix_fabric_route_filter_rules.rf_rules_filtered", tfjsonpath.New("id"), knownvalue.NotNull()),
-					statecheck.ExpectKnownValue("data.equinix_fabric_route_filter_rules.rf_rules_filtered", tfjsonpath.New("route_filter_id"), knownvalue.NotNull()),
+					testinghelpers.ExpectKnownAttributes("equinix_fabric_route_filter.test", map[string]knownvalue.Check{
+						"id":              knownvalue.NotNull(),
+						"route_filter_id": knownvalue.NotNull(),
+					}),
+
 					statecheck.ExpectKnownValue(
 						"data.equinix_fabric_route_filter_rules.rf_rules_filtered",
 						tfjsonpath.New("data"),
@@ -179,8 +183,11 @@ func TestAccFabricRouteFilterRule_DataSources_PFCR(t *testing.T) {
 						}),
 					),
 
-					statecheck.ExpectKnownValue("data.equinix_fabric_route_filter_rules.rf_rules_or", tfjsonpath.New("id"), knownvalue.NotNull()),
-					statecheck.ExpectKnownValue("data.equinix_fabric_route_filter_rules.rf_rules_or", tfjsonpath.New("route_filter_id"), knownvalue.NotNull()),
+					testinghelpers.ExpectKnownAttributes("equinix_fabric_route_filter.test", map[string]knownvalue.Check{
+						"id":              knownvalue.NotNull(),
+						"route_filter_id": knownvalue.NotNull(),
+					}),
+
 					statecheck.ExpectKnownValue(
 						"data.equinix_fabric_route_filter_rules.rf_rules_or",
 						tfjsonpath.New("data"),
@@ -202,8 +209,10 @@ func TestAccFabricRouteFilterRule_DataSources_PFCR(t *testing.T) {
 						}),
 					),
 
-					statecheck.ExpectKnownValue("data.equinix_fabric_route_filter_rules.rf_rules_and", tfjsonpath.New("id"), knownvalue.NotNull()),
-					statecheck.ExpectKnownValue("data.equinix_fabric_route_filter_rules.rf_rules_and", tfjsonpath.New("route_filter_id"), knownvalue.NotNull()),
+					testinghelpers.ExpectKnownAttributes("equinix_fabric_route_filter.test", map[string]knownvalue.Check{
+						"id":              knownvalue.NotNull(),
+						"route_filter_id": knownvalue.NotNull(),
+					}),
 					statecheck.ExpectKnownValue(
 						"data.equinix_fabric_route_filter_rules.rf_rules_and",
 						tfjsonpath.New("data"),
