@@ -134,7 +134,7 @@ func TestAccFabricRouteFilterRule_DataSources_PFCR(t *testing.T) {
 			{
 				Config: config,
 				ConfigStateChecks: []statecheck.StateCheck{
-					testinghelpers.ExpectKnownAttributes("equinix_fabric_route_filter.test", map[string]knownvalue.Check{
+					testinghelpers.ExpectKnownAttributes("equinix_fabric_route_filter.route_filter", map[string]knownvalue.Check{
 						"id":              knownvalue.NotNull(),
 						"route_filter_id": knownvalue.NotNull(),
 						"name":            knownvalue.StringExact("RF_DS_Rule1_PFCR"),
@@ -164,7 +164,7 @@ func TestAccFabricRouteFilterRule_DataSources_PFCR(t *testing.T) {
 						}),
 					),
 
-					testinghelpers.ExpectKnownAttributes("equinix_fabric_route_filter.test", map[string]knownvalue.Check{
+					testinghelpers.ExpectKnownAttributes("equinix_fabric_route_filter.route_filter", map[string]knownvalue.Check{
 						"id":              knownvalue.NotNull(),
 						"route_filter_id": knownvalue.NotNull(),
 					}),
@@ -183,7 +183,7 @@ func TestAccFabricRouteFilterRule_DataSources_PFCR(t *testing.T) {
 						}),
 					),
 
-					testinghelpers.ExpectKnownAttributes("equinix_fabric_route_filter.test", map[string]knownvalue.Check{
+					testinghelpers.ExpectKnownAttributes("equinix_fabric_route_filter.route_filter", map[string]knownvalue.Check{
 						"id":              knownvalue.NotNull(),
 						"route_filter_id": knownvalue.NotNull(),
 					}),
@@ -209,7 +209,7 @@ func TestAccFabricRouteFilterRule_DataSources_PFCR(t *testing.T) {
 						}),
 					),
 
-					testinghelpers.ExpectKnownAttributes("equinix_fabric_route_filter.test", map[string]knownvalue.Check{
+					testinghelpers.ExpectKnownAttributes("equinix_fabric_route_filter.rule1", map[string]knownvalue.Check{
 						"id":              knownvalue.NotNull(),
 						"route_filter_id": knownvalue.NotNull(),
 					}),

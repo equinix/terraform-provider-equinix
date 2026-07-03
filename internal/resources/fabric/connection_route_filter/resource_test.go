@@ -51,7 +51,6 @@ func TestAccFabricConnectionRouteFilter_PFCR(t *testing.T) {
 					"vlan_tag":  config.IntegerVariable(targetVlan),
 				},
 				ConfigStateChecks: []statecheck.StateCheck{
-					statecheck.ExpectKnownValue("equinix_fabric_connection_route_filter.test", tfjsonpath.New("id"), knownvalue.NotNull()),
 					testinghelpers.ExpectKnownAttributes("equinix_fabric_connection_route_filter.test", map[string]knownvalue.Check{
 						"id":                knownvalue.NotNull(),
 						"direction":         knownvalue.StringExact("INBOUND"),

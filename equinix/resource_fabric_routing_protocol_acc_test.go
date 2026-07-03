@@ -33,7 +33,7 @@ func TestAccFabricCreateRoutingProtocols_PFCR(t *testing.T) {
 
 	targetVlan, err := testinghelpers.RandomVlan(portUUID)
 	if err != nil {
-		log.Printf("[DEBUG] unable to get a available VLAN: %s", err)
+		t.Fatalf("unable to get a available VLAN: %s", err)
 		return
 	}
 

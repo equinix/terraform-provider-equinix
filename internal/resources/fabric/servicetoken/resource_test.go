@@ -211,7 +211,7 @@ func TestAccFabricZsidePortServiceToken_PNFV(t *testing.T) {
 							"vlan_tag": knownvalue.Int32Exact(int32(targetVlan)),
 						}),
 					testinghelpers.ExpectKnownAttributesAt("equinix_fabric_service_token.test",
-						tfjsonpath.New("service_token_connection").AtSliceIndex(0).AtMapKey("a_side").AtSliceIndex(0).AtMapKey("access_point_selectors").AtSliceIndex(0).AtMapKey("port").AtSliceIndex(0),
+						tfjsonpath.New("service_token_connection").AtSliceIndex(0).AtMapKey("z_side").AtSliceIndex(0).AtMapKey("access_point_selectors").AtSliceIndex(0).AtMapKey("port").AtSliceIndex(0),
 						map[string]knownvalue.Check{
 							"uuid": knownvalue.StringExact(portUUID),
 						}),
@@ -240,6 +240,11 @@ func TestAccFabricZsidePortServiceToken_PNFV(t *testing.T) {
 						map[string]knownvalue.Check{
 							"supported_bandwidths": knownvalue.ListSizeExact(3),
 						}),
+					testinghelpers.ExpectKnownAttributesAt("equinix_fabric_service_token.test",
+						tfjsonpath.New("service_token_connection").AtSliceIndex(0).AtMapKey("z_side").AtSliceIndex(0).AtMapKey("access_point_selectors").AtSliceIndex(0).AtMapKey("port").AtSliceIndex(0),
+						map[string]knownvalue.Check{
+							"uuid": knownvalue.StringExact(portUUID),
+						}),
 
 					testinghelpers.ExpectKnownAttributesAt("equinix_fabric_service_token.test",
 						tfjsonpath.New("service_token_connection").AtSliceIndex(0).AtMapKey("z_side").AtSliceIndex(0).AtMapKey("access_point_selectors").AtSliceIndex(0).AtMapKey("link_protocol").AtSliceIndex(0),
@@ -248,9 +253,6 @@ func TestAccFabricZsidePortServiceToken_PNFV(t *testing.T) {
 							"vlan_tag": knownvalue.Int32Exact(int32(targetVlan)),
 						}),
 				},
-				Check: resource.ComposeTestCheckFunc(
-					resource.TestCheckResourceAttr("equinix_fabric_service_token.test", "service_token_connection.0.z_side.0.access_point_selectors.0.port.0.uuid", portUUID),
-				),
 				ExpectNonEmptyPlan: false,
 			},
 		},
