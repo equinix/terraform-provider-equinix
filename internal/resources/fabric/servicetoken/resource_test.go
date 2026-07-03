@@ -10,8 +10,12 @@ import (
 	testinghelpers "github.com/equinix/terraform-provider-equinix/internal/fabric/testing_helpers"
 	"github.com/equinix/terraform-provider-equinix/internal/resources/fabric/servicetoken"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
+	"github.com/hashicorp/terraform-plugin-testing/config"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
+	"github.com/hashicorp/terraform-plugin-testing/knownvalue"
+	"github.com/hashicorp/terraform-plugin-testing/statecheck"
 	"github.com/hashicorp/terraform-plugin-testing/terraform"
+	"github.com/hashicorp/terraform-plugin-testing/tfjsonpath"
 )
 
 func TestAccFabricZsideVirtualDeviceServiceToken_PNFV(t *testing.T) {
@@ -70,42 +74,88 @@ func TestAccFabricAsidePortServiceToken_PNFV(t *testing.T) {
 	if len(ports) > 0 {
 		portUUID = ports["pnfv"]["dot1q"][0].GetUuid()
 	}
+
+	targetVlan, err := testinghelpers.RandomVlan(portUUID)
+	if err != nil {
+		t.Fatalf("unable to get a available VLAN: %s", err)
+		return
+	}
+
 	expiration := time.Now().Add(30 * 24 * time.Hour).UTC().Format("2006-01-02T15:04:05.000Z")
-	serviceTokenName, serviceTokenUpdatedName := "token_port_PNFV", "UP_Token_port_PNFV"
-	serviceTokenDescription, serviceTokenUpdatedDescription := "aside port token", "Updated aside port token"
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:     func() { acceptance.TestAccPreCheck(t) },
 		Providers:    acceptance.TestAccProviders,
 		CheckDestroy: CheckServiceTokenDelete,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccFabricAsidePortServiceTokenConfig(serviceTokenName, serviceTokenDescription, expiration, portUUID),
+				Config: asidePortServiceTokenConfig,
+				ConfigVariables: config.Variables{
+					"port_uuid":   config.StringVariable(portUUID),
+					"vlan_tag":    config.IntegerVariable(targetVlan),
+					"name":        config.StringVariable("token_port_PNFV"),
+					"description": config.StringVariable("aside port token"),
+					"expiration":  config.StringVariable(expiration),
+				},
+				ConfigStateChecks: []statecheck.StateCheck{
+					testinghelpers.ExpectKnownAttributes("equinix_fabric_service_token.test", map[string]knownvalue.Check{
+						"uuid":                 knownvalue.NotNull(),
+						"name":                 knownvalue.StringExact("token_port_PNFV"),
+						"description":          knownvalue.StringExact("aside port token"),
+						"expiration_date_time": knownvalue.StringExact(expiration),
+						"type":                 knownvalue.StringExact("VC_TOKEN"),
+					}),
+					testinghelpers.ExpectKnownAttributesAt("equinix_fabric_service_token.test",
+						tfjsonpath.New("service_token_connection").AtSliceIndex(0),
+						map[string]knownvalue.Check{
+							"bandwidth_limit": knownvalue.Int32Exact(int32(1000)),
+						}),
+					testinghelpers.ExpectKnownAttributesAt("equinix_fabric_service_token.test",
+						tfjsonpath.New("service_token_connection").AtSliceIndex(0).AtMapKey("a_side").AtSliceIndex(0).AtMapKey("access_point_selectors").AtSliceIndex(0).AtMapKey("link_protocol").AtSliceIndex(0),
+						map[string]knownvalue.Check{
+							"type":     knownvalue.StringExact("DOT1Q"),
+							"vlan_tag": knownvalue.Int32Exact(int32(targetVlan)),
+						}),
+				},
+
 				Check: resource.ComposeTestCheckFunc(
-					resource.TestCheckResourceAttrSet("equinix_fabric_service_token.test", "uuid"),
-					resource.TestCheckResourceAttr("equinix_fabric_service_token.test", "name", serviceTokenName),
-					resource.TestCheckResourceAttr("equinix_fabric_service_token.test", "type", "VC_TOKEN"),
-					resource.TestCheckResourceAttr("equinix_fabric_service_token.test", "description", serviceTokenDescription),
-					resource.TestCheckResourceAttr("equinix_fabric_service_token.test", "expiration_date_time", expiration),
-					resource.TestCheckResourceAttr("equinix_fabric_service_token.test", "service_token_connection.0.bandwidth_limit", "1000"),
 					resource.TestCheckResourceAttr("equinix_fabric_service_token.test", "service_token_connection.0.a_side.0.access_point_selectors.0.port.0.uuid", portUUID),
-					resource.TestCheckResourceAttr("equinix_fabric_service_token.test", "service_token_connection.0.a_side.0.access_point_selectors.0.link_protocol.0.type", "DOT1Q"),
-					resource.TestCheckResourceAttr("equinix_fabric_service_token.test", "service_token_connection.0.a_side.0.access_point_selectors.0.link_protocol.0.vlan_tag", "2987"),
 				),
 				ExpectNonEmptyPlan: false,
 			},
 			{
-				Config: testAccFabricAsidePortServiceTokenConfig(serviceTokenUpdatedName, serviceTokenUpdatedDescription, expiration, portUUID),
-				Check: resource.ComposeTestCheckFunc(
-					resource.TestCheckResourceAttrSet("equinix_fabric_service_token.test", "uuid"),
-					resource.TestCheckResourceAttr("equinix_fabric_service_token.test", "name", serviceTokenUpdatedName),
-					resource.TestCheckResourceAttr("equinix_fabric_service_token.test", "type", "VC_TOKEN"),
-					resource.TestCheckResourceAttr("equinix_fabric_service_token.test", "description", serviceTokenUpdatedDescription),
-					resource.TestCheckResourceAttr("equinix_fabric_service_token.test", "expiration_date_time", expiration),
-					resource.TestCheckResourceAttr("equinix_fabric_service_token.test", "service_token_connection.0.bandwidth_limit", "1000"),
-					resource.TestCheckResourceAttr("equinix_fabric_service_token.test", "service_token_connection.0.a_side.0.access_point_selectors.0.port.0.uuid", portUUID),
-					resource.TestCheckResourceAttr("equinix_fabric_service_token.test", "service_token_connection.0.a_side.0.access_point_selectors.0.link_protocol.0.type", "DOT1Q"),
-					resource.TestCheckResourceAttr("equinix_fabric_service_token.test", "service_token_connection.0.a_side.0.access_point_selectors.0.link_protocol.0.vlan_tag", "2987"),
-				),
+				Config: asidePortServiceTokenConfig,
+				ConfigVariables: config.Variables{
+					"port_uuid":   config.StringVariable(portUUID),
+					"vlan_tag":    config.IntegerVariable(targetVlan),
+					"name":        config.StringVariable("UP_Token_port_PNFV"),
+					"description": config.StringVariable("Updated aside port token"),
+					"expiration":  config.StringVariable(expiration),
+				},
+				ConfigStateChecks: []statecheck.StateCheck{
+					testinghelpers.ExpectKnownAttributes("equinix_fabric_service_token.test", map[string]knownvalue.Check{
+						"uuid":                 knownvalue.NotNull(),
+						"name":                 knownvalue.StringExact("UP_Token_port_PNFV"),
+						"description":          knownvalue.StringExact("Updated aside port token"),
+						"expiration_date_time": knownvalue.StringExact(expiration),
+						"type":                 knownvalue.StringExact("VC_TOKEN"),
+					}),
+					testinghelpers.ExpectKnownAttributesAt("equinix_fabric_service_token.test",
+						tfjsonpath.New("service_token_connection").AtSliceIndex(0),
+						map[string]knownvalue.Check{
+							"bandwidth_limit": knownvalue.Int32Exact(int32(1000)),
+						}),
+					testinghelpers.ExpectKnownAttributesAt("equinix_fabric_service_token.test",
+						tfjsonpath.New("service_token_connection").AtSliceIndex(0).AtMapKey("a_side").AtSliceIndex(0).AtMapKey("access_point_selectors").AtSliceIndex(0).AtMapKey("link_protocol").AtSliceIndex(0),
+						map[string]knownvalue.Check{
+							"type":     knownvalue.StringExact("DOT1Q"),
+							"vlan_tag": knownvalue.Int32Exact(int32(targetVlan)),
+						}),
+					testinghelpers.ExpectKnownAttributesAt("equinix_fabric_service_token.test",
+						tfjsonpath.New("service_token_connection").AtSliceIndex(0).AtMapKey("a_side").AtSliceIndex(0).AtMapKey("access_point_selectors").AtSliceIndex(0).AtMapKey("port").AtSliceIndex(0),
+						map[string]knownvalue.Check{
+							"uuid": knownvalue.StringExact(portUUID),
+						}),
+				},
 				ExpectNonEmptyPlan: false,
 			},
 		},
@@ -118,41 +168,88 @@ func TestAccFabricZsidePortServiceToken_PNFV(t *testing.T) {
 	if len(ports) > 0 {
 		portUUID = ports["pnfv"]["dot1q"][0].GetUuid()
 	}
+
+	targetVlan, err := testinghelpers.RandomVlan(portUUID)
+	if err != nil {
+		t.Fatalf("unable to get a available VLAN: %s", err)
+		return
+	}
+
 	expiration := time.Now().Add(30 * 24 * time.Hour).UTC().Format("2006-01-02T15:04:05.000Z")
-	serviceTokenName, serviceTokenUpdatedName := "token_zport_PNFV", "UP_Token_zport_PNFV"
-	serviceTokenDescription, serviceTokenUpdatedDescription := "zside port token", "Updated zside port token"
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:     func() { acceptance.TestAccPreCheck(t) },
 		Providers:    acceptance.TestAccProviders,
 		CheckDestroy: CheckServiceTokenDelete,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccFabricZsidePortServiceTokenConfig(serviceTokenName, serviceTokenDescription, expiration, portUUID),
-				Check: resource.ComposeTestCheckFunc(
-					resource.TestCheckResourceAttrSet("equinix_fabric_service_token.test", "uuid"),
-					resource.TestCheckResourceAttr("equinix_fabric_service_token.test", "name", serviceTokenName),
-					resource.TestCheckResourceAttr("equinix_fabric_service_token.test", "type", "VC_TOKEN"),
-					resource.TestCheckResourceAttr("equinix_fabric_service_token.test", "description", serviceTokenDescription),
-					resource.TestCheckResourceAttr("equinix_fabric_service_token.test", "expiration_date_time", expiration),
-					resource.TestCheckResourceAttr("equinix_fabric_service_token.test", "service_token_connection.0.supported_bandwidths.#", "3"),
-					resource.TestCheckResourceAttr("equinix_fabric_service_token.test", "service_token_connection.0.z_side.0.access_point_selectors.0.port.0.uuid", portUUID),
-					resource.TestCheckResourceAttr("equinix_fabric_service_token.test", "service_token_connection.0.z_side.0.access_point_selectors.0.link_protocol.0.type", "DOT1Q"),
-					resource.TestCheckResourceAttr("equinix_fabric_service_token.test", "service_token_connection.0.z_side.0.access_point_selectors.0.link_protocol.0.vlan_tag", "2087"),
-				),
+				Config: zsidePortServiceTokenConfig,
+				ConfigVariables: config.Variables{
+					"port_uuid":   config.StringVariable(portUUID),
+					"vlan_tag":    config.IntegerVariable(targetVlan),
+					"name":        config.StringVariable("token_port_PNFV"),
+					"description": config.StringVariable("zside port token"),
+					"expiration":  config.StringVariable(expiration),
+				},
+				ConfigStateChecks: []statecheck.StateCheck{
+					testinghelpers.ExpectKnownAttributes("equinix_fabric_service_token.test", map[string]knownvalue.Check{
+						"uuid":                 knownvalue.NotNull(),
+						"name":                 knownvalue.StringExact("token_port_PNFV"),
+						"description":          knownvalue.StringExact("zside port token"),
+						"expiration_date_time": knownvalue.StringExact(expiration),
+						"type":                 knownvalue.StringExact("VC_TOKEN"),
+					}),
+					testinghelpers.ExpectKnownAttributesAt("equinix_fabric_service_token.test",
+						tfjsonpath.New("service_token_connection").AtSliceIndex(0),
+						map[string]knownvalue.Check{
+							"supported_bandwidths": knownvalue.ListSizeExact(3),
+						}),
+
+					testinghelpers.ExpectKnownAttributesAt("equinix_fabric_service_token.test",
+						tfjsonpath.New("service_token_connection").AtSliceIndex(0).AtMapKey("z_side").AtSliceIndex(0).AtMapKey("access_point_selectors").AtSliceIndex(0).AtMapKey("link_protocol").AtSliceIndex(0),
+						map[string]knownvalue.Check{
+							"type":     knownvalue.StringExact("DOT1Q"),
+							"vlan_tag": knownvalue.Int32Exact(int32(targetVlan)),
+						}),
+					testinghelpers.ExpectKnownAttributesAt("equinix_fabric_service_token.test",
+						tfjsonpath.New("service_token_connection").AtSliceIndex(0).AtMapKey("a_side").AtSliceIndex(0).AtMapKey("access_point_selectors").AtSliceIndex(0).AtMapKey("port").AtSliceIndex(0),
+						map[string]knownvalue.Check{
+							"uuid": knownvalue.StringExact(portUUID),
+						}),
+				},
 				ExpectNonEmptyPlan: false,
 			},
 			{
-				Config: testAccFabricZsidePortServiceTokenConfig(serviceTokenUpdatedName, serviceTokenUpdatedDescription, expiration, portUUID),
+				Config: zsidePortServiceTokenConfig,
+				ConfigVariables: config.Variables{
+					"port_uuid":   config.StringVariable(portUUID),
+					"vlan_tag":    config.IntegerVariable(targetVlan),
+					"name":        config.StringVariable("UP_Token_port_PNFV"),
+					"description": config.StringVariable("Updated zside port token"),
+					"expiration":  config.StringVariable(expiration),
+				},
+				ConfigStateChecks: []statecheck.StateCheck{
+					testinghelpers.ExpectKnownAttributes("equinix_fabric_service_token.test", map[string]knownvalue.Check{
+						"uuid":                 knownvalue.NotNull(),
+						"name":                 knownvalue.StringExact("UP_Token_port_PNFV"),
+						"description":          knownvalue.StringExact("Updated zside port token"),
+						"expiration_date_time": knownvalue.StringExact(expiration),
+						"type":                 knownvalue.StringExact("VC_TOKEN"),
+					}),
+					testinghelpers.ExpectKnownAttributesAt("equinix_fabric_service_token.test",
+						tfjsonpath.New("service_token_connection").AtSliceIndex(0),
+						map[string]knownvalue.Check{
+							"supported_bandwidths": knownvalue.ListSizeExact(3),
+						}),
+
+					testinghelpers.ExpectKnownAttributesAt("equinix_fabric_service_token.test",
+						tfjsonpath.New("service_token_connection").AtSliceIndex(0).AtMapKey("z_side").AtSliceIndex(0).AtMapKey("access_point_selectors").AtSliceIndex(0).AtMapKey("link_protocol").AtSliceIndex(0),
+						map[string]knownvalue.Check{
+							"type":     knownvalue.StringExact("DOT1Q"),
+							"vlan_tag": knownvalue.Int32Exact(int32(targetVlan)),
+						}),
+				},
 				Check: resource.ComposeTestCheckFunc(
-					resource.TestCheckResourceAttrSet("equinix_fabric_service_token.test", "uuid"),
-					resource.TestCheckResourceAttr("equinix_fabric_service_token.test", "name", serviceTokenUpdatedName),
-					resource.TestCheckResourceAttr("equinix_fabric_service_token.test", "type", "VC_TOKEN"),
-					resource.TestCheckResourceAttr("equinix_fabric_service_token.test", "description", serviceTokenUpdatedDescription),
-					resource.TestCheckResourceAttr("equinix_fabric_service_token.test", "expiration_date_time", expiration),
-					resource.TestCheckResourceAttr("equinix_fabric_service_token.test", "service_token_connection.0.supported_bandwidths.#", "3"),
 					resource.TestCheckResourceAttr("equinix_fabric_service_token.test", "service_token_connection.0.z_side.0.access_point_selectors.0.port.0.uuid", portUUID),
-					resource.TestCheckResourceAttr("equinix_fabric_service_token.test", "service_token_connection.0.z_side.0.access_point_selectors.0.link_protocol.0.type", "DOT1Q"),
-					resource.TestCheckResourceAttr("equinix_fabric_service_token.test", "service_token_connection.0.z_side.0.access_point_selectors.0.link_protocol.0.vlan_tag", "2087"),
 				),
 				ExpectNonEmptyPlan: false,
 			},
@@ -202,69 +299,106 @@ func TestAccFabricZsideNetworkServiceToken_PNFV(t *testing.T) {
 	})
 }
 
-func testAccFabricAsidePortServiceTokenConfig(serviceTokenName string, serviceTokenDescription string, expiration string, portUUID string) string {
-	return fmt.Sprintf(
-		`resource "equinix_fabric_service_token" "test"{
-			type = "VC_TOKEN"
-			name = "%s"
-			description = "%s"
-			expiration_date_time = "%s"
-			service_token_connection {
-				type = "EVPL_VC"
-				bandwidth_limit = 1000
-				a_side {
-					access_point_selectors{
-						type = "COLO"
-						port {
-							uuid = "%s"
-						}
-						link_protocol {
-							type = "DOT1Q"
-							vlan_tag = "2987"
-						}
-					}
-				}
-			}
-			notifications {
-    			type   = "ALL"
-    			emails = ["panthers_auto@equinix.com", "test1@equinix.com", "example@equinix.com"]
-  			}
-
-		}
-    `, serviceTokenName, serviceTokenDescription, expiration, portUUID)
+var asidePortServiceTokenConfig = `
+variable "port_uuid" {
+  type = string
 }
 
-func testAccFabricZsidePortServiceTokenConfig(serviceTokenName string, serviceTokenDescription string, expiration string, portUUID string) string {
-	return fmt.Sprintf(
-		`resource "equinix_fabric_service_token" "test"{
-			type = "VC_TOKEN"
-			name = "%s"
-			description = "%s"
-			expiration_date_time = "%s"
-			service_token_connection {
-				type = "EVPL_VC"
-				supported_bandwidths = [50, 200, 10000]
-				z_side {
-					access_point_selectors{
-						type = "COLO"
-						port {
-							uuid = "%s"
-						}
-						link_protocol {
-							type = "DOT1Q"
-							vlan_tag = "2087"
-						}
-					}
-				}
-			}
-			notifications {
-    			type   = "ALL"
-    			emails = ["panthers_auto@equinix.com", "test1@equinix.com", "example@equinix.com"]
-  			}
-
-		}
-    `, serviceTokenName, serviceTokenDescription, expiration, portUUID)
+variable "vlan_tag" {
+  type = number
 }
+
+variable "name" {
+  type = string
+}
+
+variable "description" {
+  type = string
+}
+
+variable "expiration" {
+  type = string
+}
+
+resource "equinix_fabric_service_token" "test" {
+  type                 = "VC_TOKEN"
+  name                 = var.name
+  description          = var.description
+  expiration_date_time = var.expiration
+  service_token_connection {
+    type            = "EVPL_VC"
+    bandwidth_limit = 1000
+    a_side {
+      access_point_selectors {
+        type = "COLO"
+        port {
+          uuid = var.port_uuid
+        }
+        link_protocol {
+          type     = "DOT1Q"
+          vlan_tag = var.vlan_tag
+        }
+      }
+    }
+  }
+  notifications {
+    type   = "ALL"
+    emails = ["panthers_auto@equinix.com", "test1@equinix.com", "example@equinix.com"]
+  }
+
+}
+`
+
+var zsidePortServiceTokenConfig = `
+variable "port_uuid" {
+  type = string
+}
+
+variable "vlan_tag" {
+  type = number
+}
+
+variable "name" {
+  type = string
+}
+
+variable "description" {
+  type = string
+}
+
+variable "expiration" {
+  type = string
+}
+
+
+resource "equinix_fabric_service_token" "test" {
+  type                 = "VC_TOKEN"
+  name                 = var.name
+  description          = var.description
+  expiration_date_time = var.expiration
+  service_token_connection {
+    type                 = "EVPL_VC"
+    supported_bandwidths = [50, 200, 10000]
+    z_side {
+      access_point_selectors {
+        type = "COLO"
+        port {
+          uuid = var.port_uuid
+        }
+        link_protocol {
+          type     = "DOT1Q"
+          vlan_tag = var.vlan_tag
+        }
+      }
+    }
+  }
+  notifications {
+    type   = "ALL"
+    emails = ["panthers_auto@equinix.com", "test1@equinix.com", "example@equinix.com"]
+  }
+
+}
+`
 
 func testAccFabricZsideVirtualDeviceServiceTokenConfig(serviceTokenName string, serviceTokenDescription string, expiration string, virtualDeviceUUID string) string {
 	return fmt.Sprintf(
