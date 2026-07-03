@@ -36,7 +36,6 @@ func TestAccFabricRouteFilterRule_PFCR(t *testing.T) {
 					resource.TestCheckResourceAttr(
 						"equinix_fabric_route_filter_rule.test", "description", routeFilterRuleDescription),
 				),
-				ExpectNonEmptyPlan: false,
 			},
 			{
 				Config: testAccFabricRouteFilterRuleConfig(routeFilterRuleUpdatedName, routeFilterRulePrefixUpdated),
@@ -51,7 +50,6 @@ func TestAccFabricRouteFilterRule_PFCR(t *testing.T) {
 					resource.TestCheckResourceAttr(
 						"equinix_fabric_route_filter_rule.test", "description", routeFilterRuleDescription),
 				),
-				ExpectNonEmptyPlan: false,
 			},
 		},
 	})

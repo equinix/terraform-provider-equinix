@@ -62,7 +62,6 @@ func TestAccFabricRouteFilterPolicy_PFCR(t *testing.T) {
 						"rules_count":             knownvalue.Int32Exact(0),
 					}),
 				},
-				ExpectNonEmptyPlan: false,
 			},
 		},
 	})

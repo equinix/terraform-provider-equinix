@@ -43,7 +43,6 @@ func TestAccFabricServiceTokenDataSource_PNFV(t *testing.T) {
 					resource.TestCheckResourceAttr("data.equinix_fabric_service_tokens.service-tokens", "data.0.service_token_connection.0.z_side.0.access_point_selectors.0.interface.0.type", "NETWORK"),
 					resource.TestCheckResourceAttrSet("data.equinix_fabric_service_tokens.service-tokens", "data.0.service_token_connection.0.z_side.0.access_point_selectors.0.interface.0.id"),
 				),
-				ExpectNonEmptyPlan: false,
 			},
 		},
 	})

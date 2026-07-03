@@ -54,7 +54,6 @@ func TestAccCloudRouterCreateOnlyRequiredParameters_PFCR(t *testing.T) {
 					resource.TestCheckResourceAttrSet("equinix_fabric_cloud_router.test", "change_log.0.updated_date_time"),
 					resource.TestCheckResourceAttrSet("equinix_fabric_cloud_router.test", "change_log.0.deleted_date_time"),
 				),
-				ExpectNonEmptyPlan: false,
 			},
 			{
 				Config: testAccCloudRouterCreateOnlyRequiredParameterConfig_PFCR("fcr_update_PFCR"),
@@ -62,7 +61,6 @@ func TestAccCloudRouterCreateOnlyRequiredParameters_PFCR(t *testing.T) {
 					resource.TestCheckResourceAttr(
 						"equinix_fabric_cloud_router.test", "name", "fcr_update_PFCR"),
 				),
-				ExpectNonEmptyPlan: false,
 			},
 		},
 	})

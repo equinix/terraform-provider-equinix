@@ -46,7 +46,6 @@ func TestAccFabricZsideVirtualDeviceServiceToken_PNFV(t *testing.T) {
 					resource.TestCheckResourceAttr("equinix_fabric_service_token.test", "service_token_connection.0.z_side.0.access_point_selectors.0.interface.0.type", "NETWORK"),
 					resource.TestCheckResourceAttrSet("equinix_fabric_service_token.test", "service_token_connection.0.z_side.0.access_point_selectors.0.interface.0.id"),
 				),
-				ExpectNonEmptyPlan: false,
 			},
 			{
 				Config: testAccFabricZsideVirtualDeviceServiceTokenConfig(serviceTokenUpdatedName, serviceTokenUpdatedDescription, expiration, virtualDevice),
@@ -62,7 +61,6 @@ func TestAccFabricZsideVirtualDeviceServiceToken_PNFV(t *testing.T) {
 					resource.TestCheckResourceAttr("equinix_fabric_service_token.test", "service_token_connection.0.z_side.0.access_point_selectors.0.interface.0.type", "NETWORK"),
 					resource.TestCheckResourceAttrSet("equinix_fabric_service_token.test", "service_token_connection.0.z_side.0.access_point_selectors.0.interface.0.id"),
 				),
-				ExpectNonEmptyPlan: false,
 			},
 		},
 	})
@@ -120,7 +118,6 @@ func TestAccFabricAsidePortServiceToken_PNFV(t *testing.T) {
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr("equinix_fabric_service_token.test", "service_token_connection.0.a_side.0.access_point_selectors.0.port.0.uuid", portUUID),
 				),
-				ExpectNonEmptyPlan: false,
 			},
 			{
 				Config: asidePortServiceTokenConfig,
@@ -156,7 +153,6 @@ func TestAccFabricAsidePortServiceToken_PNFV(t *testing.T) {
 							"uuid": knownvalue.StringExact(portUUID),
 						}),
 				},
-				ExpectNonEmptyPlan: false,
 			},
 		},
 	})
@@ -216,7 +212,6 @@ func TestAccFabricZsidePortServiceToken_PNFV(t *testing.T) {
 							"uuid": knownvalue.StringExact(portUUID),
 						}),
 				},
-				ExpectNonEmptyPlan: false,
 			},
 			{
 				Config: zsidePortServiceTokenConfig,
@@ -253,7 +248,6 @@ func TestAccFabricZsidePortServiceToken_PNFV(t *testing.T) {
 							"vlan_tag": knownvalue.Int32Exact(int32(targetVlan)),
 						}),
 				},
-				ExpectNonEmptyPlan: false,
 			},
 		},
 	})

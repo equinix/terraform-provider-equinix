@@ -58,7 +58,6 @@ func TestAccFabricMetroDataSource_PFCR(t *testing.T) {
 					resource.TestCheckResourceAttr("data.equinix_fabric_metros.metros", "pagination.limit", strconv.Itoa(limit)),
 					resource.TestCheckResourceAttr("data.equinix_fabric_metros.metros", "pagination.offset", strconv.Itoa(offset)),
 				),
-				ExpectNonEmptyPlan: false,
 			},
 		},
 	})

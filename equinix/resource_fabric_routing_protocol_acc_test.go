@@ -3,7 +3,6 @@ package equinix_test
 import (
 	"context"
 	"fmt"
-	"log"
 	"testing"
 	"time"
 

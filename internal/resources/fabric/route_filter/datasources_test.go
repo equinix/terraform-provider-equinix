@@ -88,7 +88,6 @@ func TestAccFabricRouteFilterPolicy_DataSources_PFCR(t *testing.T) {
 							}),
 						})),
 				},
-				ExpectNonEmptyPlan: false,
 			},
 		},
 	})

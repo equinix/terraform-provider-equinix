@@ -49,7 +49,6 @@ func TestAccFabricNetworkCreateOnlyRequiredParameters_PFCR(t *testing.T) {
 					resource.TestCheckResourceAttrSet("equinix_fabric_network.test", "change_log.0.created_date_time"),
 					resource.TestCheckResourceAttrSet("equinix_fabric_network.test", "operation.0.equinix_status"),
 				),
-				ExpectNonEmptyPlan: false,
 			},
 			{
 				Config: testAccNetworkCreateOnlyRequiredParameterConfig_PFCR("Ipwan_update_PFCR"),
@@ -57,7 +56,6 @@ func TestAccFabricNetworkCreateOnlyRequiredParameters_PFCR(t *testing.T) {
 					resource.TestCheckResourceAttr(
 						"equinix_fabric_network.test", "name", "Ipwan_update_PFCR"),
 				),
-				ExpectNonEmptyPlan: false,
 			},
 		},
 	})
@@ -119,7 +117,6 @@ func TestAccFabricNetworkCreateMixedParameters_PFCR(t *testing.T) {
 					resource.TestCheckResourceAttrSet("equinix_fabric_network.example2", "change_log.0.created_date_time"),
 					resource.TestCheckResourceAttrSet("equinix_fabric_network.example2", "operation.0.equinix_status"),
 				),
-				ExpectNonEmptyPlan: false,
 			},
 		},
 	})
@@ -168,7 +165,6 @@ func TestAccFabricCreateEVPTREE_Network_PFCR(t *testing.T) {
 					resource.TestCheckResourceAttrSet("equinix_fabric_network.example3", "change_log.0.created_date_time"),
 					resource.TestCheckResourceAttrSet("equinix_fabric_network.example3", "operation.0.equinix_status"),
 				),
-				ExpectNonEmptyPlan: false,
 			},
 		},
 	})

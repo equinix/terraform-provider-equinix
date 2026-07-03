@@ -82,7 +82,6 @@ func TestAccFabricConnectionRouteFilter_PFCR(t *testing.T) {
 
 					newConnectionId.AddStateValue("data.equinix_fabric_connection_route_filters.test", tfjsonpath.New("connection_id")),
 				},
-				ExpectNonEmptyPlan: false,
 			},
 		},
 	})
