@@ -2,6 +2,7 @@ package sweep
 
 import (
 	"fmt"
+	"os"
 	"strconv"
 	"strings"
 	"time"
@@ -26,6 +27,10 @@ func IsSweepableTestResource(namePrefix string) bool {
 }
 
 func IsSweepableFabricTestResource(resourceName string) bool {
+	if v := os.Getenv("SWEEP_TARGET"); v != "" {
+		return strings.HasSuffix("_"+resourceName, v)
+	}
+
 	for _, suffix := range FabricTestResourceSuffixes {
 		if strings.HasSuffix(resourceName, suffix) {
 			return true
