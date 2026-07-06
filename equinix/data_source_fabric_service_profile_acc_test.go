@@ -193,6 +193,7 @@ func TestAccFabricServiceProfileDataSources_PFCR(t *testing.T) {
 						}),
 					),
 				},
+				ExpectNonEmptyPlan: true,
 			},
 		},
 	})
