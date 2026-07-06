@@ -123,7 +123,7 @@ func TestAccFabricServiceProfileDataSources_PFCR(t *testing.T) {
 					statecheck.ExpectKnownValue("data.equinix_fabric_service_profile.test", tfjsonpath.New("state"), knownvalue.StringExact("ACTIVE")),
 					statecheck.ExpectKnownValue("data.equinix_fabric_service_profile.test", tfjsonpath.New("visibility"), knownvalue.StringExact("PRIVATE")),
 					statecheck.ExpectKnownValue("data.equinix_fabric_service_profile.test", tfjsonpath.New("href"), knownvalue.NotNull()),
-					statecheck.ExpectKnownValue("data.equinix_fabric_service_profile.test", tfjsonpath.New("self_profile"), knownvalue.Bool(false)),
+					statecheck.ExpectKnownValue("data.equinix_fabric_service_profile.test", tfjsonpath.New("self_profile"), knownvalue.Bool(true)),
 					statecheck.ExpectKnownValue(
 						"data.equinix_fabric_service_profile.test",
 						tfjsonpath.New("access_point_type_configs"),
@@ -155,13 +155,24 @@ func TestAccFabricServiceProfileDataSources_PFCR(t *testing.T) {
 						tfjsonpath.New("data"),
 						knownvalue.ListExact([]knownvalue.Check{
 							knownvalue.ObjectPartial(map[string]knownvalue.Check{
-								"name":         knownvalue.StringExact("SP_DataSource_PFCR"),
-								"uuid":         knownvalue.NotNull(),
-								"description":  knownvalue.StringExact("Generic Read SP"),
-								"state":        knownvalue.StringExact("ACTIVE"),
-								"visibility":   knownvalue.StringExact("PRIVATE"),
-								"href":         knownvalue.NotNull(),
-								"self_profile": knownvalue.Bool(false),
+								"name":           knownvalue.StringExact("SP_DataSource_PFCR"),
+								"type":           knownvalue.StringExact("L2_PROFILE"),
+								"uuid":           knownvalue.NotNull(),
+								"description":    knownvalue.StringExact("Generic Read SP"),
+								"state":          knownvalue.StringExact("ACTIVE"),
+								"visibility":     knownvalue.StringExact("PRIVATE"),
+								"href":           knownvalue.NotNull(),
+								"notifications":  knownvalue.NotNull(),
+								"marketing_info": knownvalue.NotNull(),
+								"allowed_emails": knownvalue.ListExact([]knownvalue.Check{
+									knownvalue.StringExact("panthersfcr@test.com"),
+								}),
+								"tags": knownvalue.ListExact([]knownvalue.Check{
+									knownvalue.StringExact("VoIP"),
+									knownvalue.StringExact("Saas"),
+								}),
+								"account":    knownvalue.NotNull(),
+								"change_log": knownvalue.NotNull(),
 								"access_point_type_configs": knownvalue.ListExact([]knownvalue.Check{
 									knownvalue.ObjectPartial(map[string]knownvalue.Check{
 										"uuid":                             knownvalue.NotNull(),
