@@ -190,7 +190,7 @@ func TestAccFabricCreatePort2EPT_PTPConfiguration_PFCR(t *testing.T) {
 	ports := testing_helpers.GetFabricEnvPorts(t)
 	var portUuid string
 	if len(ports) > 0 {
-		portUuid = ports["pfcr"]["dot1q"][0].GetUuid()
+		portUuid = ports["pfcr"]["dot1q"][1].GetUuid()
 	}
 
 	targetVlan, err := testinghelpers.RandomVlan(portUuid)
