@@ -3,22 +3,27 @@ package streamalertrule_test
 import (
 	"context"
 	"fmt"
+	"regexp"
 	"testing"
 
 	testinghelpers "github.com/equinix/terraform-provider-equinix/internal/fabric/testing_helpers"
 
 	"github.com/equinix/terraform-provider-equinix/internal/acceptance"
-	"github.com/equinix/terraform-provider-equinix/internal/config"
+	eqconfig "github.com/equinix/terraform-provider-equinix/internal/config"
 
 	"github.com/equinix/equinix-sdk-go/services/fabricv4"
 
+	"github.com/hashicorp/terraform-plugin-testing/config"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
+	"github.com/hashicorp/terraform-plugin-testing/knownvalue"
+	"github.com/hashicorp/terraform-plugin-testing/statecheck"
 	"github.com/hashicorp/terraform-plugin-testing/terraform"
+	"github.com/hashicorp/terraform-plugin-testing/tfjsonpath"
 )
 
 func CheckStreamAlertRuleDelete(s *terraform.State) error {
 	ctx := context.Background()
-	client := acceptance.TestAccProvider.Meta().(*config.Config).NewFabricClientForTesting(ctx)
+	client := acceptance.TestAccProvider.Meta().(*eqconfig.Config).NewFabricClientForTesting(ctx)
 
 	for _, rs := range s.RootModule().Resources {
 		if rs.Type != "equinix_fabric_stream_alert_rule" {
@@ -36,140 +41,181 @@ func CheckStreamAlertRuleDelete(s *terraform.State) error {
 	return nil
 }
 
-func testAccFabricStreamAlertRuleConfig(uri, event_index, metric_index, source, access_token, aSidePortUUID, zSidePortUUID, alertRuleName, alertRuleDescription string) string {
-	return fmt.Sprintf(`
-        resource "equinix_fabric_stream" "new_stream" {
-		  type = "TELEMETRY_STREAM"
-		  name = "Stream_Test_PFCR"
-
-		  description = "Stream Description"
-		  project = {
-			project_id = "291639000636552"
-		  }
-		}
-
-        resource "equinix_fabric_stream_subscription" "SPLUNK" {
-			  depends_on = [
-				equinix_fabric_stream.new_stream
-			  ]
-			
-			  type        = "STREAM_SUBSCRIPTION"
-			  name        = "Stream_Sub_PFCR"
-			  description = "Stream Subscription for Splunk PFCR"
-			  stream_id   = equinix_fabric_stream.new_stream.uuid
-			  enabled     = true
-			  sink = {
-				type = "SPLUNK_HEC"
-				uri  = "%s"
-				settings = {
-				  event_index  = "%s"
-				  metric_index = "%s"
-				  source       = "%s"
-				}
-				credential = {
-				  type         = "ACCESS_TOKEN"
-				  access_token = "%s"
-				}
-			  }
-              lifecycle {
-					create_before_destroy = true
-  				}
-			  }
-        resource "equinix_fabric_connection" "test_connection" {
-			name = "Test Connection PFCR"
-			type = "EVPL_VC"
-			notifications{
-				type="ALL" 
-				emails=["example@equinix.com"]
-			} 
-			bandwidth = 50
-			redundancy {priority= "PRIMARY"}
-			order {
-				purchase_order_number= "1-323292"
-			}
-			a_side {
-				access_point {
-					type= "COLO"
-					port {
-						uuid= "%s"
-					}
-					link_protocol {
-						type= "DOT1Q"
-						vlan_tag= "876"
-					}
-				}
-			}
-			z_side {
-				access_point {
-				  type= "COLO"
-				  port {
-					uuid= "%s"
-				  }
-				  link_protocol {
-					type= "DOT1Q"
-					vlan_tag= "878"
-				  }
-				}
-		}
+var resourceConfig = `
+variable "aside_vlan" {
+  type = number
 }
 
-    resource "equinix_fabric_stream_attachment" "asset" {
-		    depends_on = [
-				equinix_fabric_stream.new_stream,
-				equinix_fabric_connection.test_connection 
-		    ]
-		    asset_id  = equinix_fabric_connection.test_connection.id
-		    asset     = "connections"
-		    stream_id = equinix_fabric_stream.new_stream.uuid
+variable "aside_port_uuid" {
+  type = string
+}
+
+variable "zside_vlan" {
+  type = number
+}
+
+variable "zside_port_uuid" {
+  type = string
+}
+
+variable "uri" {
+  type = string
+}
+
+variable "event_index" {
+  type = string
+}
+
+variable "metric_index" {
+  type = string
+}
+
+
+variable "alert_source" {
+  type = string
+}
+
+variable "access_token" {
+  type      = string
+  sensitive = true
+}
+
+variable "name" {
+  type = string
+}
+
+variable "description" {
+  type = string
+}
+
+resource "equinix_fabric_stream" "new_stream" {
+  type = "TELEMETRY_STREAM"
+  name = "Stream_Test_PFCR"
+
+  description = "Stream Description"
+  project = {
+    project_id = "291639000636552"
+  }
+}
+
+resource "equinix_fabric_stream_subscription" "SPLUNK" {
+  depends_on = [
+    equinix_fabric_stream.new_stream
+  ]
+
+  type        = "STREAM_SUBSCRIPTION"
+  name        = "Stream_Sub_PFCR"
+  description = "Stream Subscription for Splunk PFCR"
+  stream_id   = equinix_fabric_stream.new_stream.uuid
+  enabled     = true
+  sink = {
+    type = "SPLUNK_HEC"
+    uri  = var.uri
+    settings = {
+      event_index  = var.event_index
+      metric_index = var.metric_index
+      source       = var.alert_source
     }
-
-    resource "equinix_fabric_stream_alert_rule" "alert_rule" {
-		  depends_on = [
-			equinix_fabric_stream_attachment.asset
-		  ]
-		  stream_id          = equinix_fabric_stream.new_stream.uuid
-		  name               = "%s"
-		  type               = "METRIC_ALERT"
-		  description        = "%s"
-		  detection_method = {
-			type               = "THRESHOLD"
-			operand            = "ABOVE"
-		  	window_size        = "PT15M"
-		  	warning_threshold  = "35000000"
-		  	critical_threshold = "40000000"
-		  }
-		  metric_selector = {
-			"include": [
-				"equinix.fabric.connection.bandwidth_tx.usage"
-			]
-          }
-		  resource_selector   = {
-			"include" : [
-			  "*/connections/${equinix_fabric_connection.test_connection.id}"
-			]
-		  }
-		}
-        data "equinix_fabric_stream_alert_rule" "by_ids" {
-		  depends_on = [
-			equinix_fabric_stream.new_stream,
-			equinix_fabric_stream_alert_rule.alert_rule
-		  ]
-		  stream_id = equinix_fabric_stream.new_stream.uuid
-		  alert_rule_id = equinix_fabric_stream_alert_rule.alert_rule.uuid
-		}
-        data "equinix_fabric_stream_alert_rules" "all" {
-			depends_on = [
-				 equinix_fabric_stream.new_stream,
-				 equinix_fabric_stream_alert_rule.alert_rule
-			   ]
-			   stream_id = equinix_fabric_stream.new_stream.uuid
-			   pagination = {
-				 limit = 20
-				 offset = 0
-			   }
-			 }
-	`, uri, event_index, metric_index, source, access_token, aSidePortUUID, zSidePortUUID, alertRuleName, alertRuleDescription)
+    credential = {
+      type         = "ACCESS_TOKEN"
+      access_token = var.access_token
+    }
+  }
+  lifecycle {
+    create_before_destroy = true
+  }
 }
+resource "equinix_fabric_connection" "test_connection" {
+  name = "Test Connection PFCR"
+  type = "EVPL_VC"
+  notifications {
+    type   = "ALL"
+    emails = ["example@equinix.com"]
+  }
+  bandwidth = 50
+  redundancy { priority = "PRIMARY" }
+  order {
+    purchase_order_number = "1-323292"
+  }
+  a_side {
+    access_point {
+      type = "COLO"
+      port {
+        uuid = var.aside_port_uuid
+      }
+      link_protocol {
+        type     = "DOT1Q"
+        vlan_tag = var.aside_vlan
+      }
+    }
+  }
+  z_side {
+    access_point {
+      type = "COLO"
+      port {
+        uuid = var.zside_port_uuid
+      }
+      link_protocol {
+        type     = "DOT1Q"
+        vlan_tag = var.zside_vlan
+      }
+    }
+  }
+}
+
+resource "equinix_fabric_stream_attachment" "asset" {
+  depends_on = [
+    equinix_fabric_stream.new_stream,
+    equinix_fabric_connection.test_connection
+  ]
+  asset_id  = equinix_fabric_connection.test_connection.id
+  asset     = "connections"
+  stream_id = equinix_fabric_stream.new_stream.uuid
+}
+
+resource "equinix_fabric_stream_alert_rule" "alert_rule" {
+  depends_on = [
+    equinix_fabric_stream_attachment.asset
+  ]
+  stream_id   = equinix_fabric_stream.new_stream.uuid
+  name        = var.name
+  type        = "METRIC_ALERT"
+  description = var.description
+  detection_method = {
+    type               = "THRESHOLD"
+    operand            = "ABOVE"
+    window_size        = "PT15M"
+    warning_threshold  = "35000000"
+    critical_threshold = "40000000"
+  }
+  metric_selector = {
+    "include" : [
+      "equinix.fabric.connection.bandwidth_tx.usage"
+    ]
+  }
+  resource_selector = {
+    "include" : [
+      "*/connections/${equinix_fabric_connection.test_connection.id}"
+    ]
+  }
+}
+data "equinix_fabric_stream_alert_rule" "by_ids" {
+  stream_id     = equinix_fabric_stream.new_stream.uuid
+  alert_rule_id = equinix_fabric_stream_alert_rule.alert_rule.uuid
+}
+
+data "equinix_fabric_stream_alert_rules" "all" {
+  depends_on = [
+    equinix_fabric_stream.new_stream,
+    equinix_fabric_stream_alert_rule.alert_rule
+  ]
+  stream_id = equinix_fabric_stream.new_stream.uuid
+  pagination = {
+    limit  = 20
+    offset = 0
+  }
+}
+`
 
 func TestAccFabricStreamAlertRule_PFCR(t *testing.T) {
 	streamData := testinghelpers.GetFabricStreamTestData(t)
@@ -185,8 +231,20 @@ func TestAccFabricStreamAlertRule_PFCR(t *testing.T) {
 		aSidePortUUID = ports["pfcr"]["dot1q"][0].GetUuid()
 		zSidePortUUID = ports["pfcr"]["dot1q"][1].GetUuid()
 	}
-	alertRuleName, updatedAlertRuleName := "alert_rule_PFCR", "up_alert_rule_PFCR"
-	alertRuleDescription, updatedAlertRuleDescription := "stream alert rule acceptance test PFCR", "updated stream alert rule acceptance test PFCR"
+
+	asideVlan, err := testinghelpers.RandomVlan(aSidePortUUID)
+	if err != nil {
+		t.Fatalf("unable to get a available VLAN: %s", err)
+		return
+	}
+
+	zsideVlan, err := testinghelpers.RandomVlan(zSidePortUUID)
+	if err != nil {
+		t.Fatalf("unable to get a available VLAN: %s", err)
+		return
+	}
+
+	_, _ = "alert_rule_PFCR", "up_alert_rule_PFCR"
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { acceptance.TestAccPreCheck(t); acceptance.TestAccPreCheckProviderConfigured(t) },
@@ -195,80 +253,157 @@ func TestAccFabricStreamAlertRule_PFCR(t *testing.T) {
 		CheckDestroy:             CheckStreamAlertRuleDelete,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccFabricStreamAlertRuleConfig(uri, eventIndex, metricIndex, source, accessToken, aSidePortUUID, zSidePortUUID, alertRuleName, alertRuleDescription),
-				Check: resource.ComposeTestCheckFunc(
-					resource.TestCheckResourceAttr(
-						"equinix_fabric_stream_alert_rule.alert_rule", "name", alertRuleName),
-					resource.TestCheckResourceAttr(
-						"equinix_fabric_stream_alert_rule.alert_rule", "type", "METRIC_ALERT"),
-					resource.TestCheckResourceAttr(
-						"equinix_fabric_stream_alert_rule.alert_rule", "description", alertRuleDescription),
-					resource.TestCheckResourceAttr("equinix_fabric_stream_alert_rule.alert_rule", "enabled", "true"),
-					resource.TestCheckResourceAttr("equinix_fabric_stream_alert_rule.alert_rule", "detection_method.type", "THRESHOLD"),
-					resource.TestCheckResourceAttr("equinix_fabric_stream_alert_rule.alert_rule", "detection_method.operand", "ABOVE"),
-					resource.TestCheckResourceAttr("equinix_fabric_stream_alert_rule.alert_rule", "detection_method.window_size", "PT15M"),
-					resource.TestCheckResourceAttr("equinix_fabric_stream_alert_rule.alert_rule", "detection_method.warning_threshold", "35000000"),
-					resource.TestCheckResourceAttr("equinix_fabric_stream_alert_rule.alert_rule", "detection_method.critical_threshold", "40000000"),
-					resource.TestCheckResourceAttr("equinix_fabric_stream_alert_rule.alert_rule", "metric_selector.include.0", "equinix.fabric.connection.bandwidth_tx.usage"),
+				Config: resourceConfig,
+				ConfigVariables: config.Variables{
+					"name":            config.StringVariable("alert_rule_PFCR"),
+					"description":     config.StringVariable("stream alert rule acceptance test PFCR"),
+					"aside_vlan":      config.IntegerVariable(asideVlan),
+					"aside_port_uuid": config.StringVariable(aSidePortUUID),
+					"zside_vlan":      config.IntegerVariable(zsideVlan),
+					"zside_port_uuid": config.StringVariable(zSidePortUUID),
+					"uri":             config.StringVariable(uri),
+					"event_index":     config.StringVariable(eventIndex),
+					"metric_index":    config.StringVariable(metricIndex),
+					"alert_source":    config.StringVariable(source),
+					"access_token":    config.StringVariable(accessToken),
+				},
+				ConfigStateChecks: []statecheck.StateCheck{
+					testinghelpers.ExpectKnownAttributes("equinix_fabric_stream_alert_rule.alert_rule",
+						map[string]knownvalue.Check{
+							"href":    knownvalue.NotNull(),
+							"uuid":    knownvalue.NotNull(),
+							"state":   knownvalue.StringExact("ACTIVE"),
+							"enabled": knownvalue.Bool(true),
+							"detection_method": knownvalue.ObjectPartial(map[string]knownvalue.Check{
+								"type":               knownvalue.StringExact("THRESHOLD"),
+								"operand":            knownvalue.StringExact("ABOVE"),
+								"window_size":        knownvalue.StringExact("PT15M"),
+								"warning_threshold":  knownvalue.StringExact("35000000"),
+								"critical_threshold": knownvalue.StringExact("40000000"),
+							}),
+							"change_log": knownvalue.NotNull(),
+						}),
 
-					resource.TestCheckResourceAttrSet("equinix_fabric_stream_alert_rule.alert_rule", "uuid"),
-					resource.TestCheckResourceAttrSet("equinix_fabric_stream_alert_rule.alert_rule", "href"),
-					resource.TestCheckResourceAttr(
-						"data.equinix_fabric_stream_alert_rule.by_ids", "name", alertRuleName),
-					resource.TestCheckResourceAttr(
-						"data.equinix_fabric_stream_alert_rule.by_ids", "type", "METRIC_ALERT"),
-					resource.TestCheckResourceAttr(
-						"data.equinix_fabric_stream_alert_rule.by_ids", "description", alertRuleDescription),
-					resource.TestCheckResourceAttr("data.equinix_fabric_stream_alert_rule.by_ids", "enabled", "true"),
-					resource.TestCheckResourceAttrSet("data.equinix_fabric_stream_alert_rule.by_ids", "detection_method.window_size"),
-					resource.TestCheckResourceAttrSet("data.equinix_fabric_stream_alert_rule.by_ids", "detection_method.critical_threshold"),
-					resource.TestCheckResourceAttrSet("data.equinix_fabric_stream_alert_rule.by_ids", "detection_method.warning_threshold"),
-					resource.TestCheckResourceAttrSet("data.equinix_fabric_stream_alert_rule.by_ids", "detection_method.operand"),
-					resource.TestCheckResourceAttrSet("data.equinix_fabric_stream_alert_rule.by_ids", "uuid"),
-					resource.TestCheckResourceAttrSet("data.equinix_fabric_stream_alert_rule.by_ids", "href"),
+					testinghelpers.ExpectKnownAttributes("data.equinix_fabric_stream_alert_rule.by_ids",
+						map[string]knownvalue.Check{
+							"type":        knownvalue.StringExact("METRIC_ALERT"),
+							"name":        knownvalue.StringExact("alert_rule_PFCR"),
+							"description": knownvalue.StringExact("stream alert rule acceptance test PFCR"),
+							"enabled":     knownvalue.Bool(true),
+							"resource_selector": knownvalue.ObjectExact(map[string]knownvalue.Check{
+								"include": knownvalue.ListExact([]knownvalue.Check{knownvalue.StringRegexp(regexp.MustCompile(`\*/connections/.+`))}),
+							}),
+							"href":  knownvalue.NotNull(),
+							"uuid":  knownvalue.NotNull(),
+							"state": knownvalue.StringExact("ACTIVE"),
+							"detection_method": knownvalue.ObjectPartial(map[string]knownvalue.Check{
+								"type":               knownvalue.StringExact("THRESHOLD"),
+								"operand":            knownvalue.StringExact("ABOVE"),
+								"window_size":        knownvalue.StringExact("PT15M"),
+								"warning_threshold":  knownvalue.StringExact("35000000"),
+								"critical_threshold": knownvalue.StringExact("40000000"),
+							}),
+							"change_log": knownvalue.NotNull(),
+						}),
 
-					resource.TestCheckResourceAttrSet("data.equinix_fabric_stream_alert_rules.all", "data.0.name"),
-					resource.TestCheckResourceAttrSet("data.equinix_fabric_stream_alert_rules.all", "data.0.type"),
-					resource.TestCheckResourceAttrSet("data.equinix_fabric_stream_alert_rules.all", "data.0.description"),
-					resource.TestCheckResourceAttrSet("data.equinix_fabric_stream_alert_rules.all", "data.0.uuid"),
-				),
+					testinghelpers.ExpectKnownAttributesAt("data.equinix_fabric_stream_alert_rules.all",
+						tfjsonpath.New("data").AtSliceIndex(0),
+						map[string]knownvalue.Check{
+							"type":              knownvalue.NotNull(),
+							"name":              knownvalue.NotNull(),
+							"description":       knownvalue.NotNull(),
+							"enabled":           knownvalue.NotNull(),
+							"resource_selector": knownvalue.NotNull(),
+							"href":              knownvalue.NotNull(),
+							"uuid":              knownvalue.NotNull(),
+							"state":             knownvalue.NotNull(),
+							"detection_method": knownvalue.ObjectPartial(map[string]knownvalue.Check{
+								"type":               knownvalue.NotNull(),
+								"operand":            knownvalue.NotNull(),
+								"window_size":        knownvalue.NotNull(),
+								"warning_threshold":  knownvalue.NotNull(),
+								"critical_threshold": knownvalue.NotNull(),
+							}),
+							"change_log": knownvalue.NotNull(),
+						}),
+				},
 				ExpectNonEmptyPlan: true,
 			},
 			{
-				Config: testAccFabricStreamAlertRuleConfig(uri, eventIndex, metricIndex, source, accessToken, aSidePortUUID, zSidePortUUID, updatedAlertRuleName, updatedAlertRuleDescription),
-				Check: resource.ComposeTestCheckFunc(
-					resource.TestCheckResourceAttr(
-						"equinix_fabric_stream_alert_rule.alert_rule", "name", updatedAlertRuleName),
-					resource.TestCheckResourceAttr(
-						"equinix_fabric_stream_alert_rule.alert_rule", "type", "METRIC_ALERT"),
-					resource.TestCheckResourceAttr(
-						"equinix_fabric_stream_alert_rule.alert_rule", "description", updatedAlertRuleDescription),
-					resource.TestCheckResourceAttr("equinix_fabric_stream_alert_rule.alert_rule", "detection_method.operand", "ABOVE"),
-					resource.TestCheckResourceAttr("equinix_fabric_stream_alert_rule.alert_rule", "enabled", "true"),
-					resource.TestCheckResourceAttr("equinix_fabric_stream_alert_rule.alert_rule", "detection_method.window_size", "PT15M"),
-					resource.TestCheckResourceAttr("equinix_fabric_stream_alert_rule.alert_rule", "detection_method.warning_threshold", "35000000"),
-					resource.TestCheckResourceAttr("equinix_fabric_stream_alert_rule.alert_rule", "detection_method.critical_threshold", "40000000"),
-					resource.TestCheckResourceAttrSet("equinix_fabric_stream_alert_rule.alert_rule", "uuid"),
-					resource.TestCheckResourceAttrSet("equinix_fabric_stream_alert_rule.alert_rule", "href"),
-					resource.TestCheckResourceAttr(
-						"data.equinix_fabric_stream_alert_rule.by_ids", "name", updatedAlertRuleName),
-					resource.TestCheckResourceAttr(
-						"data.equinix_fabric_stream_alert_rule.by_ids", "type", "METRIC_ALERT"),
-					resource.TestCheckResourceAttr(
-						"data.equinix_fabric_stream_alert_rule.by_ids", "description", updatedAlertRuleDescription),
-					resource.TestCheckResourceAttr("data.equinix_fabric_stream_alert_rule.by_ids", "enabled", "true"),
-					resource.TestCheckResourceAttrSet("data.equinix_fabric_stream_alert_rule.by_ids", "detection_method.window_size"),
-					resource.TestCheckResourceAttrSet("data.equinix_fabric_stream_alert_rule.by_ids", "detection_method.critical_threshold"),
-					resource.TestCheckResourceAttrSet("data.equinix_fabric_stream_alert_rule.by_ids", "detection_method.warning_threshold"),
-					resource.TestCheckResourceAttrSet("data.equinix_fabric_stream_alert_rule.by_ids", "detection_method.operand"),
-					resource.TestCheckResourceAttrSet("data.equinix_fabric_stream_alert_rule.by_ids", "uuid"),
-					resource.TestCheckResourceAttrSet("data.equinix_fabric_stream_alert_rule.by_ids", "href"),
+				Config: resourceConfig,
+				ConfigVariables: config.Variables{
+					"name":            config.StringVariable("up_alert_rule_PFCR"),
+					"description":     config.StringVariable("updated stream alert rule acceptance test PFCR"),
+					"aside_vlan":      config.IntegerVariable(asideVlan),
+					"aside_port_uuid": config.StringVariable(aSidePortUUID),
+					"zside_vlan":      config.IntegerVariable(zsideVlan),
+					"zside_port_uuid": config.StringVariable(zSidePortUUID),
+					"uri":             config.StringVariable(uri),
+					"event_index":     config.StringVariable(eventIndex),
+					"metric_index":    config.StringVariable(metricIndex),
+					"alert_source":    config.StringVariable(source),
+					"access_token":    config.StringVariable(accessToken),
+				},
+				ConfigStateChecks: []statecheck.StateCheck{
+					testinghelpers.ExpectKnownAttributes("equinix_fabric_stream_alert_rule.alert_rule",
+						map[string]knownvalue.Check{
+							"href":    knownvalue.NotNull(),
+							"uuid":    knownvalue.NotNull(),
+							"state":   knownvalue.StringExact("ACTIVE"),
+							"enabled": knownvalue.Bool(true),
+							"detection_method": knownvalue.ObjectPartial(map[string]knownvalue.Check{
+								"type":               knownvalue.StringExact("THRESHOLD"),
+								"operand":            knownvalue.StringExact("ABOVE"),
+								"window_size":        knownvalue.StringExact("PT15M"),
+								"warning_threshold":  knownvalue.StringExact("35000000"),
+								"critical_threshold": knownvalue.StringExact("40000000"),
+							}),
+							"change_log": knownvalue.NotNull(),
+						}),
 
-					resource.TestCheckResourceAttrSet("data.equinix_fabric_stream_alert_rules.all", "data.0.name"),
-					resource.TestCheckResourceAttrSet("data.equinix_fabric_stream_alert_rules.all", "data.0.type"),
-					resource.TestCheckResourceAttrSet("data.equinix_fabric_stream_alert_rules.all", "data.0.description"),
-					resource.TestCheckResourceAttrSet("data.equinix_fabric_stream_alert_rules.all", "data.0.uuid"),
-				),
+					testinghelpers.ExpectKnownAttributes("data.equinix_fabric_stream_alert_rule.by_ids",
+						map[string]knownvalue.Check{
+							"type":        knownvalue.StringExact("METRIC_ALERT"),
+							"name":        knownvalue.StringExact("up_alert_rule_PFCR"),
+							"description": knownvalue.StringExact("updated stream alert rule acceptance test PFCR"),
+							"enabled":     knownvalue.Bool(true),
+							"resource_selector": knownvalue.ObjectExact(map[string]knownvalue.Check{
+								"include": knownvalue.ListExact([]knownvalue.Check{knownvalue.StringRegexp(regexp.MustCompile(`\*/connections/.+`))}),
+							}),
+							"href":  knownvalue.NotNull(),
+							"uuid":  knownvalue.NotNull(),
+							"state": knownvalue.StringExact("ACTIVE"),
+							"detection_method": knownvalue.ObjectPartial(map[string]knownvalue.Check{
+								"type":               knownvalue.StringExact("THRESHOLD"),
+								"operand":            knownvalue.StringExact("ABOVE"),
+								"window_size":        knownvalue.StringExact("PT15M"),
+								"warning_threshold":  knownvalue.StringExact("35000000"),
+								"critical_threshold": knownvalue.StringExact("40000000"),
+							}),
+							"change_log": knownvalue.NotNull(),
+						}),
+
+					testinghelpers.ExpectKnownAttributesAt("data.equinix_fabric_stream_alert_rules.all",
+						tfjsonpath.New("data").AtSliceIndex(0),
+						map[string]knownvalue.Check{
+							"type":              knownvalue.NotNull(),
+							"name":              knownvalue.NotNull(),
+							"description":       knownvalue.NotNull(),
+							"enabled":           knownvalue.NotNull(),
+							"resource_selector": knownvalue.NotNull(),
+							"href":              knownvalue.NotNull(),
+							"uuid":              knownvalue.NotNull(),
+							"state":             knownvalue.NotNull(),
+							"detection_method": knownvalue.ObjectPartial(map[string]knownvalue.Check{
+								"type":               knownvalue.NotNull(),
+								"operand":            knownvalue.NotNull(),
+								"window_size":        knownvalue.NotNull(),
+								"warning_threshold":  knownvalue.NotNull(),
+								"critical_threshold": knownvalue.NotNull(),
+							}),
+							"change_log": knownvalue.NotNull(),
+						}),
+				},
 				ExpectNonEmptyPlan: true,
 			},
 		},
