@@ -28,7 +28,7 @@ resource "equinix_fabric_cloud_router" "test" {
   type = "XF_ROUTER"
   name = "RF_CR_PFCR"
   location {
-    metro_code = "DA"
+    metro_code = "SV"
   }
   package {
     code = "STANDARD"
@@ -83,12 +83,11 @@ resource "equinix_fabric_connection" "test" {
         uuid = var.port_uuid
       }
       link_protocol {
-        type       = "QINQ"
-        vlan_s_tag = 1435
-        vlan_c_tag = 1436
+        type       = "DOT1Q"
+        vlan_tag = var.vlan_tag
       }
       location {
-        metro_code = "DA"
+        metro_code = "SV"
       }
     }
   }
@@ -150,7 +149,7 @@ func TestAccFabricConnectionRouteAggregation_PNFV(t *testing.T) {
 	ports := testinghelpers.GetFabricEnvPorts(t)
 	var portUuid string
 	if len(ports) > 0 {
-		portUuid = ports["pnfv"]["qinq"][1].GetUuid()
+		portUuid = ports["pnfv"]["dot1q"][1].GetUuid()
 	}
 
 	targetVlan, err := testinghelpers.RandomVlan(portUuid)
