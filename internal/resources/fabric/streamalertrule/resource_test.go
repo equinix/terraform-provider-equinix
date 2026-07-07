@@ -244,8 +244,6 @@ func TestAccFabricStreamAlertRule_PFCR(t *testing.T) {
 		return
 	}
 
-	_, _ = "alert_rule_PFCR", "up_alert_rule_PFCR"
-
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { acceptance.TestAccPreCheck(t); acceptance.TestAccPreCheckProviderConfigured(t) },
 		ExternalProviders:        acceptance.TestExternalProviders,

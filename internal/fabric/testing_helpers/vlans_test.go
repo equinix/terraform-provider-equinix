@@ -19,11 +19,11 @@ func TestRandomVlanExcluding(t *testing.T) {
 		out, err := randomVlanExcluding(usedVlans)
 
 		if err != nil {
-			t.Errorf(`errored with = %q`, err)
+			t.Errorf(`errored with = %v`, err)
 		}
 
 		if out != 3060 {
-			t.Errorf(`Output = %q, want 3060`, out)
+			t.Errorf(`Output = %d, want 3060`, out)
 		}
 	})
 
@@ -37,7 +37,7 @@ func TestRandomVlanExcluding(t *testing.T) {
 		_, err := randomVlanExcluding(usedVlans)
 
 		if err == nil {
-			t.Errorf(`errored with = %q`, err)
+			t.Errorf("expected error, got nil")
 		}
 	})
 }

@@ -67,7 +67,7 @@ func TestAccFabricRouteFilterPolicy_DataSources_PFCR(t *testing.T) {
 			{
 				Config: datasourceConfig,
 				ConfigStateChecks: []statecheck.StateCheck{
-					testinghelpers.ExpectKnownAttributes("equinix_fabric_route_filter.test", map[string]knownvalue.Check{
+					testinghelpers.ExpectKnownAttributes("data.equinix_fabric_route_filter.rf_policy", map[string]knownvalue.Check{
 						"id":                      knownvalue.NotNull(),
 						"name":                    knownvalue.StringExact("RF_DS_Policy_PFCR"),
 						"type":                    knownvalue.StringExact("BGP_IPv4_PREFIX_FILTER"),

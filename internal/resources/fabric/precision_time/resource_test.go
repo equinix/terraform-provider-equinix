@@ -8,8 +8,7 @@ import (
 
 	"github.com/equinix/equinix-sdk-go/services/fabricv4"
 	eqconfig "github.com/equinix/terraform-provider-equinix/internal/config"
-	testing_helpers "github.com/equinix/terraform-provider-equinix/internal/fabric/testing_helpers"
-	testinghelpers "github.com/equinix/terraform-provider-equinix/internal/fabric/testing_helpers"
+	"github.com/equinix/terraform-provider-equinix/internal/fabric/testing_helpers"
 	"github.com/hashicorp/terraform-plugin-testing/compare"
 	"github.com/hashicorp/terraform-plugin-testing/config"
 	"github.com/hashicorp/terraform-plugin-testing/knownvalue"
@@ -22,7 +21,7 @@ import (
 )
 
 func TestAccFabricCreatePort2EPT_NTPConfiguration_PFCR(t *testing.T) {
-	ports := testing_helpers.GetFabricEnvPorts(t)
+	ports := testinghelpers.GetFabricEnvPorts(t)
 	var portUuid string
 	if len(ports) > 0 {
 		portUuid = ports["pfcr"]["dot1q"][0].GetUuid()
@@ -187,7 +186,7 @@ data "equinix_fabric_precision_time_service" "ntp" {
 `
 
 func TestAccFabricCreatePort2EPT_PTPConfiguration_PFCR(t *testing.T) {
-	ports := testing_helpers.GetFabricEnvPorts(t)
+	ports := testinghelpers.GetFabricEnvPorts(t)
 	var portUuid string
 	if len(ports) > 0 {
 		portUuid = ports["pfcr"]["dot1q"][1].GetUuid()
