@@ -86,7 +86,7 @@ func checkNetworkDelete(s *terraform.State) error {
 		}
 		err := network.WaitUntilFabricNetworkDeprovisioned(ctx, rs.Primary.ID, acceptance.TestAccProvider.Meta(), &schema.ResourceData{}, 10*time.Minute)
 		if err != nil {
-			return fmt.Errorf("API call failed while waiting for resource deletion")
+			return fmt.Errorf("API call failed while waiting for network deletion. ID: %s, Err: %s", rs.Primary.ID, err)
 		}
 	}
 	return nil

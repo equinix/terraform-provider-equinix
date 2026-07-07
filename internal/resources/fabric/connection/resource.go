@@ -346,7 +346,7 @@ func resourceFabricConnectionDelete(ctx context.Context, d *schema.ResourceData,
 	deleteTimeout := d.Timeout(schema.TimeoutDelete) - 30*time.Second - time.Since(start)
 	err = WaitUntilConnectionDeprovisioned(ctx, d.Id(), meta, d, deleteTimeout)
 	if err != nil {
-		return diag.FromErr(fmt.Errorf("API call failed while waiting for resource deletion. Error %v", err))
+		return diag.FromErr(fmt.Errorf("API call failed while waiting for connection deletion. ID: %s, Error %v", d.Id(), err))
 	}
 	return diags
 }

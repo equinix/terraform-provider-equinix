@@ -927,7 +927,7 @@ func CheckConnectionDelete(s *terraform.State) error {
 
 		err := connection.WaitUntilConnectionDeprovisioned(ctx, rs.Primary.ID, acceptance.TestAccProvider.Meta(), &schema.ResourceData{}, 10*time.Minute)
 		if err != nil {
-			return fmt.Errorf("API call failed while waiting for resource deletion")
+			return fmt.Errorf("API call failed while waiting for connection deletion. ID: %s, Err: %s", rs.Primary.ID, err)
 		}
 	}
 	return nil

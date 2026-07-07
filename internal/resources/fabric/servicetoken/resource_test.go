@@ -464,7 +464,7 @@ func CheckServiceTokenDelete(s *terraform.State) error {
 
 		err := servicetoken.WaitForDeletion(ctx, rs.Primary.ID, acceptance.TestAccProvider.Meta(), &schema.ResourceData{}, 10*time.Minute)
 		if err != nil {
-			return fmt.Errorf("API call failed while waiting for resource deletion")
+			return fmt.Errorf("API call failed while waiting for service token deletion. ID: %s, Err: %s", rs.Primary.ID, err)
 		}
 	}
 	return nil

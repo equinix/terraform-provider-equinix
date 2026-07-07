@@ -437,9 +437,8 @@ func resourceFabricRoutingProtocolDelete(ctx context.Context, d *schema.Resource
 	}
 
 	deleteTimeout := d.Timeout(schema.TimeoutDelete) - 30*time.Second - time.Since(start)
-	err = WaitUntilRoutingProtocolIsDeprovisioned(ctx, d.Id(), d.Get("connection_uuid").(string), meta, d, deleteTimeout)
-	if err != nil {
-		return diag.FromErr(fmt.Errorf("API call failed while waiting for resource deletion. Error %v", err))
+	if err := WaitUntilRoutingProtocolIsDeprovisioned(ctx, d.Id(), d.Get("connection_uuid").(string), meta, d, deleteTimeout); err != nil {
+		return diag.FromErr(fmt.Errorf("API call failed while waiting for routing protocol deletion. ID: %s, Error %v", d.Id(), err))
 	}
 
 	return diags

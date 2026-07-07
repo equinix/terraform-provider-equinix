@@ -88,7 +88,7 @@ func CheckRouteFilterRuleDelete(s *terraform.State) error {
 
 		err := route_filter_rule.WaitForDeletion(ctx, routeFilterID, rs.Primary.ID, acceptance.TestAccProvider.Meta(), &schema.ResourceData{}, 10*time.Minute)
 		if err != nil {
-			return fmt.Errorf("API call failed while waiting for resource deletion")
+			return fmt.Errorf("API call failed while waiting for route filter rule deletion. ID: %s, Err: %s", rs.Primary.ID, err)
 		}
 	}
 	return nil
