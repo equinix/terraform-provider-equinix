@@ -207,6 +207,7 @@ func WaitUntilFabricNetworkDeprovisioned(ctx context.Context, uuid string, meta 
 	log.Printf("Waiting for Fabric Network to be deprovisioned, uuid %s", uuid)
 	stateConf := &retry.StateChangeConf{
 		Pending: []string{
+			string(fabricv4.NETWORKEQUINIXSTATUS_PROVISIONED),
 			string(fabricv4.NETWORKEQUINIXSTATUS_DEPROVISIONING),
 		},
 		Target: []string{
