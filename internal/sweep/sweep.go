@@ -39,10 +39,10 @@ func GetConfigForFabric() (*config.Config, error) {
 	clientId := env.GetWithDefault(config.ClientIDEnvVar, "")
 	clientSecret := env.GetWithDefault(config.ClientSecretEnvVar, "")
 	tokenExchangeScope := env.GetWithDefault(config.TokenExchangeScopeEnvVar, "")
-	envVar := env.GetWithDefault(config.TokenExchangeSubjectTokenEnvVarEnvVar, "")
-	token := env.GetWithDefault(envVar, env.GetWithDefault(config.DefaultTokenExchangeSubjectTokenEnvVar, ""))
+	envVar := env.GetWithDefault(config.TokenExchangeSubjectTokenEnvVarEnvVar, config.DefaultTokenExchangeSubjectTokenEnvVar)
+	token := env.GetWithDefault(envVar, "")
 	if (clientId == "" || clientSecret == "") && (tokenExchangeScope == "" || token == "") {
-		return nil, fmt.Errorf(missingFabricSecrets, config.ClientIDEnvVar, config.ClientSecretEnvVar)
+		return nil, fmt.Errorf("missing Fabric credentials: either %s and %s, or %s and a subject token (from %s, default %s)", config.ClientIDEnvVar, config.ClientSecretEnvVar, config.TokenExchangeScopeEnvVar, config.TokenExchangeSubjectTokenEnvVarEnvVar, config.DefaultTokenExchangeSubjectTokenEnvVar)
 	}
 
 	clientTimeout := env.GetWithDefault(config.ClientTimeoutEnvVar, strconv.Itoa(config.DefaultTimeout))
