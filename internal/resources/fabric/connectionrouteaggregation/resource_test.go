@@ -9,142 +9,156 @@ import (
 
 	"github.com/equinix/equinix-sdk-go/services/fabricv4"
 	"github.com/equinix/terraform-provider-equinix/internal/acceptance"
-	"github.com/equinix/terraform-provider-equinix/internal/config"
+	eqconfig "github.com/equinix/terraform-provider-equinix/internal/config"
+	"github.com/hashicorp/terraform-plugin-testing/config"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/hashicorp/terraform-plugin-testing/terraform"
 )
 
-func testAccFabricConnectionRouteAggregationConfig(portUuid string) string {
-	return fmt.Sprintf(`
-		resource "equinix_fabric_cloud_router" "test" {
-			type = "XF_ROUTER"
-			name = "RF_CR_PFCR"
-			location {
-				metro_code  = "DA"
-			}
-			package {
-				code = "STANDARD"
-			}
-			order {
-				purchase_order_number = "1-234567"
-			}
-			notifications {
-				type = "ALL"
-				emails = [
-					"test@equinix.com",
-					"test1@equinix.com"
-				]
-			}
-			project {
-				project_id = "4f855852-eb47-4721-8e40-b386a3676abf"
-			}
-			account {
-				account_number = 77733367
-			}
-		}
-
-		resource "equinix_fabric_connection" "test" {
-			type = "IP_VC"
-			name = "RF_CR_Connection_PFCR"
-			notifications {
-				type = "ALL"
-				emails = ["test@equinix.com","test1@equinix.com"]
-			}
-			order {
-				purchase_order_number = "123485"
-			}
-			bandwidth = 50
-			redundancy {
-				priority= "PRIMARY"
-			}
-			a_side {
-				access_point {
-					type = "CLOUD_ROUTER"
-					router {
-						uuid = equinix_fabric_cloud_router.test.id
-					}
-				}
-			}
-			project {
-			   project_id = "4f855852-eb47-4721-8e40-b386a3676abf"
-			}
-			z_side {
-				access_point {
-					type = "COLO"
-					port{
-						uuid = "%s"
-					}
-					link_protocol {
-						type= "QINQ"
-						vlan_s_tag= 1435
-                        vlan_c_tag= 1436
-					}
-					location {
-						metro_code = "DA"
-					}
-				}
-			}
-		}
-		
-		resource "equinix_fabric_routing_protocol" "direct" {
-			connection_uuid = equinix_fabric_connection.test.id
-			type = "DIRECT"
-			name = "rp_direct_PFCR"
-			direct_ipv4{
-				equinix_iface_ip = "190.1.1.1/30"
-			}
-        }
-		resource "equinix_fabric_routing_protocol" "bgp" {
-		depends_on = [
-		  equinix_fabric_routing_protocol.direct
-		]
-		connection_uuid = equinix_fabric_connection.test.id
-		type = "BGP"
-		name = "rp_bgp_PFCR"
-		bgp_ipv4 {
-			customer_peer_ip = "190.1.1.2"
-			outbound_as_prepend_count = "1"
-			inbound_med = 4
-			outbound_med = 7
-		}
-		customer_asn = 100
-		}
-		
-		resource "equinix_fabric_route_aggregation" "test" {
-		 type = "BGP_IPv4_PREFIX_AGGREGATION"
-		 name = "Route_Aggregation_Test"
-		 description = "Test Route Aggregation"
-		 project = {
-			project_id = "4f855852-eb47-4721-8e40-b386a3676abf"
-			}
-		}
-
-		resource "equinix_fabric_connection_route_aggregation" "test" {
-			depends_on = [equinix_fabric_routing_protocol.direct, equinix_fabric_routing_protocol.bgp]
-			route_aggregation_id = equinix_fabric_route_aggregation.test.id
-			connection_id = equinix_fabric_connection.test.id
-		}
-
-		data "equinix_fabric_connection_route_aggregation" "data_cra" {
-  			depends_on = [equinix_fabric_connection_route_aggregation.test]
-  			route_aggregation_id = equinix_fabric_route_aggregation.test.id
-  			connection_id = equinix_fabric_connection.test.id
-		}
-
-
-		data "equinix_fabric_connection_route_aggregations" "data_cras" {
-  			depends_on = [equinix_fabric_connection_route_aggregation.test]
-  			connection_id = equinix_fabric_connection.test.id
-		}
-	`, portUuid)
+var connectionRouteAggregationConfig = `
+variable "port_uuid" {
+  type = string
 }
+
+variable "vlan_tag" {
+  type = number
+}
+
+resource "equinix_fabric_cloud_router" "test" {
+  type = "XF_ROUTER"
+  name = "RF_CR_PFCR"
+  location {
+    metro_code = "SV"
+  }
+  package {
+    code = "STANDARD"
+  }
+  order {
+    purchase_order_number = "1-234567"
+  }
+  notifications {
+    type = "ALL"
+    emails = [
+      "test@equinix.com",
+      "test1@equinix.com"
+    ]
+  }
+  project {
+    project_id = "4f855852-eb47-4721-8e40-b386a3676abf"
+  }
+  account {
+    account_number = 77733367
+  }
+}
+
+resource "equinix_fabric_connection" "test" {
+  type = "IP_VC"
+  name = "RF_CR_Connection_PFCR"
+  notifications {
+    type   = "ALL"
+    emails = ["test@equinix.com", "test1@equinix.com"]
+  }
+  order {
+    purchase_order_number = "123485"
+  }
+  bandwidth = 50
+  redundancy {
+    priority = "PRIMARY"
+  }
+  a_side {
+    access_point {
+      type = "CLOUD_ROUTER"
+      router {
+        uuid = equinix_fabric_cloud_router.test.id
+      }
+    }
+  }
+  project {
+    project_id = "4f855852-eb47-4721-8e40-b386a3676abf"
+  }
+  z_side {
+    access_point {
+      type = "COLO"
+      port {
+        uuid = var.port_uuid
+      }
+      link_protocol {
+        type       = "DOT1Q"
+        vlan_tag = var.vlan_tag
+      }
+      location {
+        metro_code = "SV"
+      }
+    }
+  }
+}
+
+resource "equinix_fabric_routing_protocol" "direct" {
+  connection_uuid = equinix_fabric_connection.test.id
+  type            = "DIRECT"
+  name            = "rp_direct_PFCR"
+  direct_ipv4 {
+    equinix_iface_ip = "190.1.1.1/30"
+  }
+}
+resource "equinix_fabric_routing_protocol" "bgp" {
+  depends_on = [
+    equinix_fabric_routing_protocol.direct
+  ]
+  connection_uuid = equinix_fabric_connection.test.id
+  type            = "BGP"
+  name            = "rp_bgp_PFCR"
+  bgp_ipv4 {
+    customer_peer_ip          = "190.1.1.2"
+    outbound_as_prepend_count = "1"
+    inbound_med               = 4
+    outbound_med              = 7
+  }
+  customer_asn = 100
+}
+
+resource "equinix_fabric_route_aggregation" "test" {
+  type        = "BGP_IPv4_PREFIX_AGGREGATION"
+  name        = "Route_Aggregation_Test"
+  description = "Test Route Aggregation"
+  project = {
+    project_id = "4f855852-eb47-4721-8e40-b386a3676abf"
+  }
+}
+
+resource "equinix_fabric_connection_route_aggregation" "test" {
+  depends_on           = [equinix_fabric_routing_protocol.direct, equinix_fabric_routing_protocol.bgp]
+  route_aggregation_id = equinix_fabric_route_aggregation.test.id
+  connection_id        = equinix_fabric_connection.test.id
+}
+
+data "equinix_fabric_connection_route_aggregation" "data_cra" {
+  depends_on           = [equinix_fabric_connection_route_aggregation.test]
+  route_aggregation_id = equinix_fabric_route_aggregation.test.id
+  connection_id        = equinix_fabric_connection.test.id
+}
+
+
+data "equinix_fabric_connection_route_aggregations" "data_cras" {
+  depends_on    = [equinix_fabric_connection_route_aggregation.test]
+  connection_id = equinix_fabric_connection.test.id
+}
+`
 
 func TestAccFabricConnectionRouteAggregation_PNFV(t *testing.T) {
 	ports := testinghelpers.GetFabricEnvPorts(t)
 	var portUuid string
 	if len(ports) > 0 {
-		portUuid = ports["pnfv"]["qinq"][1].GetUuid()
+		portUuid = ports["pnfv"]["dot1q"][1].GetUuid()
 	}
+
+	targetVlan, err := testinghelpers.RandomVlan(portUuid)
+
+	if err != nil {
+		t.Fatalf("unable to get a available VLAN: %s", err)
+		return
+	}
+
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:                 func() { acceptance.TestAccPreCheck(t); acceptance.TestAccPreCheckProviderConfigured(t) },
 		ExternalProviders:        acceptance.TestExternalProviders,
@@ -152,7 +166,11 @@ func TestAccFabricConnectionRouteAggregation_PNFV(t *testing.T) {
 		CheckDestroy:             CheckConnectionRouteAggregationDelete,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccFabricConnectionRouteAggregationConfig(portUuid),
+				Config: connectionRouteAggregationConfig,
+				ConfigVariables: config.Variables{
+					"port_uuid": config.StringVariable(portUuid),
+					"vlan_tag":  config.IntegerVariable(targetVlan),
+				},
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttrSet("equinix_fabric_connection_route_aggregation.test", "uuid"),
 					resource.TestCheckResourceAttrSet("equinix_fabric_connection_route_aggregation.test", "attachment_status"),
@@ -181,7 +199,7 @@ func TestAccFabricConnectionRouteAggregation_PNFV(t *testing.T) {
 
 func CheckConnectionRouteAggregationDelete(s *terraform.State) error {
 	ctx := context.Background()
-	client := acceptance.TestAccProvider.Meta().(*config.Config).NewFabricClientForTesting(ctx)
+	client := acceptance.TestAccProvider.Meta().(*eqconfig.Config).NewFabricClientForTesting(ctx)
 
 	for _, rs := range s.RootModule().Resources {
 		if rs.Type != "equinix_fabric_connection_route_aggregation" {

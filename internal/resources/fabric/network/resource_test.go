@@ -49,7 +49,6 @@ func TestAccFabricNetworkCreateOnlyRequiredParameters_PFCR(t *testing.T) {
 					resource.TestCheckResourceAttrSet("equinix_fabric_network.test", "change_log.0.created_date_time"),
 					resource.TestCheckResourceAttrSet("equinix_fabric_network.test", "operation.0.equinix_status"),
 				),
-				ExpectNonEmptyPlan: false,
 			},
 			{
 				Config: testAccNetworkCreateOnlyRequiredParameterConfig_PFCR("Ipwan_update_PFCR"),
@@ -57,7 +56,6 @@ func TestAccFabricNetworkCreateOnlyRequiredParameters_PFCR(t *testing.T) {
 					resource.TestCheckResourceAttr(
 						"equinix_fabric_network.test", "name", "Ipwan_update_PFCR"),
 				),
-				ExpectNonEmptyPlan: false,
 			},
 		},
 	})
@@ -88,7 +86,7 @@ func checkNetworkDelete(s *terraform.State) error {
 		}
 		err := network.WaitUntilFabricNetworkDeprovisioned(ctx, rs.Primary.ID, acceptance.TestAccProvider.Meta(), &schema.ResourceData{}, 10*time.Minute)
 		if err != nil {
-			return fmt.Errorf("API call failed while waiting for resource deletion")
+			return fmt.Errorf("API call failed while waiting for network deletion. ID: %s, Err: %s", rs.Primary.ID, err)
 		}
 	}
 	return nil
@@ -119,7 +117,6 @@ func TestAccFabricNetworkCreateMixedParameters_PFCR(t *testing.T) {
 					resource.TestCheckResourceAttrSet("equinix_fabric_network.example2", "change_log.0.created_date_time"),
 					resource.TestCheckResourceAttrSet("equinix_fabric_network.example2", "operation.0.equinix_status"),
 				),
-				ExpectNonEmptyPlan: false,
 			},
 		},
 	})
@@ -168,7 +165,6 @@ func TestAccFabricCreateEVPTREE_Network_PFCR(t *testing.T) {
 					resource.TestCheckResourceAttrSet("equinix_fabric_network.example3", "change_log.0.created_date_time"),
 					resource.TestCheckResourceAttrSet("equinix_fabric_network.example3", "operation.0.equinix_status"),
 				),
-				ExpectNonEmptyPlan: false,
 			},
 		},
 	})

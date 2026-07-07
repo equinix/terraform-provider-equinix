@@ -30,13 +30,19 @@ func TestAccFabricCreateRoutingProtocols_PFCR(t *testing.T) {
 		portUUID = ports["pfcr"]["dot1q"][1].GetUuid()
 	}
 
+	targetVlan, err := testinghelpers.RandomVlan(portUUID)
+	if err != nil {
+		t.Fatalf("unable to get a available VLAN: %s", err)
+		return
+	}
+
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:     func() { acceptance.TestAccPreCheck(t); acceptance.TestAccPreCheckProviderConfigured(t) },
 		Providers:    acceptance.TestAccProviders,
 		CheckDestroy: checkRoutingProtocolDelete,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccFabricCreateRoutingProtocolConfig("RP_Conn_Test_PFCR", portUUID),
+				Config: testAccFabricCreateRoutingProtocolConfig("RP_Conn_Test_PFCR", portUUID, targetVlan),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttrSet("equinix_fabric_routing_protocol.direct", "id"),
 					resource.TestCheckResourceAttr("equinix_fabric_routing_protocol.direct", "type", "DIRECT"),
@@ -91,7 +97,7 @@ func TestAccFabricCreateRoutingProtocols_PFCR(t *testing.T) {
 	})
 }
 
-func testAccFabricCreateRoutingProtocolConfig(name, portUUID string) string {
+func testAccFabricCreateRoutingProtocolConfig(name, portUUID string, targetVlan int) string {
 	return fmt.Sprintf(`
 
 resource "equinix_fabric_cloud_router" "this" {
@@ -153,7 +159,7 @@ resource "equinix_fabric_connection" "this" {
 			}
 			link_protocol {
 				type= "DOT1Q"
-				vlan_tag= 1501
+				vlan_tag= %d
 			}
 			location {
 				metro_code = "SV"
@@ -206,7 +212,7 @@ data "equinix_fabric_routing_protocol" "bgp" {
 	uuid = equinix_fabric_routing_protocol.bgp.id
 }
 
-`, name, portUUID)
+`, name, portUUID, targetVlan)
 }
 
 func checkRoutingProtocolDelete(s *terraform.State) error {
@@ -217,7 +223,7 @@ func checkRoutingProtocolDelete(s *terraform.State) error {
 		}
 		err := equinix.WaitUntilRoutingProtocolIsDeprovisioned(ctx, rs.Primary.ID, rs.Primary.Attributes["connection_uuid"], acceptance.TestAccProvider.Meta(), &schema.ResourceData{}, 10*time.Minute)
 		if err != nil {
-			return fmt.Errorf("API call failed while waiting for resource deletion")
+			return fmt.Errorf("API call failed while waiting for routing protocol deletion. ID: %s, Err: %s", rs.Primary.ID, err)
 		}
 	}
 	return nil

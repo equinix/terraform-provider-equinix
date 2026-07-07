@@ -57,7 +57,6 @@ func TestAccDataSourceFabricCloudRouter_PFCR(t *testing.T) {
 					resource.TestCheckResourceAttrSet("data.equinix_fabric_cloud_routers.test", "data.0.change_log.0.updated_date_time"),
 					resource.TestCheckResourceAttrSet("data.equinix_fabric_cloud_routers.test", "data.0.change_log.0.deleted_date_time"),
 				),
-				ExpectNonEmptyPlan: false,
 			},
 		},
 	})
