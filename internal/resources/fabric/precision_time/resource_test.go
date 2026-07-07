@@ -7,20 +7,34 @@ import (
 	"testing"
 
 	"github.com/equinix/equinix-sdk-go/services/fabricv4"
-	"github.com/equinix/terraform-provider-equinix/internal/config"
-	testing_helpers "github.com/equinix/terraform-provider-equinix/internal/fabric/testing_helpers"
+	eqconfig "github.com/equinix/terraform-provider-equinix/internal/config"
+	testinghelpers "github.com/equinix/terraform-provider-equinix/internal/fabric/testing_helpers"
+	"github.com/hashicorp/terraform-plugin-testing/compare"
+	"github.com/hashicorp/terraform-plugin-testing/config"
+	"github.com/hashicorp/terraform-plugin-testing/knownvalue"
+	"github.com/hashicorp/terraform-plugin-testing/statecheck"
 	"github.com/hashicorp/terraform-plugin-testing/terraform"
+	"github.com/hashicorp/terraform-plugin-testing/tfjsonpath"
 
 	"github.com/equinix/terraform-provider-equinix/internal/acceptance"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 )
 
 func TestAccFabricCreatePort2EPT_NTPConfiguration_PFCR(t *testing.T) {
-	ports := testing_helpers.GetFabricEnvPorts(t)
+	ports := testinghelpers.GetFabricEnvPorts(t)
 	var portUuid string
 	if len(ports) > 0 {
 		portUuid = ports["pfcr"]["dot1q"][0].GetUuid()
 	}
+
+	targetVlan, err := testinghelpers.RandomVlan(portUuid)
+
+	if err != nil {
+		t.Fatalf("unable to get a available VLAN: %s", err)
+		return
+	}
+	newConnectionId := statecheck.CompareValue(compare.ValuesSame())
+
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:                 func() { acceptance.TestAccPreCheck(t); acceptance.TestAccPreCheckProviderConfigured(t) },
 		ExternalProviders:        acceptance.TestExternalProviders,
@@ -28,43 +42,62 @@ func TestAccFabricCreatePort2EPT_NTPConfiguration_PFCR(t *testing.T) {
 		CheckDestroy:             checkEptServiceDelete,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccFabricCreatePort2EPTNPTConfig("Equinix Precision Time NTP UAT Global", "port2eptntp_PFCR", portUuid, "SV"),
-				Check: resource.ComposeTestCheckFunc(
-					resource.TestCheckResourceAttrSet("equinix_fabric_precision_time_service.ntp", "id"),
-					resource.TestCheckResourceAttrSet("equinix_fabric_precision_time_service.ntp", "connections.0.uuid"),
-					resource.TestCheckResourceAttrSet("equinix_fabric_precision_time_service.ntp", "project.project_id"),
-					resource.TestCheckResourceAttr(
-						"equinix_fabric_precision_time_service.ntp", "name", "tf_acc_eptntp_PFCR"),
-					resource.TestCheckResourceAttr(
-						"equinix_fabric_precision_time_service.ntp", "type", "NTP"),
-					resource.TestCheckResourceAttr(
-						"equinix_fabric_precision_time_service.ntp", "package.code", "NTP_STANDARD"),
-					resource.TestCheckResourceAttr(
-						"equinix_fabric_precision_time_service.ntp", "ipv4.primary", "192.168.254.241"),
-					resource.TestCheckResourceAttr(
-						"equinix_fabric_precision_time_service.ntp", "ipv4.secondary", "192.168.254.242"),
-					resource.TestCheckResourceAttr(
-						"equinix_fabric_precision_time_service.ntp", "ipv4.network_mask", "255.255.255.240"),
-					resource.TestCheckResourceAttr(
-						"equinix_fabric_precision_time_service.ntp", "ipv4.default_gateway", "192.168.254.254"),
-					resource.TestCheckResourceAttrSet("data.equinix_fabric_precision_time_service.ntp", "uuid"),
-					resource.TestCheckResourceAttrSet("data.equinix_fabric_precision_time_service.ntp", "connections.0.uuid"),
-					resource.TestCheckResourceAttrSet("data.equinix_fabric_precision_time_service.ntp", "project.project_id"),
-					resource.TestCheckResourceAttr(
-						"data.equinix_fabric_precision_time_service.ntp", "name", "tf_acc_eptntp_PFCR"),
-					resource.TestCheckResourceAttr(
-						"data.equinix_fabric_precision_time_service.ntp", "type", "NTP"),
-					resource.TestCheckResourceAttr(
-						"data.equinix_fabric_precision_time_service.ntp", "package.code", "NTP_STANDARD"),
-					resource.TestCheckResourceAttr(
-						"data.equinix_fabric_precision_time_service.ntp", "ipv4.primary", "192.168.254.241"),
-					resource.TestCheckResourceAttr(
-						"data.equinix_fabric_precision_time_service.ntp", "ipv4.secondary", "192.168.254.242"),
-					resource.TestCheckResourceAttr(
-						"data.equinix_fabric_precision_time_service.ntp", "ipv4.network_mask", "255.255.255.240"),
-					resource.TestCheckResourceAttr(
-						"data.equinix_fabric_precision_time_service.ntp", "ipv4.default_gateway", "192.168.254.254"),
-				),
+				Config: port2EPTNPTConfig,
+				ConfigVariables: config.Variables{
+					"port_uuid": config.StringVariable(portUuid),
+					"vlan_tag":  config.IntegerVariable(targetVlan),
+				},
+				ConfigStateChecks: []statecheck.StateCheck{
+					testinghelpers.ExpectKnownAttributes("equinix_fabric_precision_time_service.ntp", map[string]knownvalue.Check{
+						"id":   knownvalue.NotNull(),
+						"name": knownvalue.StringExact("tf_acc_eptntp_PFCR"),
+						"type": knownvalue.StringExact("NTP"),
+					}),
+					testinghelpers.ExpectKnownAttributesAt("equinix_fabric_precision_time_service.ntp",
+						tfjsonpath.New("package"),
+						map[string]knownvalue.Check{
+							"href": knownvalue.NotNull(),
+							"code": knownvalue.StringExact("NTP_STANDARD"),
+						}),
+
+					testinghelpers.ExpectKnownAttributesAt("equinix_fabric_precision_time_service.ntp",
+						tfjsonpath.New("ipv4"),
+						map[string]knownvalue.Check{
+							"primary":         knownvalue.StringExact("192.168.254.241"),
+							"secondary":       knownvalue.StringExact("192.168.254.242"),
+							"network_mask":    knownvalue.StringExact("255.255.255.240"),
+							"default_gateway": knownvalue.StringExact("192.168.254.254"),
+						}),
+
+					testinghelpers.ExpectKnownAttributes("data.equinix_fabric_precision_time_service.ntp", map[string]knownvalue.Check{
+						"uuid": knownvalue.NotNull(),
+						"name": knownvalue.StringExact("tf_acc_eptntp_PFCR"),
+						"type": knownvalue.StringExact("NTP"),
+					}),
+					testinghelpers.ExpectKnownAttributesAt("data.equinix_fabric_precision_time_service.ntp",
+						tfjsonpath.New("package"),
+						map[string]knownvalue.Check{
+							"href": knownvalue.NotNull(),
+							"code": knownvalue.StringExact("NTP_STANDARD"),
+						}),
+					testinghelpers.ExpectKnownAttributesAt("data.equinix_fabric_precision_time_service.ntp",
+						tfjsonpath.New("project"),
+						map[string]knownvalue.Check{
+							"project_id": knownvalue.StringExact("33ec651f-cc99-48e0-94d3-47466899cdc7"), // inherited from port
+						}),
+					testinghelpers.ExpectKnownAttributesAt("data.equinix_fabric_precision_time_service.ntp",
+						tfjsonpath.New("ipv4"),
+						map[string]knownvalue.Check{
+							"primary":         knownvalue.StringExact("192.168.254.241"),
+							"secondary":       knownvalue.StringExact("192.168.254.242"),
+							"network_mask":    knownvalue.StringExact("255.255.255.240"),
+							"default_gateway": knownvalue.StringExact("192.168.254.254"),
+						}),
+
+					newConnectionId.AddStateValue("equinix_fabric_connection.test", tfjsonpath.New("uuid")),
+					newConnectionId.AddStateValue("equinix_fabric_precision_time_service.ntp", tfjsonpath.New("connections").AtSliceIndex(0).AtMapKey("uuid")),
+					newConnectionId.AddStateValue("data.equinix_fabric_precision_time_service.ntp", tfjsonpath.New("connections").AtSliceIndex(0).AtMapKey("uuid")),
+				},
 				ExpectNonEmptyPlan: true,
 			},
 		},
@@ -72,88 +105,103 @@ func TestAccFabricCreatePort2EPT_NTPConfiguration_PFCR(t *testing.T) {
 
 }
 
-func testAccFabricCreatePort2EPTNPTConfig(spName, name, portUuid, zSideMetro string) string {
-	return fmt.Sprintf(`
-
-	data "equinix_fabric_service_profiles" "this" {
-	 filter {
-		property = "/name"
-		operator = "="
-		values   = ["%s"]
-	 }
-	}
-
-
-	resource "equinix_fabric_connection" "test" {
-		name = "%s"
-		type = "EVPL_VC"
-		notifications{
-			type="ALL"
-			emails=["example@equinix.com"]
-		}
-		bandwidth = 1
-		redundancy {priority= "PRIMARY"}
-		order {
-			purchase_order_number= "1-323292"
-		}
-		a_side {
-			access_point {
-				type= "COLO"
-				port {
-					uuid= "%s"
-				}
-				link_protocol {
-					type= "DOT1Q"
-					vlan_tag= 1700
-				}
-			}
-		}
-		z_side {
-			access_point {
-				type= "SP"
-				profile {
-					type= "L2_PROFILE"
-					uuid= data.equinix_fabric_service_profiles.this.data.0.uuid
-				}
-				location {
-					metro_code= "%s"
-				}
-			}
-		}
-	}
-
-	resource "equinix_fabric_precision_time_service" "ntp" {
-	  type = "NTP"
-	  name = "tf_acc_eptntp_PFCR"
-	  package = {
-		code = "NTP_STANDARD"
-	  }
-	  connections = [
-		{
-			uuid = equinix_fabric_connection.test.id
-	  	}
-     ]
-	  ipv4 = {
-		primary = "192.168.254.241"
-		secondary = "192.168.254.242"
-		network_mask = "255.255.255.240"
-		default_gateway = "192.168.254.254"
-	  }
-	}
-
-	data "equinix_fabric_precision_time_service" "ntp" {
-	  ept_service_id = equinix_fabric_precision_time_service.ntp.id
-	}
-
-`, spName, name, portUuid, zSideMetro)
+var port2EPTNPTConfig = `
+variable "port_uuid" {
+  type = string
 }
+
+variable "vlan_tag" {
+  type = number
+}
+
+data "equinix_fabric_service_profiles" "sp" {
+  filter {
+    property = "/name"
+    operator = "="
+    values   = ["Equinix Precision Time NTP UAT Global"]
+  }
+}
+
+
+resource "equinix_fabric_connection" "test" {
+  name = "port2eptntp_PFCR"
+  type = "EVPL_VC"
+  notifications {
+    type   = "ALL"
+    emails = ["example@equinix.com"]
+  }
+  bandwidth = 1
+  redundancy { priority = "PRIMARY" }
+  order {
+    purchase_order_number = "1-323292"
+  }
+  a_side {
+    access_point {
+      type = "COLO"
+      port {
+        uuid = var.port_uuid
+      }
+      link_protocol {
+        type     = "DOT1Q"
+        vlan_tag = var.vlan_tag
+      }
+    }
+  }
+  z_side {
+    access_point {
+      type = "SP"
+      profile {
+        type = "L2_PROFILE"
+        uuid = data.equinix_fabric_service_profiles.sp.data.0.uuid
+      }
+      location {
+        metro_code = "SV"
+      }
+    }
+  }
+}
+
+resource "equinix_fabric_precision_time_service" "ntp" {
+  type = "NTP"
+  name = "tf_acc_eptntp_PFCR"
+  package = {
+    code = "NTP_STANDARD"
+  }
+  connections = [
+    {
+      uuid = equinix_fabric_connection.test.id
+    }
+  ]
+  ipv4 = {
+    primary         = "192.168.254.241"
+    secondary       = "192.168.254.242"
+    network_mask    = "255.255.255.240"
+    default_gateway = "192.168.254.254"
+  }
+}
+
+data "equinix_fabric_precision_time_service" "ntp" {
+  ept_service_id = equinix_fabric_precision_time_service.ntp.id
+}
+`
 
 func TestAccFabricCreatePort2EPT_PTPConfiguration_PFCR(t *testing.T) {
-	ports := testing_helpers.GetFabricEnvPorts(t)
+	ports := testinghelpers.GetFabricEnvPorts(t)
 	var portUuid string
 	if len(ports) > 0 {
-		portUuid = ports["pfcr"]["dot1q"][0].GetUuid()
+		portUuid = ports["pfcr"]["dot1q"][1].GetUuid()
 	}
+
+	targetVlan, err := testinghelpers.RandomVlan(portUuid)
+
+	if err != nil {
+		t.Fatalf("unable to get a available VLAN: %s", err)
+		return
+	}
+
+	newConnectionId := statecheck.CompareValue(compare.ValuesSame())
+	newServiceId := statecheck.CompareValue(compare.ValuesSame())
+
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:                 func() { acceptance.TestAccPreCheck(t); acceptance.TestAccPreCheckProviderConfigured(t) },
 		ExternalProviders:        acceptance.TestExternalProviders,
@@ -161,51 +209,78 @@ func TestAccFabricCreatePort2EPT_PTPConfiguration_PFCR(t *testing.T) {
 		CheckDestroy:             checkEptServiceDelete,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccFabricCreatePort2EPTPTPConfig("Equinix Precision Time PTP Global UAT", "port2eptptp_PFCR", portUuid, "SV"),
-				Check: resource.ComposeTestCheckFunc(
-					resource.TestCheckResourceAttrSet("equinix_fabric_precision_time_service.ptp", "uuid"),
-					resource.TestCheckResourceAttrSet("equinix_fabric_precision_time_service.ptp", "connections.0.uuid"),
-					resource.TestCheckResourceAttrSet("equinix_fabric_precision_time_service.ptp", "project.project_id"),
-					resource.TestCheckResourceAttr(
-						"equinix_fabric_precision_time_service.ptp", "name", "tf_acc_eptptp_PFCR"),
-					resource.TestCheckResourceAttr(
-						"equinix_fabric_precision_time_service.ptp", "type", "PTP"),
-					resource.TestCheckResourceAttr(
-						"equinix_fabric_precision_time_service.ptp", "package.code", "PTP_STANDARD"),
-					resource.TestCheckResourceAttr(
-						"equinix_fabric_precision_time_service.ptp", "ipv4.primary", "192.168.254.241"),
-					resource.TestCheckResourceAttr(
-						"equinix_fabric_precision_time_service.ptp", "ipv4.secondary", "192.168.254.242"),
-					resource.TestCheckResourceAttr(
-						"equinix_fabric_precision_time_service.ptp", "ipv4.network_mask", "255.255.255.240"),
-					resource.TestCheckResourceAttr(
-						"equinix_fabric_precision_time_service.ptp", "ipv4.default_gateway", "192.168.254.254"),
-					resource.TestCheckResourceAttrSet("data.equinix_fabric_precision_time_service.ptp", "uuid"),
-					resource.TestCheckResourceAttrSet("data.equinix_fabric_precision_time_service.ptp", "connections.0.uuid"),
-					resource.TestCheckResourceAttrSet("data.equinix_fabric_precision_time_service.ptp", "project.project_id"),
-					resource.TestCheckResourceAttr(
-						"data.equinix_fabric_precision_time_service.ptp", "name", "tf_acc_eptptp_PFCR"),
-					resource.TestCheckResourceAttr(
-						"data.equinix_fabric_precision_time_service.ptp", "type", "PTP"),
-					resource.TestCheckResourceAttr(
-						"data.equinix_fabric_precision_time_service.ptp", "package.code", "PTP_STANDARD"),
-					resource.TestCheckResourceAttr(
-						"data.equinix_fabric_precision_time_service.ptp", "ipv4.primary", "192.168.254.241"),
-					resource.TestCheckResourceAttr(
-						"data.equinix_fabric_precision_time_service.ptp", "ipv4.secondary", "192.168.254.242"),
-					resource.TestCheckResourceAttr(
-						"data.equinix_fabric_precision_time_service.ptp", "ipv4.network_mask", "255.255.255.240"),
-					resource.TestCheckResourceAttr(
-						"data.equinix_fabric_precision_time_service.ptp", "ipv4.default_gateway", "192.168.254.254"),
-					resource.TestCheckResourceAttrSet("data.equinix_fabric_precision_time_services.all", "data.0.uuid"),
-					resource.TestCheckResourceAttrSet("data.equinix_fabric_precision_time_services.all", "data.0.connections.0.uuid"),
-					resource.TestCheckResourceAttrSet("data.equinix_fabric_precision_time_services.all", "data.0.project.project_id"),
-					resource.TestCheckResourceAttrSet("data.equinix_fabric_precision_time_services.all", "data.0.href"),
-					resource.TestCheckResourceAttr("data.equinix_fabric_precision_time_services.all", "data.#", "1"),
-					resource.TestCheckResourceAttr("data.equinix_fabric_precision_time_services.all", "pagination.%", "5"),
-					resource.TestCheckResourceAttr("data.equinix_fabric_precision_time_services.all", "pagination.limit", "2"),
-					resource.TestCheckResourceAttr("data.equinix_fabric_precision_time_services.all", "pagination.offset", "1"),
-				),
+				Config: port2EPTPTPConfig,
+				ConfigVariables: config.Variables{
+					"port_uuid": config.StringVariable(portUuid),
+					"vlan_tag":  config.IntegerVariable(targetVlan),
+				},
+				ConfigStateChecks: []statecheck.StateCheck{
+					testinghelpers.ExpectKnownAttributes("equinix_fabric_precision_time_service.ptp", map[string]knownvalue.Check{
+						"id":   knownvalue.NotNull(),
+						"name": knownvalue.StringExact("tf_acc_eptptp_PFCR"),
+						"type": knownvalue.StringExact("PTP"),
+					}),
+					testinghelpers.ExpectKnownAttributesAt("equinix_fabric_precision_time_service.ptp",
+						tfjsonpath.New("package"),
+						map[string]knownvalue.Check{
+							"href": knownvalue.NotNull(),
+							"code": knownvalue.StringExact("PTP_STANDARD"),
+						}),
+					testinghelpers.ExpectKnownAttributesAt("data.equinix_fabric_precision_time_service.ptp",
+						tfjsonpath.New("project"),
+						map[string]knownvalue.Check{
+							"project_id": knownvalue.StringExact("33ec651f-cc99-48e0-94d3-47466899cdc7"), // inherited from port
+						}),
+					testinghelpers.ExpectKnownAttributesAt("equinix_fabric_precision_time_service.ptp",
+						tfjsonpath.New("ipv4"),
+						map[string]knownvalue.Check{
+							"primary":         knownvalue.StringExact("192.168.254.241"),
+							"secondary":       knownvalue.StringExact("192.168.254.242"),
+							"network_mask":    knownvalue.StringExact("255.255.255.240"),
+							"default_gateway": knownvalue.StringExact("192.168.254.254"),
+						}),
+
+					testinghelpers.ExpectKnownAttributes("data.equinix_fabric_precision_time_service.ptp", map[string]knownvalue.Check{
+						"uuid": knownvalue.NotNull(),
+						"name": knownvalue.StringExact("tf_acc_eptptp_PFCR"),
+						"type": knownvalue.StringExact("PTP"),
+					}),
+					testinghelpers.ExpectKnownAttributesAt("data.equinix_fabric_precision_time_service.ptp",
+						tfjsonpath.New("package"),
+						map[string]knownvalue.Check{
+							"href": knownvalue.NotNull(),
+							"code": knownvalue.StringExact("PTP_STANDARD"),
+						}),
+					testinghelpers.ExpectKnownAttributesAt("data.equinix_fabric_precision_time_service.ptp",
+						tfjsonpath.New("project"),
+						map[string]knownvalue.Check{
+							"project_id": knownvalue.StringExact("33ec651f-cc99-48e0-94d3-47466899cdc7"), // inherited from port
+						}),
+					testinghelpers.ExpectKnownAttributesAt("data.equinix_fabric_precision_time_service.ptp",
+						tfjsonpath.New("ipv4"),
+						map[string]knownvalue.Check{
+							"primary":         knownvalue.StringExact("192.168.254.241"),
+							"secondary":       knownvalue.StringExact("192.168.254.242"),
+							"network_mask":    knownvalue.StringExact("255.255.255.240"),
+							"default_gateway": knownvalue.StringExact("192.168.254.254"),
+						}),
+
+					statecheck.ExpectKnownValue("data.equinix_fabric_precision_time_services.all", tfjsonpath.New("data"), knownvalue.ListSizeExact(1)),
+					testinghelpers.ExpectKnownAttributesAt("data.equinix_fabric_precision_time_services.all",
+						tfjsonpath.New("pagination"),
+						map[string]knownvalue.Check{
+							"limit":  knownvalue.Int32Exact(2),
+							"offset": knownvalue.Int32Exact(0),
+						}),
+
+					newConnectionId.AddStateValue("equinix_fabric_connection.test", tfjsonpath.New("uuid")),
+					newConnectionId.AddStateValue("equinix_fabric_precision_time_service.ptp", tfjsonpath.New("connections").AtSliceIndex(0).AtMapKey("uuid")),
+					newConnectionId.AddStateValue("data.equinix_fabric_precision_time_service.ptp", tfjsonpath.New("connections").AtSliceIndex(0).AtMapKey("uuid")),
+
+					newServiceId.AddStateValue("equinix_fabric_precision_time_service.ptp", tfjsonpath.New("uuid")),
+					newServiceId.AddStateValue("data.equinix_fabric_precision_time_service.ptp", tfjsonpath.New("uuid")),
+					newServiceId.AddStateValue("data.equinix_fabric_precision_time_services.all", tfjsonpath.New("data").AtSliceIndex(0).AtMapKey("uuid")),
+				},
 				ExpectNonEmptyPlan: true,
 			},
 		},
@@ -213,102 +288,104 @@ func TestAccFabricCreatePort2EPT_PTPConfiguration_PFCR(t *testing.T) {
 
 }
 
-func testAccFabricCreatePort2EPTPTPConfig(spName, name, portUuid, zSideMetro string) string {
-	return fmt.Sprintf(`
-
-	data "equinix_fabric_service_profiles" "this" {
-	 filter {
-		property = "/name"
-		operator = "="
-		values   = ["%s"]
-	 }
-		
-	}
-
-
-	resource "equinix_fabric_connection" "test" {
-		name = "%s"
-		type = "EVPL_VC"
-		notifications{
-			type="ALL"
-			emails=["example@equinix.com"]
-		}
-		bandwidth = 5
-		redundancy {priority= "PRIMARY"}
-		order {
-			purchase_order_number= "1-323292"
-		}
-		a_side {
-			access_point {
-				type= "COLO"
-				port {
-					uuid= "%s"
-				}
-				link_protocol {
-					type= "DOT1Q"
-					vlan_tag= "1355"
-				}
-			}
-		}
-		z_side {
-			access_point {
-				type= "SP"
-				profile {
-					type= "L2_PROFILE"
-					uuid= data.equinix_fabric_service_profiles.this.data.0.uuid
-				}
-				location {
-					metro_code= "%s"
-				}
-			}
-		}
-	}
-
-	resource "equinix_fabric_precision_time_service" "ptp" {
-	  type = "PTP"
-	  name = "tf_acc_eptptp_PFCR"
-	  package = {
-		code = "PTP_STANDARD"
-	  }
-	  connections = [
-		{
-			uuid = equinix_fabric_connection.test.id
-	  	}
-     ]
-	  ipv4 = {
-		primary = "192.168.254.241"
-		secondary = "192.168.254.242"
-		network_mask = "255.255.255.240"
-		default_gateway = "192.168.254.254"
-	  }
-	}
-
-	data "equinix_fabric_precision_time_service" "ptp" {
-	  ept_service_id = equinix_fabric_precision_time_service.ptp.id
-	}
-
-	data "equinix_fabric_precision_time_services" "all" {
-		depends_on = [equinix_fabric_precision_time_service.ptp, equinix_fabric_connection.test]
-		  pagination = {
-			limit = 2
-			offset = 1
-		  }
-		  filters = [{
-			property = "/type"
-			operator = "="
-			values = ["PTP"]
-		  }]
-		  sort = [{
-			direction = "DESC"
-			property = "/uuid"
-		  }]
-	}
-`, spName, name, portUuid, zSideMetro)
+var port2EPTPTPConfig = `
+variable "port_uuid" {
+  type = string
 }
+
+variable "vlan_tag" {
+  type = number
+}
+
+data "equinix_fabric_service_profiles" "sp" {
+  filter {
+    property = "/name"
+    operator = "="
+    values   = ["Equinix Precision Time PTP Global UAT"]
+  }
+}
+
+resource "equinix_fabric_connection" "test" {
+  name = "port2eptptp_PFCR"
+  type = "EVPL_VC"
+  notifications {
+    type   = "ALL"
+    emails = ["example@equinix.com"]
+  }
+  bandwidth = 5
+  redundancy { priority = "PRIMARY" }
+  order {
+    purchase_order_number = "1-323292"
+  }
+  a_side {
+    access_point {
+      type = "COLO"
+      port {
+        uuid = var.port_uuid
+      }
+      link_protocol {
+        type     = "DOT1Q"
+        vlan_tag = var.vlan_tag
+      }
+    }
+  }
+  z_side {
+    access_point {
+      type = "SP"
+      profile {
+        type = "L2_PROFILE"
+        uuid = data.equinix_fabric_service_profiles.sp.data.0.uuid
+      }
+      location {
+        metro_code = "SV"
+      }
+    }
+  }
+}
+
+resource "equinix_fabric_precision_time_service" "ptp" {
+  type = "PTP"
+  name = "tf_acc_eptptp_PFCR"
+  package = {
+    code = "PTP_STANDARD"
+  }
+  connections = [
+    {
+      uuid = equinix_fabric_connection.test.id
+    }
+  ]
+  ipv4 = {
+    primary         = "192.168.254.241"
+    secondary       = "192.168.254.242"
+    network_mask    = "255.255.255.240"
+    default_gateway = "192.168.254.254"
+  }
+}
+
+data "equinix_fabric_precision_time_service" "ptp" {
+  ept_service_id = equinix_fabric_precision_time_service.ptp.id
+}
+
+data "equinix_fabric_precision_time_services" "all" {
+  pagination = {
+    limit  = 2
+    offset = 0
+  }
+  filters = [{
+    property = "/uuid"
+    operator = "="
+    values   = [equinix_fabric_precision_time_service.ptp.uuid]
+  }]
+  sort = [{
+    direction = "DESC"
+    property  = "/uuid"
+  }]
+}
+`
 
 func checkEptServiceDelete(s *terraform.State) error {
 	ctx := context.Background()
-	client := acceptance.TestAccProvider.Meta().(*config.Config).NewFabricClientForTesting(ctx)
+	client := acceptance.TestAccProvider.Meta().(*eqconfig.Config).NewFabricClientForTesting(ctx)
 
 	for _, rs := range s.RootModule().Resources {
 		if rs.Type != "equinix_fabric_precision_time_service" {

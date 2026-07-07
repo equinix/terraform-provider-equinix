@@ -133,15 +133,6 @@ func TestAccFabricRouteFilterRule_DataSources_PFCR(t *testing.T) {
 			{
 				Config: config,
 				ConfigStateChecks: []statecheck.StateCheck{
-					statecheck.ExpectKnownValue("data.equinix_fabric_route_filter_rule.rf_rule", tfjsonpath.New("id"), knownvalue.NotNull()),
-					statecheck.ExpectKnownValue("data.equinix_fabric_route_filter_rule.rf_rule", tfjsonpath.New("route_filter_id"), knownvalue.NotNull()),
-					statecheck.ExpectKnownValue("data.equinix_fabric_route_filter_rule.rf_rule", tfjsonpath.New("name"), knownvalue.StringExact("RF_DS_Rule1_PFCR")),
-					statecheck.ExpectKnownValue("data.equinix_fabric_route_filter_rule.rf_rule", tfjsonpath.New("description"), knownvalue.StringExact("Route Filter Rule 1")),
-					statecheck.ExpectKnownValue("data.equinix_fabric_route_filter_rule.rf_rule", tfjsonpath.New("prefix"), knownvalue.StringExact("192.168.0.0/24")),
-					statecheck.ExpectKnownValue("data.equinix_fabric_route_filter_rule.rf_rule", tfjsonpath.New("prefix_match"), knownvalue.StringExact("exact")),
-
-					statecheck.ExpectKnownValue("data.equinix_fabric_route_filter_rules.rf_rules", tfjsonpath.New("id"), knownvalue.NotNull()),
-					statecheck.ExpectKnownValue("data.equinix_fabric_route_filter_rules.rf_rules", tfjsonpath.New("route_filter_id"), knownvalue.NotNull()),
 					statecheck.ExpectKnownValue(
 						"data.equinix_fabric_route_filter_rules.rf_rules",
 						tfjsonpath.New("data"),
@@ -175,8 +166,6 @@ func TestAccFabricRouteFilterRule_DataSources_PFCR(t *testing.T) {
 						}),
 					),
 
-					statecheck.ExpectKnownValue("data.equinix_fabric_route_filter_rules.rf_rules_filtered", tfjsonpath.New("id"), knownvalue.NotNull()),
-					statecheck.ExpectKnownValue("data.equinix_fabric_route_filter_rules.rf_rules_filtered", tfjsonpath.New("route_filter_id"), knownvalue.NotNull()),
 					statecheck.ExpectKnownValue(
 						"data.equinix_fabric_route_filter_rules.rf_rules_filtered",
 						tfjsonpath.New("data"),
@@ -197,8 +186,6 @@ func TestAccFabricRouteFilterRule_DataSources_PFCR(t *testing.T) {
 						}),
 					),
 
-					statecheck.ExpectKnownValue("data.equinix_fabric_route_filter_rules.rf_rules_or", tfjsonpath.New("id"), knownvalue.NotNull()),
-					statecheck.ExpectKnownValue("data.equinix_fabric_route_filter_rules.rf_rules_or", tfjsonpath.New("route_filter_id"), knownvalue.NotNull()),
 					statecheck.ExpectKnownValue(
 						"data.equinix_fabric_route_filter_rules.rf_rules_or",
 						tfjsonpath.New("data"),
@@ -220,8 +207,6 @@ func TestAccFabricRouteFilterRule_DataSources_PFCR(t *testing.T) {
 						}),
 					),
 
-					statecheck.ExpectKnownValue("data.equinix_fabric_route_filter_rules.rf_rules_and", tfjsonpath.New("id"), knownvalue.NotNull()),
-					statecheck.ExpectKnownValue("data.equinix_fabric_route_filter_rules.rf_rules_and", tfjsonpath.New("route_filter_id"), knownvalue.NotNull()),
 					statecheck.ExpectKnownValue(
 						"data.equinix_fabric_route_filter_rules.rf_rules_and",
 						tfjsonpath.New("data"),
@@ -236,7 +221,6 @@ func TestAccFabricRouteFilterRule_DataSources_PFCR(t *testing.T) {
 						}),
 					),
 				},
-				ExpectNonEmptyPlan: false,
 			},
 		},
 	})

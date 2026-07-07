@@ -166,7 +166,7 @@ func checkServiceProfileDelete(s *terraform.State) error {
 		}
 		err := equinix.WaitAndCheckServiceProfileDeleted(ctx, acceptance.TestAccProvider.Meta(), rs.Primary.ID, &schema.ResourceData{}, 10*time.Minute)
 		if err != nil {
-			return fmt.Errorf("API call failed while waiting for resource deletion: %v", err)
+			return fmt.Errorf("API call failed while waiting for service profile deletion. ID: %s, Err: %s", rs.Primary.ID, err)
 		}
 	}
 	return nil

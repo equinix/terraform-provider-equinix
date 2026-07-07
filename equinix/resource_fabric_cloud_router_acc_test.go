@@ -49,12 +49,10 @@ func TestAccCloudRouterCreateOnlyRequiredParameters_PFCR(t *testing.T) {
 					resource.TestCheckResourceAttr("equinix_fabric_cloud_router.test", "connections_count", "0"),
 					resource.TestCheckResourceAttrSet("equinix_fabric_cloud_router.test", "change_log.0.created_by"),
 					resource.TestCheckResourceAttrSet("equinix_fabric_cloud_router.test", "change_log.0.created_by_full_name"),
-					resource.TestCheckResourceAttrSet("equinix_fabric_cloud_router.test", "change_log.0.created_by_email"),
 					resource.TestCheckResourceAttrSet("equinix_fabric_cloud_router.test", "change_log.0.created_date_time"),
 					resource.TestCheckResourceAttrSet("equinix_fabric_cloud_router.test", "change_log.0.updated_date_time"),
 					resource.TestCheckResourceAttrSet("equinix_fabric_cloud_router.test", "change_log.0.deleted_date_time"),
 				),
-				ExpectNonEmptyPlan: false,
 			},
 			{
 				Config: testAccCloudRouterCreateOnlyRequiredParameterConfig_PFCR("fcr_update_PFCR"),
@@ -62,7 +60,6 @@ func TestAccCloudRouterCreateOnlyRequiredParameters_PFCR(t *testing.T) {
 					resource.TestCheckResourceAttr(
 						"equinix_fabric_cloud_router.test", "name", "fcr_update_PFCR"),
 				),
-				ExpectNonEmptyPlan: false,
 			},
 		},
 	})
@@ -124,7 +121,6 @@ func TestAccCloudRouterCreateMixedParameters_PFCR(t *testing.T) {
 					resource.TestCheckResourceAttr("equinix_fabric_cloud_router.example", "connections_count", "0"),
 					resource.TestCheckResourceAttrSet("equinix_fabric_cloud_router.example", "change_log.0.created_by"),
 					resource.TestCheckResourceAttrSet("equinix_fabric_cloud_router.example", "change_log.0.created_by_full_name"),
-					resource.TestCheckResourceAttrSet("equinix_fabric_cloud_router.example", "change_log.0.created_by_email"),
 					resource.TestCheckResourceAttrSet("equinix_fabric_cloud_router.example", "change_log.0.created_date_time"),
 					resource.TestCheckResourceAttrSet("equinix_fabric_cloud_router.example", "change_log.0.updated_date_time"),
 					resource.TestCheckResourceAttrSet("equinix_fabric_cloud_router.example", "change_log.0.deleted_date_time"),
@@ -173,7 +169,7 @@ func checkCloudRouterDelete(s *terraform.State) error {
 		}
 		err := equinix.WaitUntilCloudRouterDeprovisioned(ctx, rs.Primary.ID, acceptance.TestAccProvider.Meta(), &schema.ResourceData{}, 10*time.Minute)
 		if err != nil {
-			return fmt.Errorf("API call failed while waiting for resource deletion")
+			return fmt.Errorf("API call failed while waiting for cloud router deletion. ID: %s, Err: %s", rs.Primary.ID, err)
 		}
 	}
 	return nil

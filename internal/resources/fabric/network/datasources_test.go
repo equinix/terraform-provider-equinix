@@ -45,7 +45,6 @@ func TestAccDataSourceFabricNetwork_PFCR(t *testing.T) {
 					resource.TestCheckResourceAttrSet("data.equinix_fabric_networks.example", "data.0.change_log.0.created_date_time"),
 					resource.TestCheckResourceAttrSet("data.equinix_fabric_networks.example", "data.0.operation.0.equinix_status"),
 				),
-				ExpectNonEmptyPlan: false,
 			},
 		},
 	})

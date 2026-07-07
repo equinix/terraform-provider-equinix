@@ -93,7 +93,6 @@ func TestAccFabricStreamDataSources_PFCR(t *testing.T) {
 					resource.TestCheckResourceAttr("data.equinix_fabric_streams.data_streams", "pagination.limit", "2"),
 					resource.TestCheckResourceAttr("data.equinix_fabric_streams.data_streams", "pagination.offset", "1"),
 				),
-				ExpectNonEmptyPlan: true,
 			},
 		},
 	})

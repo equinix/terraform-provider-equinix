@@ -575,9 +575,8 @@ func resourceFabricCloudRouterDelete(ctx context.Context, d *schema.ResourceData
 	}
 
 	deleteTimeout := d.Timeout(schema.TimeoutDelete) - 30*time.Second - time.Since(start)
-	err = WaitUntilCloudRouterDeprovisioned(ctx, d.Id(), meta, d, deleteTimeout)
-	if err != nil {
-		return diag.FromErr(fmt.Errorf("API call failed while waiting for resource deletion. Error %v", err))
+	if err = WaitUntilCloudRouterDeprovisioned(ctx, d.Id(), meta, d, deleteTimeout); err != nil {
+		return diag.FromErr(fmt.Errorf("API call failed while waiting for cloud router deletion. ID: %s, Error %v", d.Id(), err))
 	}
 	return diags
 }
