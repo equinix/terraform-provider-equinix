@@ -14,7 +14,6 @@ const (
 	// duplicated from equinix_sweeoer_test.go
 	testResourcePrefix        = "tfacc"
 	cannotConvertTimeoutToInt = "cannot convert value of '%s' env variable to int"
-	missingFabricSecrets      = "missing fabric clientId - %s, and clientSecret - %s"
 )
 
 var (
@@ -38,8 +37,11 @@ func GetConfigForFabric() (*config.Config, error) {
 	endpoint := env.GetWithDefault(config.EndpointEnvVar, config.DefaultBaseURL)
 	clientId := env.GetWithDefault(config.ClientIDEnvVar, "")
 	clientSecret := env.GetWithDefault(config.ClientSecretEnvVar, "")
-	if clientId == "" || clientSecret == "" {
-		return nil, fmt.Errorf(missingFabricSecrets, config.ClientIDEnvVar, config.ClientSecretEnvVar)
+	tokenExchangeScope := env.GetWithDefault(config.TokenExchangeScopeEnvVar, "")
+	envVar := env.GetWithDefault(config.TokenExchangeSubjectTokenEnvVarEnvVar, config.DefaultTokenExchangeSubjectTokenEnvVar)
+	token := env.GetWithDefault(envVar, "")
+	if (clientId == "" || clientSecret == "") && (tokenExchangeScope == "" || token == "") {
+		return nil, fmt.Errorf("missing Fabric credentials: either %s and %s, or %s and a subject token (from %s, default %s)", config.ClientIDEnvVar, config.ClientSecretEnvVar, config.TokenExchangeScopeEnvVar, config.TokenExchangeSubjectTokenEnvVarEnvVar, config.DefaultTokenExchangeSubjectTokenEnvVar)
 	}
 
 	clientTimeout := env.GetWithDefault(config.ClientTimeoutEnvVar, strconv.Itoa(config.DefaultTimeout))
@@ -49,9 +51,13 @@ func GetConfigForFabric() (*config.Config, error) {
 	}
 
 	return &config.Config{
-		BaseURL:        endpoint,
-		ClientID:       clientId,
-		ClientSecret:   clientSecret,
-		RequestTimeout: time.Duration(clientTimeoutInt) * time.Second,
+		BaseURL:                         endpoint,
+		ClientID:                        clientId,
+		ClientSecret:                    clientSecret,
+		RequestTimeout:                  time.Duration(clientTimeoutInt) * time.Second,
+		TokenExchangeScope:              tokenExchangeScope,
+		TokenExchangeSubjectTokenEnvVar: envVar,
+		TokenExchangeSubjectToken:       token,
+		StsBaseURL:                      env.GetWithDefault(config.StsEndpointEnvVar, ""),
 	}, nil
 }
