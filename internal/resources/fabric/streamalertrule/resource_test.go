@@ -188,7 +188,7 @@ func TestAccFabricStreamAlertRule_PFCR(t *testing.T) {
 	alertRuleName, updatedAlertRuleName := "alert_rule_PFCR", "up_alert_rule_PFCR"
 	alertRuleDescription, updatedAlertRuleDescription := "stream alert rule acceptance test PFCR", "updated stream alert rule acceptance test PFCR"
 
-	resource.ParallelTest(t, resource.TestCase{
+	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { acceptance.TestAccPreCheck(t); acceptance.TestAccPreCheckProviderConfigured(t) },
 		ExternalProviders:        acceptance.TestExternalProviders,
 		ProtoV6ProviderFactories: acceptance.ProtoV6ProviderFactories,

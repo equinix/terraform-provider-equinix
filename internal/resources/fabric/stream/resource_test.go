@@ -48,7 +48,7 @@ func testAccFabricStreamConfig(name, description string) string {
 func TestAccFabricStream_PFCR(t *testing.T) {
 	streamName, updatedStreamName := "stream_PFCR", "stream_up_PFCR"
 	streamDescription, updatedStreamDescription := "stream acceptance test PFCR", "updated stream acceptance test PFCR"
-	resource.ParallelTest(t, resource.TestCase{
+	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { acceptance.TestAccPreCheck(t); acceptance.TestAccPreCheckProviderConfigured(t) },
 		ExternalProviders:        acceptance.TestExternalProviders,
 		ProtoV6ProviderFactories: acceptance.ProtoV6ProviderFactories,
