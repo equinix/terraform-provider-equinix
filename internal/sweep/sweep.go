@@ -38,10 +38,7 @@ func GetConfigForFabric() (*config.Config, error) {
 	endpoint := env.GetWithDefault(config.EndpointEnvVar, config.DefaultBaseURL)
 	clientId := env.GetWithDefault(config.ClientIDEnvVar, "")
 	clientSecret := env.GetWithDefault(config.ClientSecretEnvVar, "")
-	tokenExchangeScope := env.GetWithDefault(config.TokenExchangeScopeEnvVar, "")
-	envVar := env.GetWithDefault(config.TokenExchangeSubjectTokenEnvVarEnvVar, "")
-	token := env.GetWithDefault(envVar, env.GetWithDefault(config.DefaultTokenExchangeSubjectTokenEnvVar, ""))
-	if (clientId == "" || clientSecret == "") && (tokenExchangeScope == "" || token == "") {
+	if clientId == "" || clientSecret == "" {
 		return nil, fmt.Errorf(missingFabricSecrets, config.ClientIDEnvVar, config.ClientSecretEnvVar)
 	}
 
@@ -52,13 +49,9 @@ func GetConfigForFabric() (*config.Config, error) {
 	}
 
 	return &config.Config{
-		BaseURL:                         endpoint,
-		ClientID:                        clientId,
-		ClientSecret:                    clientSecret,
-		RequestTimeout:                  time.Duration(clientTimeoutInt) * time.Second,
-		TokenExchangeScope:              tokenExchangeScope,
-		TokenExchangeSubjectTokenEnvVar: envVar,
-		TokenExchangeSubjectToken:       token,
-		StsBaseURL:                      env.GetWithDefault(config.StsEndpointEnvVar, ""),
+		BaseURL:        endpoint,
+		ClientID:       clientId,
+		ClientSecret:   clientSecret,
+		RequestTimeout: time.Duration(clientTimeoutInt) * time.Second,
 	}, nil
 }
