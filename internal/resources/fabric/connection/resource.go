@@ -358,6 +358,7 @@ func WaitUntilConnectionDeprovisioned(ctx context.Context, uuid string, meta any
 		Pending: []string{
 			string(fabricv4.CONNECTIONSTATE_DEPROVISIONING),
 			string(fabricv4.CONNECTIONSTATE_ACTIVE),
+			string(fabricv4.CONNECTIONSTATE_PROVISIONED),
 			string(fabricv4.CONNECTIONSTATE_PENDING),
 		},
 		Target: []string{
