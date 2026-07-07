@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"log"
+	"os"
 
 	"math/rand"
 
@@ -11,6 +12,11 @@ import (
 )
 
 func RandomVlan(portUUID string) (int, error) {
+	if os.Getenv("TF_ACC") == "" {
+		log.Print("Skip fetching VLAN because TF_ACC is not set")
+		return 0, nil
+	}
+
 	usedVlans, err := getUsedVlans(portUUID)
 	if err != nil {
 		return 0, err
