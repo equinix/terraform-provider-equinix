@@ -7,8 +7,6 @@ import (
 	"os"
 
 	"math/rand"
-
-	"github.com/equinix/terraform-provider-equinix/internal/sweep"
 )
 
 func RandomVlan(portUUID string) (int, error) {
@@ -34,7 +32,7 @@ func RandomVlan(portUUID string) (int, error) {
 func getUsedVlans(portUUID string) ([]int, error) {
 	log.Printf("[DEBUG] Fetching vlans")
 	ctx := context.Background()
-	meta, err := sweep.GetConfigForFabric()
+	meta, err := GetConfigForFabric()
 	if err != nil {
 		return nil, err
 	}

@@ -28,7 +28,7 @@ func testSweepConnections(region string) error {
 	ctx := context.Background()
 	meta, err := testinghelpers.GetConfigForFabric()
 	if err != nil {
-		return fmt.Errorf("error getting configuration for sweeping Conections: %s", err)
+		return fmt.Errorf("error getting configuration for sweeping Connections: %s", err)
 	}
 	err = meta.Load(ctx)
 	if err != nil {
