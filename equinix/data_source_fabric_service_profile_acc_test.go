@@ -13,69 +13,6 @@ import (
 )
 
 const testAccFabricReadServiceProfileConfig = `
-resource "equinix_fabric_service_profile" "test" {
-  name = "SP_DataSource_PFCR"
-  description = "Generic Read SP"
-  type = "L2_PROFILE"
-  notifications {
-      emails = ["opsuser100@equinix.com"]
-      type = "BANDWIDTH_ALERT"
-  }
-  tags = ["VoIP", "Saas"]
-  visibility = "PRIVATE"
-  allowed_emails = ["panthersfcr@test.com"]
-  ports {
-      uuid = var.port_uuid
-      type = var.port_type
-      location {
-        metro_code = var.metro_code
-      }
-      cross_connect_id = ""
-      seller_region = ""
-      seller_region_description = ""
-  }
-  access_point_type_configs {
-      type = "COLO"
-      connection_redundancy_required = false
-      allow_bandwidth_auto_approval = false
-      allow_remote_connections = false
-      connection_label = "test"
-      enable_auto_generate_service_key = false
-      bandwidth_alert_threshold=  10
-      allow_custom_bandwidth = true
-      api_config {
-        api_available = false
-        equinix_managed_vlan = true
-        bandwidth_from_api = false
-        integration_id = "test"
-        equinix_managed_port = true
-      }
-      authentication_key{
-        required = false
-        label = "Service Key"
-        description = "XYZ"
-      }
-      supported_bandwidths = [100,500]
-  }
-  marketing_info {
-    promotion = false
-  }
-}
-
-data "equinix_fabric_service_profile" "test" {
-		uuid = equinix_fabric_service_profile.test.uuid
-}
-
-data "equinix_fabric_service_profiles" "test" {
-	and_filters = true
-	filter {
-		property = "/uuid"
-		operator = "="
-		values = [equinix_fabric_service_profile.test.uuid]
-	}
-}
-
-
 variable "port_uuid" {
   type = string
 }
@@ -86,6 +23,68 @@ variable "port_type" {
 
 variable "metro_code" {
   type = string
+}
+
+resource "equinix_fabric_service_profile" "test" {
+  name         = "SP_DataSource_PFCR"
+  description  = "Generic Read SP"
+  type         = "L2_PROFILE"
+  notifications {
+    emails = ["opsuser100@equinix.com"]
+    type   = "BANDWIDTH_ALERT"
+  }
+  tags           = ["VoIP", "Saas"]
+  visibility     = "PRIVATE"
+  allowed_emails = ["panthersfcr@test.com"]
+  ports {
+    uuid = var.port_uuid
+    type = var.port_type
+    location {
+      metro_code = var.metro_code
+    }
+    cross_connect_id          = ""
+    seller_region             = ""
+    seller_region_description = ""
+  }
+  access_point_type_configs {
+    type                             = "COLO"
+    connection_redundancy_required   = false
+    allow_bandwidth_auto_approval    = false
+    allow_remote_connections         = false
+    connection_label                 = "test"
+    enable_auto_generate_service_key = false
+    bandwidth_alert_threshold        = 10
+    allow_custom_bandwidth           = true
+    api_config {
+      api_available        = false
+      equinix_managed_vlan = true
+      bandwidth_from_api   = false
+      integration_id       = "test"
+      equinix_managed_port = true
+    }
+    authentication_key {
+      required    = false
+      label       = "Service Key"
+      description = "XYZ"
+    }
+    supported_bandwidths = [100, 500]
+  }
+  marketing_info {
+    promotion = false
+  }
+}
+
+data "equinix_fabric_service_profile" "test" {
+  uuid = equinix_fabric_service_profile.test.uuid
+}
+
+data "equinix_fabric_service_profiles" "test" {
+  and_filters = true
+  filter {
+    property = "/uuid"
+    operator = "="
+    values   = [equinix_fabric_service_profile.test.uuid]
+  }
 }
 `
 

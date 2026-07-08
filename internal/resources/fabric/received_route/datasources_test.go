@@ -41,7 +41,6 @@ func TestAccFabricDataSourceReceivedRoutes_PFCR(t *testing.T) {
 					resource.TestCheckResourceAttrSet(
 						"data.equinix_fabric_received_routes.routes", "data.0.change_log.updated_date_time"),
 				),
-				ExpectNonEmptyPlan: false,
 			},
 		},
 	})

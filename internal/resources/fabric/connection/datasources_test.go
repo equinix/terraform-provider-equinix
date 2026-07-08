@@ -1,12 +1,15 @@
 package connection_test
 
 import (
-	"fmt"
 	"testing"
 
 	"github.com/equinix/terraform-provider-equinix/internal/acceptance"
 	testinghelpers "github.com/equinix/terraform-provider-equinix/internal/fabric/testing_helpers"
+	"github.com/hashicorp/terraform-plugin-testing/config"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
+	"github.com/hashicorp/terraform-plugin-testing/knownvalue"
+	"github.com/hashicorp/terraform-plugin-testing/statecheck"
+	"github.com/hashicorp/terraform-plugin-testing/tfjsonpath"
 )
 
 func TestAccFabricDataSourceConnection_PFCR(t *testing.T) {
@@ -16,132 +19,168 @@ func TestAccFabricDataSourceConnection_PFCR(t *testing.T) {
 		aSidePortUUID = ports["pfcr"]["dot1q"][0].GetUuid()
 		zSidePortUUID = ports["pfcr"]["dot1q"][1].GetUuid()
 	}
+	asideVlan, err := testinghelpers.RandomVlan(aSidePortUUID)
+	if err != nil {
+		t.Fatalf("unable to get a available VLAN: %s", err)
+		return
+	}
+
+	zsideVlan, err := testinghelpers.RandomVlan(zSidePortUUID)
+	if err != nil {
+		t.Fatalf("unable to get a available VLAN: %s", err)
+		return
+	}
+
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:     func() { acceptance.TestAccPreCheck(t); acceptance.TestAccPreCheckProviderConfigured(t) },
 		Providers:    acceptance.TestAccProviders,
 		CheckDestroy: CheckConnectionDelete,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccFabricDataSourceConnectionConfig(50, aSidePortUUID, zSidePortUUID),
-				Check: resource.ComposeTestCheckFunc(
-					resource.TestCheckResourceAttrSet("data.equinix_fabric_connection.test", "id"),
-					resource.TestCheckResourceAttr(
-						"data.equinix_fabric_connection.test", "name", "ds_con_test_PFCR"),
-					resource.TestCheckResourceAttr(
-						"data.equinix_fabric_connection.test", "bandwidth", "50"),
-					resource.TestCheckResourceAttr(
-						"data.equinix_fabric_connection.test", "type", "EVPL_VC"),
-					resource.TestCheckResourceAttr(
-						"data.equinix_fabric_connection.test", "redundancy.0.priority", "PRIMARY"),
-					resource.TestCheckResourceAttr(
-						"data.equinix_fabric_connection.test", "order.0.purchase_order_number", "1-129105284100"),
-					resource.TestCheckResourceAttr(
-						"data.equinix_fabric_connection.test", "a_side.0.access_point.0.type", "COLO"),
-					resource.TestCheckResourceAttr(
-						"data.equinix_fabric_connection.test", "a_side.0.access_point.0.link_protocol.0.type", "DOT1Q"),
-					resource.TestCheckResourceAttr(
-						"data.equinix_fabric_connection.test", "a_side.0.access_point.0.link_protocol.0.vlan_tag", "1350"),
-					resource.TestCheckResourceAttr(
-						"data.equinix_fabric_connection.test", "a_side.0.access_point.0.location.0.metro_code", "DC"),
-					resource.TestCheckResourceAttr(
-						"data.equinix_fabric_connection.test", "z_side.0.access_point.0.type", "COLO"),
-					resource.TestCheckResourceAttr(
-						"data.equinix_fabric_connection.test", "z_side.0.access_point.0.link_protocol.0.type", "DOT1Q"),
-					resource.TestCheckResourceAttr(
-						"data.equinix_fabric_connection.test", "z_side.0.access_point.0.link_protocol.0.vlan_tag", "1360"),
-					resource.TestCheckResourceAttr(
-						"data.equinix_fabric_connection.test", "z_side.0.access_point.0.location.0.metro_code", "SV"),
-					resource.TestCheckResourceAttrSet("data.equinix_fabric_connections.connections", "id"),
-					resource.TestCheckResourceAttr(
-						"data.equinix_fabric_connections.connections", "data.0.name", "ds_con_test_PFCR"),
-					resource.TestCheckResourceAttr(
-						"data.equinix_fabric_connections.connections", "data.0.bandwidth", "50"),
-					resource.TestCheckResourceAttr(
-						"data.equinix_fabric_connections.connections", "data.0.type", "EVPL_VC"),
-					resource.TestCheckResourceAttr(
-						"data.equinix_fabric_connections.connections", "data.0.redundancy.0.priority", "PRIMARY"),
-					resource.TestCheckResourceAttr(
-						"data.equinix_fabric_connections.connections", "data.0.order.0.purchase_order_number", "1-129105284100"),
-					resource.TestCheckResourceAttr(
-						"data.equinix_fabric_connections.connections", "data.0.a_side.0.access_point.0.type", "COLO"),
-					resource.TestCheckResourceAttr(
-						"data.equinix_fabric_connections.connections", "data.0.a_side.0.access_point.0.link_protocol.0.type", "DOT1Q"),
-					resource.TestCheckResourceAttr(
-						"data.equinix_fabric_connections.connections", "data.0.a_side.0.access_point.0.link_protocol.0.vlan_tag", "1350"),
-					resource.TestCheckResourceAttr(
-						"data.equinix_fabric_connections.connections", "data.0.a_side.0.access_point.0.location.0.metro_code", "DC"),
-					resource.TestCheckResourceAttr(
-						"data.equinix_fabric_connections.connections", "data.0.z_side.0.access_point.0.type", "COLO"),
-					resource.TestCheckResourceAttr(
-						"data.equinix_fabric_connections.connections", "data.0.z_side.0.access_point.0.link_protocol.0.type", "DOT1Q"),
-					resource.TestCheckResourceAttr(
-						"data.equinix_fabric_connections.connections", "data.0.z_side.0.access_point.0.link_protocol.0.vlan_tag", "1360"),
-					resource.TestCheckResourceAttr(
-						"data.equinix_fabric_connections.connections", "data.0.z_side.0.access_point.0.location.0.metro_code", "SV"),
-				),
+				Config: dataSourceConnectionConfig,
+				ConfigVariables: config.Variables{
+					"aside_vlan":      config.IntegerVariable(asideVlan),
+					"aside_port_uuid": config.StringVariable(aSidePortUUID),
+					"zside_vlan":      config.IntegerVariable(zsideVlan),
+					"zside_port_uuid": config.StringVariable(zSidePortUUID),
+				},
+				ConfigStateChecks: []statecheck.StateCheck{
+					statecheck.ExpectKnownValue("data.equinix_fabric_connections.connections", tfjsonpath.New("data"),
+						knownvalue.ListExact([]knownvalue.Check{
+							knownvalue.ObjectPartial(map[string]knownvalue.Check{
+								"name":      knownvalue.StringExact("ds_con_test_PFCR"),
+								"bandwidth": knownvalue.Int32Exact(50),
+								"type":      knownvalue.StringExact("EVPL_VC"),
+								"redundancy": knownvalue.ListExact([]knownvalue.Check{
+									knownvalue.ObjectPartial(map[string]knownvalue.Check{
+										"priority": knownvalue.StringExact("PRIMARY"),
+									}),
+								}),
+								"order": knownvalue.ListExact([]knownvalue.Check{
+									knownvalue.ObjectPartial(map[string]knownvalue.Check{
+										"purchase_order_number": knownvalue.StringExact("1-129105284100"),
+									}),
+								}),
+								"a_side": knownvalue.ListExact([]knownvalue.Check{
+									knownvalue.ObjectPartial(map[string]knownvalue.Check{
+										"access_point": knownvalue.ListExact([]knownvalue.Check{
+											knownvalue.ObjectPartial(map[string]knownvalue.Check{
+												"type": knownvalue.StringExact("COLO"),
+												"link_protocol": knownvalue.ListExact([]knownvalue.Check{
+													knownvalue.ObjectPartial(map[string]knownvalue.Check{
+														"type":     knownvalue.StringExact("DOT1Q"),
+														"vlan_tag": knownvalue.Int32Exact(int32(asideVlan)),
+													}),
+												}),
+												"location": knownvalue.ListExact([]knownvalue.Check{
+													knownvalue.ObjectPartial(map[string]knownvalue.Check{
+														"metro_code": knownvalue.StringExact("DC"),
+													}),
+												}),
+											}),
+										}),
+									}),
+								}),
+								"z_side": knownvalue.ListExact([]knownvalue.Check{
+									knownvalue.ObjectPartial(map[string]knownvalue.Check{
+										"access_point": knownvalue.ListExact([]knownvalue.Check{
+											knownvalue.ObjectPartial(map[string]knownvalue.Check{
+												"type": knownvalue.StringExact("COLO"),
+												"link_protocol": knownvalue.ListExact([]knownvalue.Check{
+													knownvalue.ObjectPartial(map[string]knownvalue.Check{
+														"type":     knownvalue.StringExact("DOT1Q"),
+														"vlan_tag": knownvalue.Int32Exact(int32(zsideVlan)),
+													}),
+												}),
+												"location": knownvalue.ListExact([]knownvalue.Check{
+													knownvalue.ObjectPartial(map[string]knownvalue.Check{
+														"metro_code": knownvalue.StringExact("SV"),
+													}),
+												}),
+											}),
+										}),
+									}),
+								}),
+							}),
+						}),
+					),
+				},
 				ExpectNonEmptyPlan: true,
 			},
 		},
 	})
 }
 
-func testAccFabricDataSourceConnectionConfig(bandwidth int32, aSidePortUUID, zSidePortUUID string) string {
-	return fmt.Sprintf(`
+var dataSourceConnectionConfig = `
+variable "aside_vlan" {
+  type = number
+}
+
+variable "aside_port_uuid" {
+  type = string
+}
+
+variable "zside_vlan" {
+  type = number
+}
+
+variable "zside_port_uuid" {
+  type = string
+}
 
 resource "equinix_fabric_connection" "test" {
-	type = "EVPL_VC"
-	name = "ds_con_test_PFCR"
-	notifications{
-		type = "ALL"
-		emails = ["test@equinix.com","test1@equinix.com"]
-	}
-	order {
-		purchase_order_number = "1-129105284100"
-	}
-	bandwidth = %d
-	a_side {
-		access_point {
-			type = "COLO"
-			port {
-			 	uuid = "%s"
-			}
-			link_protocol {
-				type= "DOT1Q"
-				vlan_tag= 1350
-			}
-		}
-	}
-	z_side {
-		access_point {
-			type = "COLO"
-			port {
-			 	uuid = "%s"
-			}
-			link_protocol {
-				type= "DOT1Q"
-				vlan_tag= 1360
-			}
-		}
-	}
+
+  type = "EVPL_VC"
+  name = "ds_con_test_PFCR"
+  notifications {
+    type   = "ALL"
+    emails = ["test@equinix.com", "test1@equinix.com"]
+  }
+  order {
+    purchase_order_number = "1-129105284100"
+  }
+  bandwidth = 50
+  a_side {
+    access_point {
+      type = "COLO"
+      port {
+        uuid = var.aside_port_uuid
+      }
+      link_protocol {
+        type     = "DOT1Q"
+        vlan_tag = var.aside_vlan
+      }
+    }
+  }
+  z_side {
+    access_point {
+      type = "COLO"
+      port {
+        uuid = var.zside_port_uuid
+      }
+      link_protocol {
+        type     = "DOT1Q"
+        vlan_tag = var.zside_vlan
+      }
+    }
+  }
 }
 
 data "equinix_fabric_connection" "test" {
-	uuid = equinix_fabric_connection.test.id
+  uuid = equinix_fabric_connection.test.id
 }
 
 data "equinix_fabric_connections" "connections" {
-	outer_operator = "AND"
-	filter {
-		property = "/name"
-		operator = "="
-		values = ["ds_con_test_PFCR"]
-	}
-	filter {
-		property = "/uuid"
-		operator = "="
-		values = [equinix_fabric_connection.test.id]
-	}
+  outer_operator = "AND"
+  filter {
+    property = "/name"
+    operator = "="
+    values   = ["ds_con_test_PFCR"]
+  }
+  filter {
+    property = "/uuid"
+    operator = "="
+    values   = [equinix_fabric_connection.test.id]
+  }
 }
-
-`, bandwidth, aSidePortUUID, zSidePortUUID)
-}
+`

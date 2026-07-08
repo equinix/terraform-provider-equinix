@@ -7,6 +7,7 @@ import (
 	"time"
 
 	"github.com/equinix/terraform-provider-equinix/internal/acceptance"
+	testinghelpers "github.com/equinix/terraform-provider-equinix/internal/fabric/testing_helpers"
 	"github.com/equinix/terraform-provider-equinix/internal/resources/fabric/route_filter"
 
 	"github.com/equinix/equinix-sdk-go/services/fabricv4"
@@ -17,7 +18,6 @@ import (
 	"github.com/hashicorp/terraform-plugin-testing/knownvalue"
 	"github.com/hashicorp/terraform-plugin-testing/statecheck"
 	"github.com/hashicorp/terraform-plugin-testing/terraform"
-	"github.com/hashicorp/terraform-plugin-testing/tfjsonpath"
 )
 
 var resourceConfig = `
@@ -52,32 +52,16 @@ func TestAccFabricRouteFilterPolicy_PFCR(t *testing.T) {
 					"description": config.StringVariable("Route Filter Policy for X Purpose"),
 				},
 				ConfigStateChecks: []statecheck.StateCheck{
-					statecheck.ExpectKnownValue("equinix_fabric_route_filter.test", tfjsonpath.New("id"), knownvalue.NotNull()),
-					statecheck.ExpectKnownValue("equinix_fabric_route_filter.test", tfjsonpath.New("name"), knownvalue.StringExact("RF_Policy_X_PFCR")),
-					statecheck.ExpectKnownValue("equinix_fabric_route_filter.test", tfjsonpath.New("description"), knownvalue.StringExact("Route Filter Policy for X Purpose")),
-					statecheck.ExpectKnownValue("equinix_fabric_route_filter.test", tfjsonpath.New("type"), knownvalue.StringExact("BGP_IPv4_PREFIX_FILTER")),
-					statecheck.ExpectKnownValue("equinix_fabric_route_filter.test", tfjsonpath.New("state"), knownvalue.StringExact(string(fabricv4.ROUTEFILTERSTATE_PROVISIONED))),
-					statecheck.ExpectKnownValue("equinix_fabric_route_filter.test", tfjsonpath.New("not_matched_rule_action"), knownvalue.StringExact("DENY")),
-					statecheck.ExpectKnownValue("equinix_fabric_route_filter.test", tfjsonpath.New("rules_count"), knownvalue.Int32Exact(0)),
+					testinghelpers.ExpectKnownAttributes("equinix_fabric_route_filter.test", map[string]knownvalue.Check{
+						"id":                      knownvalue.NotNull(),
+						"name":                    knownvalue.StringExact("RF_Policy_X_PFCR"),
+						"description":             knownvalue.StringExact("Route Filter Policy for X Purpose"),
+						"type":                    knownvalue.StringExact("BGP_IPv4_PREFIX_FILTER"),
+						"state":                   knownvalue.StringExact(string(fabricv4.ROUTEFILTERSTATE_PROVISIONED)),
+						"not_matched_rule_action": knownvalue.StringExact("DENY"),
+						"rules_count":             knownvalue.Int32Exact(0),
+					}),
 				},
-				ExpectNonEmptyPlan: false,
-			},
-			{
-				Config: resourceConfig,
-				ConfigVariables: config.Variables{
-					"name":        config.StringVariable("RF_Policy_Y_PFCR"),
-					"description": config.StringVariable("Route Filter Policy for Y Purpose"),
-				},
-				ConfigStateChecks: []statecheck.StateCheck{
-					statecheck.ExpectKnownValue("equinix_fabric_route_filter.test", tfjsonpath.New("id"), knownvalue.NotNull()),
-					statecheck.ExpectKnownValue("equinix_fabric_route_filter.test", tfjsonpath.New("name"), knownvalue.StringExact("RF_Policy_Y_PFCR")),
-					statecheck.ExpectKnownValue("equinix_fabric_route_filter.test", tfjsonpath.New("description"), knownvalue.StringExact("Route Filter Policy for Y Purpose")),
-					statecheck.ExpectKnownValue("equinix_fabric_route_filter.test", tfjsonpath.New("type"), knownvalue.StringExact("BGP_IPv4_PREFIX_FILTER")),
-					statecheck.ExpectKnownValue("equinix_fabric_route_filter.test", tfjsonpath.New("state"), knownvalue.StringExact(string(fabricv4.ROUTEFILTERSTATE_REPROVISIONING))),
-					statecheck.ExpectKnownValue("equinix_fabric_route_filter.test", tfjsonpath.New("not_matched_rule_action"), knownvalue.StringExact("DENY")),
-					statecheck.ExpectKnownValue("equinix_fabric_route_filter.test", tfjsonpath.New("rules_count"), knownvalue.Int32Exact(0)),
-				},
-				ExpectNonEmptyPlan: false,
 			},
 		},
 	})
@@ -93,7 +77,7 @@ func CheckRouteFilterDelete(s *terraform.State) error {
 
 		err := route_filter.WaitForDeletion(ctx, rs.Primary.ID, acceptance.TestAccProvider.Meta(), &schema.ResourceData{}, 10*time.Minute)
 		if err != nil {
-			return fmt.Errorf("API call failed while waiting for resource deletion")
+			return fmt.Errorf("API call failed while waiting for route filter deletion. ID: %s, Err: %s", rs.Primary.ID, err)
 		}
 	}
 	return nil

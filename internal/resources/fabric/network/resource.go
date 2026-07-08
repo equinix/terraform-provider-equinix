@@ -197,7 +197,7 @@ func resourceFabricNetworkDelete(ctx context.Context, d *schema.ResourceData, me
 	deleteTimeout := d.Timeout(schema.TimeoutDelete) - 30*time.Second - time.Since(start)
 	err = WaitUntilFabricNetworkDeprovisioned(ctx, d.Id(), meta, d, deleteTimeout)
 	if err != nil {
-		return diag.Errorf("API call failed while waiting for resource deletion. Error %v", err)
+		return diag.Errorf("API call failed while waiting for network deletion. ID: %s, Error %v", d.Id(), err)
 	}
 	return diags
 }
@@ -207,6 +207,7 @@ func WaitUntilFabricNetworkDeprovisioned(ctx context.Context, uuid string, meta 
 	log.Printf("Waiting for Fabric Network to be deprovisioned, uuid %s", uuid)
 	stateConf := &retry.StateChangeConf{
 		Pending: []string{
+			string(fabricv4.NETWORKEQUINIXSTATUS_PROVISIONED),
 			string(fabricv4.NETWORKEQUINIXSTATUS_DEPROVISIONING),
 		},
 		Target: []string{
