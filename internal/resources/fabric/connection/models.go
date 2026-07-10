@@ -662,12 +662,45 @@ func supportedBandwidthsGoToTerraform(supportedBandwidths []int32) []any {
 	return mappedSupportedBandwidths
 }
 
+func appendReplaceOp[T comparable](changeOps [][]fabricv4.ConnectionChangeOperation, op string, existing T, updated T, payloadValue any) [][]fabricv4.ConnectionChangeOperation {
+	if existing == updated {
+		return changeOps
+	}
+
+	changeOps = append(changeOps, []fabricv4.ConnectionChangeOperation{{
+		Op:    "replace",
+		Path:  op,
+		Value: payloadValue,
+	},
+	})
+
+	return changeOps
+}
+
 func getUpdateRequests(conn *fabricv4.Connection, d *schema.ResourceData) ([][]fabricv4.ConnectionChangeOperation, error) {
 	var changeOps [][]fabricv4.ConnectionChangeOperation
 	existingName := conn.GetName()
+
+	getVlan := func(accessPont *fabricv4.AccessPoint) int32 {
+		if accessPont == nil {
+			return 0
+		}
+
+		vlan := accessPont.GetLinkProtocol().VlanTag
+
+		if vlan == nil {
+			return 0
+		}
+
+		return *vlan
+	}
+
+	existingAsideVlan := getVlan(conn.GetASide().AccessPoint)
 	existingBandwidth := int(conn.GetBandwidth())
 	updateNameVal := d.Get("name").(string)
 	updateBandwidthVal := d.Get("bandwidth").(int)
+	updateAsideVlan := getVlan(connectionSideTerraformToGo(d.Get("a_side").(*schema.Set).List()).AccessPoint)
+	log.Printf("VLANS %d %d", existingAsideVlan, updateAsideVlan)
 	additionalInfo := d.Get("additional_info").([]any)
 
 	awsSecrets, hasAWSSecrets := additionalInfoContainsAWSSecrets(additionalInfo)
@@ -685,22 +718,16 @@ func getUpdateRequests(conn *fabricv4.Connection, d *schema.ResourceData) ([][]f
 		string(existingNotifications[0].GetType()) != string(updateNotificationsVal[0].GetType()) ||
 		!reflect.DeepEqual(prevEmails, nextEmails)
 
-	if existingName != updateNameVal {
-		changeOps = append(changeOps, []fabricv4.ConnectionChangeOperation{
-			{
-				Op:    "replace",
-				Path:  "/name",
-				Value: updateNameVal,
-			},
-		})
-	}
+	changeOps = appendReplaceOp(changeOps, "/name", existingName, updateNameVal, updateNameVal)
+	changeOps = appendReplaceOp(changeOps, "/aSide/accessPoint/linkProtocols", existingAsideVlan, updateAsideVlan, map[string]int32{"vlanTag": updateAsideVlan})
+	changeOps = appendReplaceOp(changeOps, "/bandwidth", existingBandwidth, updateBandwidthVal, updateBandwidthVal)
 
-	if existingBandwidth != updateBandwidthVal {
+	if notificationsNeedsUpdate {
 		changeOps = append(changeOps, []fabricv4.ConnectionChangeOperation{
 			{
 				Op:    "replace",
-				Path:  "/bandwidth",
-				Value: updateBandwidthVal,
+				Path:  "/notifications",
+				Value: updateNotificationsVal,
 			},
 		})
 	}
@@ -711,16 +738,6 @@ func getUpdateRequests(conn *fabricv4.Connection, d *schema.ResourceData) ([][]f
 				Op:    "add",
 				Path:  "",
 				Value: map[string]any{"additionalInfo": awsSecrets},
-			},
-		})
-	}
-
-	if notificationsNeedsUpdate {
-		changeOps = append(changeOps, []fabricv4.ConnectionChangeOperation{
-			{
-				Op:    "replace",
-				Path:  "/notifications",
-				Value: updateNotificationsVal,
 			},
 		})
 	}

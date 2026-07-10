@@ -34,6 +34,23 @@ func Resource() *schema.Resource {
 			StateContext: schema.ImportStatePassthroughContext,
 		},
 		Schema: fabricConnectionResourceSchema(),
+		CustomizeDiff: func(ctx context.Context, d *schema.ResourceDiff, meta any) error {
+			if d.Id() == "" {
+				return nil
+			}
+
+			connType := d.Get("type").(string)
+			if d.HasChange("a_side.0.access_point.0.link_protocol") {
+				if connType != "EVPL_VC" && connType != "EIA_VC" {
+					return fmt.Errorf(
+						"vlan updated not allowed for connection type %s",
+						connType,
+					)
+				}
+			}
+
+			return nil
+		},
 
 		Description: "Fabric V4 API compatible resource allows creation and management of Equinix Fabric connection",
 	}

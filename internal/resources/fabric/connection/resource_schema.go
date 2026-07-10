@@ -65,7 +65,6 @@ func fabricConnectionResourceSchema() map[string]*schema.Schema {
 			Description: "Requester or Customer side connection configuration object of the multi-segment connection",
 			MaxItems:    1,
 			Elem:        connectionSideSch(),
-			Set:         schema.HashResource(accessPointSch()),
 		},
 		"z_side": {
 			Type:        schema.TypeSet,
@@ -73,7 +72,6 @@ func fabricConnectionResourceSchema() map[string]*schema.Schema {
 			Description: "Destination or Provider side connection configuration object of the multi-segment connection",
 			MaxItems:    1,
 			Elem:        connectionSideSch(),
-			Set:         schema.HashResource(accessPointSch()),
 		},
 		"project": {
 			Type:        schema.TypeSet,
