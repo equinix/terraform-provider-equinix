@@ -71,7 +71,7 @@ Required:
 
 Read-Only:
 
-- `href` (String) Equinix auto generated URI to the Route Aggregation change
+- `href` (String) Equinix auto generated URI to the Route Aggregation Rule change
 
 
 <a id="nestedatt--change_log"></a>
