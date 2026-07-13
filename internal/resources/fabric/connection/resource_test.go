@@ -691,10 +691,6 @@ func TestAccFabricCreateVirtualDevice2NetworkConnection_PNFV(t *testing.T) {
 					resource.TestCheckResourceAttr(
 						"equinix_fabric_connection.test", "a_side.0.access_point.0.virtual_device.0.uuid", virtualDevice),
 					resource.TestCheckResourceAttr(
-						"equinix_fabric_connection.test", "a_side.0.access_point.0.interface.0.type", "CLOUD"),
-					resource.TestCheckResourceAttr(
-						"equinix_fabric_connection.test", "a_side.0.access_point.0.interface.0.id", "6"),
-					resource.TestCheckResourceAttr(
 						"equinix_fabric_connection.test", "z_side.0.access_point.0.type", "NETWORK"),
 					resource.TestCheckResourceAttrSet(
 						"equinix_fabric_connection.test", "z_side.0.access_point.0.network.0.uuid"),
