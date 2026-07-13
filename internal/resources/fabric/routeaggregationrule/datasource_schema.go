@@ -191,7 +191,7 @@ func getRouteAggregationRuleSchema(ctx context.Context) map[string]schema.Attrib
 					Required:    true,
 				},
 				"href": schema.StringAttribute{
-					Description: "Equinix auto generated URI to the Route Aggregation change",
+					Description: "Equinix auto generated URI to the Route Aggregation Rule change",
 					Computed:    true,
 				},
 			},
