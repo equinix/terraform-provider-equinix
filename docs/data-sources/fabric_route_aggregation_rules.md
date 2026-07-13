@@ -6,7 +6,7 @@ subcategory: "Fabric"
 
 Fabric V4 API compatible data resource that allow user to fetch Equinix Fabric Route Aggregation Rules with pagination details
 Additional Documentation:
-* API: https://docs.equinix.com/api-catalog/fabricv4/#tag/Route-Aggregations
+* API: https://docs.equinix.com/api-catalog/fabricv4/#tag/Route-Aggregation-Rules/operation/searchRouteAggregationRules
 
 ## Example Usage
 
@@ -42,17 +42,17 @@ output "route_aggregation_rule_state" {
 ### Required
 
 - `outer_operator` (String) Determines if the filter list will be grouped by AND or by OR. One of [AND, OR]
-- `route_aggregation_id` (String) The uuid of the route aggregation rule this data source should retrieve
+- `route_aggregation_id` (String) The UUID of the Route Aggregation from which this data source retrieves its rules.
 
 ### Optional
 
 - `filter` (Attributes List) Filters for the Data Source Search Request (see [below for nested schema](#nestedatt--filter))
-- `pagination` (Attributes) Pagination details for the returned route aggregation rules list (see [below for nested schema](#nestedatt--pagination))
+- `pagination` (Attributes) Pagination details for the returned Route Aggregation Rules list (see [below for nested schema](#nestedatt--pagination))
 - `sort` (Attributes List) Sort criteria for the Data Source Search Request (see [below for nested schema](#nestedatt--sort))
 
 ### Read-Only
 
-- `data` (Attributes List) Returned list of route aggregation rule objects (see [below for nested schema](#nestedatt--data))
+- `data` (Attributes List) Returned list of Route Aggregation Rule objects (see [below for nested schema](#nestedatt--data))
 - `id` (String) The unique identifier of the resource
 
 <a id="nestedatt--filter"></a>
@@ -77,7 +77,7 @@ Read-Only:
 
 - `next` (String) The URL relative to the next item in the response
 - `previous` (String) The URL relative to the previous item in the response
-- `total` (Number) The total number of route agrgegation rules available to the user making the request
+- `total` (Number) The total number of Route Aggregation Rules available to the user making the request
 
 
 <a id="nestedatt--sort"></a>
@@ -94,19 +94,19 @@ Optional:
 
 Optional:
 
-- `description` (String) Customer-provided route aggregation rule description
+- `description` (String) Customer-provided Route Aggregation Rule description
 
 Read-Only:
 
-- `change` (Attributes) Current state of latest route aggregation rule change (see [below for nested schema](#nestedatt--data--change))
-- `change_log` (Attributes) Details of the last change on the stream resource (see [below for nested schema](#nestedatt--data--change_log))
-- `href` (String) Equinix auto generated URI to the route aggregation rule resource
-- `name` (String) Customer provided name of the route aggregation rule
-- `prefix` (String) Customer-provided route aggregation rule prefix
-- `route_aggregation_id` (String) UUID of the Route Aggregation to apply this Rule to
-- `state` (String) Value representing provisioning status for the route aggregation rule resource
+- `change` (Attributes) Current state of latest Route Aggregation Rule change (see [below for nested schema](#nestedatt--data--change))
+- `change_log` (Attributes) Details of the last change on the resource (see [below for nested schema](#nestedatt--data--change_log))
+- `href` (String) Equinix auto generated URI to the Route Aggregation Rule resource
+- `name` (String) Customer provided name of the Route Aggregation Rule
+- `prefix` (String) Customer-provided Route Aggregation Rule prefix
+- `route_aggregation_id` (String) UUID of the Route Aggregation that the rule is applied to
+- `state` (String) Value representing provisioning status for the Route Aggregation Rule resource
 - `type` (String) Equinix defined Route Aggregation Type; BGP_IPv4_PREFIX_AGGREGATION, BGP_IPv6_PREFIX_AGGREGATION
-- `uuid` (String) Equinix-assigned unique id for the route aggregation rule resource
+- `uuid` (String) Equinix-assigned unique id for the Route Aggregation Rule resource
 
 <a id="nestedatt--data--change"></a>
 ### Nested Schema for `data.change`
@@ -118,7 +118,7 @@ Required:
 
 Read-Only:
 
-- `href` (String) Equinix auto generated URI to the route aggregation change
+- `href` (String) Equinix auto generated URI to the Route Aggregation change
 
 
 <a id="nestedatt--data--change_log"></a>
@@ -126,15 +126,15 @@ Read-Only:
 
 Read-Only:
 
-- `created_by` (String) User name of creator of the stream resource
-- `created_by_email` (String) Email of creator of the stream resource
-- `created_by_full_name` (String) Legal name of creator of the stream resource
-- `created_date_time` (String) Creation time of the stream resource
-- `deleted_by` (String) User name of deleter of the stream resource
-- `deleted_by_email` (String) Email of deleter of the stream resource
-- `deleted_by_full_name` (String) Legal name of deleter of the stream resource
-- `deleted_date_time` (String) Deletion time of the stream resource
-- `updated_by` (String) User name of last updater of the stream resource
-- `updated_by_email` (String) Email of last updater of the stream resource
-- `updated_by_full_name` (String) Legal name of last updater of the stream resource
-- `updated_date_time` (String) Last update time of the stream resource
+- `created_by` (String) User name of creator of the resource
+- `created_by_email` (String) Email of creator of the resource
+- `created_by_full_name` (String) Legal name of creator of the resource
+- `created_date_time` (String) Creation time of the resource
+- `deleted_by` (String) User name of deleter of the resource
+- `deleted_by_email` (String) Email of deleter of the resource
+- `deleted_by_full_name` (String) Legal name of deleter of the resource
+- `deleted_date_time` (String) Deletion time of the resource
+- `updated_by` (String) User name of last updater of the resource
+- `updated_by_email` (String) Email of last updater of the resource
+- `updated_by_full_name` (String) Legal name of last updater of the resource
+- `updated_date_time` (String) Last update time of the resource
