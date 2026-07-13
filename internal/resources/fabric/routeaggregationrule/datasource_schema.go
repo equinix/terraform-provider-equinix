@@ -127,11 +127,11 @@ func dataSourceSingleRouteAggregationRuleSchema(ctx context.Context) schema.Sche
 	baseRouteAggregationRuleSchema := getRouteAggregationRuleSchema(ctx)
 	baseRouteAggregationRuleSchema["id"] = framework.IDAttributeDefaultDescription()
 	baseRouteAggregationRuleSchema["route_aggregation_rule_id"] = schema.StringAttribute{
-		Description: "The uuid of the route aggregation rule this data source should retrieve",
+		Description: "The UUID of the route aggregation rule this data source should retrieve",
 		Required:    true,
 	}
 	baseRouteAggregationRuleSchema["route_aggregation_id"] = schema.StringAttribute{
-		Description: "The uuid of the route aggregation this data source should retrieve",
+		Description: "The UUID of the route aggregation this data source should retrieve",
 		Required:    true,
 	}
 	return schema.Schema{
