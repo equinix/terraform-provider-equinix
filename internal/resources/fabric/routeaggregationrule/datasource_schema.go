@@ -19,11 +19,11 @@ func dataSourceSearchRouteAggregationRulesSchema(ctx context.Context) schema.Sch
 	return schema.Schema{
 		Description: `Fabric V4 API compatible data resource that allow user to fetch Equinix Fabric Route Aggregation Rules with pagination details
 Additional Documentation:
-* API: https://docs.equinix.com/api-catalog/fabricv4/#tag/Route-Aggregations`,
+* API: https://docs.equinix.com/api-catalog/fabricv4/#tag/Route-Aggregation-Rules/operation/searchRouteAggregationRules`,
 		Attributes: map[string]schema.Attribute{
 			"id": framework.IDAttributeDefaultDescription(),
 			"route_aggregation_id": schema.StringAttribute{
-				Description: "The UUID of the route aggregation from which this data source retrieves its rules.",
+				Description: "The UUID of the Route Aggregation from which this data source retrieves its rules.",
 				Required:    true,
 			},
 			"data": schema.ListNestedAttribute{
@@ -106,7 +106,7 @@ Additional Documentation:
 						Computed:    true,
 					},
 					"total": schema.Int32Attribute{
-						Description: "The total number of route agrgegation rules available to the user making the request",
+						Description: "The total number of Route Aggregation Rules available to the user making the request",
 						Computed:    true,
 					},
 					"next": schema.StringAttribute{
@@ -131,13 +131,13 @@ func dataSourceSingleRouteAggregationRuleSchema(ctx context.Context) schema.Sche
 		Required:    true,
 	}
 	baseRouteAggregationRuleSchema["route_aggregation_id"] = schema.StringAttribute{
-		Description: "The UUID of the route aggregation this data source should retrieve",
+		Description: "The UUID of the Route Aggregation this data source should retrieve",
 		Required:    true,
 	}
 	return schema.Schema{
 		Description: `Fabric V4 API compatible data resource that allow user to fetch Equinix Fabric Route Aggregation Rule by UUID
 Additional Documentation:
-* API: https://docs.equinix.com/api-catalog/fabricv4/#tag/Route-Aggregations`,
+* API: https://docs.equinix.com/api-catalog/fabricv4/#tag/Route-Aggregation-Rules/operation/getRouteAggregationRuleByUuid`,
 		Attributes: baseRouteAggregationRuleSchema,
 	}
 
@@ -191,62 +191,62 @@ func getRouteAggregationRuleSchema(ctx context.Context) map[string]schema.Attrib
 					Required:    true,
 				},
 				"href": schema.StringAttribute{
-					Description: "Equinix auto generated URI to the route aggregation change",
+					Description: "Equinix auto generated URI to the Route Aggregation change",
 					Computed:    true,
 				},
 			},
 		},
 		"change_log": schema.SingleNestedAttribute{
-			Description: "Details of the last change on the stream resource",
+			Description: "Details of the last change on the resource",
 			Computed:    true,
 			CustomType:  fwtypes.NewObjectTypeOf[changeLogModel](ctx),
 			Attributes: map[string]schema.Attribute{
 				"created_by": schema.StringAttribute{
-					Description: "User name of creator of the stream resource",
+					Description: "User name of creator of the resource",
 					Computed:    true,
 				},
 				"created_by_full_name": schema.StringAttribute{
-					Description: "Legal name of creator of the stream resource",
+					Description: "Legal name of creator of the resource",
 					Computed:    true,
 				},
 				"created_by_email": schema.StringAttribute{
-					Description: "Email of creator of the stream resource",
+					Description: "Email of creator of the resource",
 					Computed:    true,
 				},
 				"created_date_time": schema.StringAttribute{
-					Description: "Creation time of the stream resource",
+					Description: "Creation time of the resource",
 					Computed:    true,
 				},
 				"updated_by": schema.StringAttribute{
-					Description: "User name of last updater of the stream resource",
+					Description: "User name of last updater of the resource",
 					Computed:    true,
 				},
 				"updated_by_full_name": schema.StringAttribute{
-					Description: "Legal name of last updater of the stream resource",
+					Description: "Legal name of last updater of the resource",
 					Computed:    true,
 				},
 				"updated_by_email": schema.StringAttribute{
-					Description: "Email of last updater of the stream resource",
+					Description: "Email of last updater of the resource",
 					Computed:    true,
 				},
 				"updated_date_time": schema.StringAttribute{
-					Description: "Last update time of the stream resource",
+					Description: "Last update time of the resource",
 					Computed:    true,
 				},
 				"deleted_by": schema.StringAttribute{
-					Description: "User name of deleter of the stream resource",
+					Description: "User name of deleter of the resource",
 					Computed:    true,
 				},
 				"deleted_by_full_name": schema.StringAttribute{
-					Description: "Legal name of deleter of the stream resource",
+					Description: "Legal name of deleter of the resource",
 					Computed:    true,
 				},
 				"deleted_by_email": schema.StringAttribute{
-					Description: "Email of deleter of the stream resource",
+					Description: "Email of deleter of the resource",
 					Computed:    true,
 				},
 				"deleted_date_time": schema.StringAttribute{
-					Description: "Deletion time of the stream resource",
+					Description: "Deletion time of the resource",
 					Computed:    true,
 				},
 			},
