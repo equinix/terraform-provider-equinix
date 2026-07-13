@@ -28,19 +28,19 @@ Additional Documentation:
 				Required:    true,
 			},
 			"name": schema.StringAttribute{
-				Description: "Customer provided name of the route aggregation rule",
+				Description: "Customer provided name of the Route Aggregation Rule",
 				Required:    true,
 			},
 			"description": schema.StringAttribute{
-				Description: "Customer-provided route aggregation rule description",
+				Description: "Customer-provided Route Aggregation Rule description",
 				Optional:    true,
 			},
 			"prefix": schema.StringAttribute{
-				Description: "Customer-provided route aggregation rule prefix",
+				Description: "Customer-provided Route Aggregation Rule prefix",
 				Required:    true,
 			},
 			"href": schema.StringAttribute{
-				Description: "Equinix auto generated URI to the route aggregation rule resource",
+				Description: "Equinix auto generated URI to the Route Aggregation Rule resource",
 				Computed:    true,
 			},
 			"type": schema.StringAttribute{
@@ -48,15 +48,15 @@ Additional Documentation:
 				Computed:    true,
 			},
 			"uuid": schema.StringAttribute{
-				Description: "Equinix-assigned unique id for the route aggregation rule resource",
+				Description: "Equinix-assigned unique id for the Route Aggregation Rule resource",
 				Computed:    true,
 			},
 			"state": schema.StringAttribute{
-				Description: "Value representing provisioning status for the route aggregation rule resource",
+				Description: "Value representing provisioning status for the Route Aggregation Rule resource",
 				Computed:    true,
 			},
 			"change": schema.SingleNestedAttribute{
-				Description: "Current state of latest route aggregation rule change",
+				Description: "Current state of latest Route Aggregation Rule change",
 				Computed:    true,
 				CustomType:  fwtypes.NewObjectTypeOf[changeModel](ctx),
 				Attributes: map[string]schema.Attribute{

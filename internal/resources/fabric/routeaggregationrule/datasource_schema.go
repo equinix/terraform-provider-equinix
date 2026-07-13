@@ -27,7 +27,7 @@ Additional Documentation:
 				Required:    true,
 			},
 			"data": schema.ListNestedAttribute{
-				Description: "Returned list of route aggregation rule objects",
+				Description: "Returned list of Route Aggregation Rule objects",
 				Computed:    true,
 				CustomType:  fwtypes.NewListNestedObjectTypeOf[baseRouteAggregationRuleModel](ctx),
 				NestedObject: schema.NestedAttributeObject{
@@ -91,7 +91,7 @@ Additional Documentation:
 				},
 			},
 			"pagination": schema.SingleNestedAttribute{
-				Description: "Pagination details for the returned route aggregation rules list",
+				Description: "Pagination details for the returned Route Aggregation Rules list",
 				Optional:    true,
 				CustomType:  fwtypes.NewObjectTypeOf[paginationModel](ctx),
 				Attributes: map[string]schema.Attribute{
@@ -127,7 +127,7 @@ func dataSourceSingleRouteAggregationRuleSchema(ctx context.Context) schema.Sche
 	baseRouteAggregationRuleSchema := getRouteAggregationRuleSchema(ctx)
 	baseRouteAggregationRuleSchema["id"] = framework.IDAttributeDefaultDescription()
 	baseRouteAggregationRuleSchema["route_aggregation_rule_id"] = schema.StringAttribute{
-		Description: "The UUID of the route aggregation rule this data source should retrieve",
+		Description: "The UUID of the Route Aggregation Rule this data source should retrieve",
 		Required:    true,
 	}
 	baseRouteAggregationRuleSchema["route_aggregation_id"] = schema.StringAttribute{
@@ -150,7 +150,7 @@ func getRouteAggregationRuleSchema(ctx context.Context) map[string]schema.Attrib
 			Computed:    true,
 		},
 		"href": schema.StringAttribute{
-			Description: "Equinix auto generated URI to the route aggregation rule resource",
+			Description: "Equinix auto generated URI to the Route Aggregation Rule resource",
 			Computed:    true,
 		},
 		"type": schema.StringAttribute{
@@ -158,27 +158,27 @@ func getRouteAggregationRuleSchema(ctx context.Context) map[string]schema.Attrib
 			Computed:    true,
 		},
 		"uuid": schema.StringAttribute{
-			Description: "Equinix-assigned unique id for the route aggregation rule resource",
+			Description: "Equinix-assigned unique id for the Route Aggregation Rule resource",
 			Computed:    true,
 		},
 		"name": schema.StringAttribute{
-			Description: "Customer provided name of the route aggregation rule",
+			Description: "Customer provided name of the Route Aggregation Rule",
 			Computed:    true,
 		},
 		"description": schema.StringAttribute{
-			Description: "Customer-provided route aggregation rule description",
+			Description: "Customer-provided Route Aggregation Rule description",
 			Optional:    true,
 		},
 		"state": schema.StringAttribute{
-			Description: "Value representing provisioning status for the route aggregation rule resource",
+			Description: "Value representing provisioning status for the Route Aggregation Rule resource",
 			Computed:    true,
 		},
 		"prefix": schema.StringAttribute{
-			Description: "Customer-provided route aggregation rule prefix",
+			Description: "Customer-provided Route Aggregation Rule prefix",
 			Computed:    true,
 		},
 		"change": schema.SingleNestedAttribute{
-			Description: "Current state of latest route aggregation rule change",
+			Description: "Current state of latest Route Aggregation Rule change",
 			Computed:    true,
 			CustomType:  fwtypes.NewObjectTypeOf[changeModel](ctx),
 			Attributes: map[string]schema.Attribute{
