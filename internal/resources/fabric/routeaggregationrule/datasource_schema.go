@@ -23,7 +23,7 @@ Additional Documentation:
 		Attributes: map[string]schema.Attribute{
 			"id": framework.IDAttributeDefaultDescription(),
 			"route_aggregation_id": schema.StringAttribute{
-				Description: "The uuid of the route aggregation rule this data source should retrieve",
+				Description: "The UUID of the route aggregation from which this data source retrieves its rules.",
 				Required:    true,
 			},
 			"data": schema.ListNestedAttribute{
@@ -146,7 +146,7 @@ Additional Documentation:
 func getRouteAggregationRuleSchema(ctx context.Context) map[string]schema.Attribute {
 	return map[string]schema.Attribute{
 		"route_aggregation_id": schema.StringAttribute{
-			Description: "UUID of the Route Aggregation to apply this Rule to",
+			Description: "UUID of the Route Aggregation that the rule is applied to",
 			Computed:    true,
 		},
 		"href": schema.StringAttribute{
