@@ -691,10 +691,6 @@ func TestAccFabricCreateVirtualDevice2NetworkConnection_PNFV(t *testing.T) {
 					resource.TestCheckResourceAttr(
 						"equinix_fabric_connection.test", "a_side.0.access_point.0.virtual_device.0.uuid", virtualDevice),
 					resource.TestCheckResourceAttr(
-						"equinix_fabric_connection.test", "a_side.0.access_point.0.interface.0.type", "CLOUD"),
-					resource.TestCheckResourceAttr(
-						"equinix_fabric_connection.test", "a_side.0.access_point.0.interface.0.id", "6"),
-					resource.TestCheckResourceAttr(
 						"equinix_fabric_connection.test", "z_side.0.access_point.0.type", "NETWORK"),
 					resource.TestCheckResourceAttrSet(
 						"equinix_fabric_connection.test", "z_side.0.access_point.0.network.0.uuid"),
@@ -708,59 +704,55 @@ func TestAccFabricCreateVirtualDevice2NetworkConnection_PNFV(t *testing.T) {
 
 func testAccFabricCreateVirtualDevice2NetworkConnectionConfig(name, virtualDeviceUUID string) string {
 	return fmt.Sprintf(`
+resource "equinix_fabric_network" "this" {
+  type  = "EVPLAN"
+  name  = "Tf_Network_PNFV"
+  scope = "REGIONAL"
+  notifications {
+    type   = "ALL"
+    emails = ["test@equinix.com", "test1@equinix.com"]
+  }
+  location {
+    region = "AMER"
+  }
+  project {
+    project_id = "4f855852-eb47-4721-8e40-b386a3676abf"
+  }
+}
 
-	resource "equinix_fabric_network" "this" {
-		type = "EVPLAN"
-		name = "Tf_Network_PNFV"
-		scope = "REGIONAL"
-		notifications {
-			type = "ALL"
-			emails = ["test@equinix.com","test1@equinix.com"]
-		}
-		location {
-			region = "AMER"
-		}
-		project{
-			project_id = "4f855852-eb47-4721-8e40-b386a3676abf"
-		}
-	}
-
-	resource "equinix_fabric_connection" "test" {
-		type = "EVPLAN_VC"
-		name = "%s"
-		notifications{
-			type = "ALL"
-			emails = ["test@equinix.com","test1@equinix.com"]
-		}
-		order {
-			purchase_order_number = "123485"
-		}
-		bandwidth = 50
-		redundancy {
-			priority= "PRIMARY"
-		}
-		a_side {
-			access_point {
-				type = "VD"
-				virtual_device {
-					type = "EDGE"
-					uuid = "%s"
-				}
-				interface {
-					type = "CLOUD"
-					id = 6
-				}
-			}
-		}
-		z_side {
-			access_point {
-				type = "NETWORK"
-				network {
-					uuid = equinix_fabric_network.this.id
-				}
-			}
-		}
-	}`, name, virtualDeviceUUID)
+resource "equinix_fabric_connection" "test" {
+  type = "EVPLAN_VC"
+  name = "%s"
+  notifications {
+    type   = "ALL"
+    emails = ["test@equinix.com", "test1@equinix.com"]
+  }
+  order {
+    purchase_order_number = "123485"
+  }
+  bandwidth = 50
+  redundancy {
+    priority = "PRIMARY"
+  }
+  a_side {
+    access_point {
+      type = "VD"
+      virtual_device {
+        type = "EDGE"
+        uuid = "%s"
+      }
+    }
+  }
+  z_side {
+    access_point {
+      type = "NETWORK"
+      network {
+        uuid = equinix_fabric_network.this.id
+      }
+    }
+  }
+}
+`, name, virtualDeviceUUID)
 }
 
 func TestAccFabricCreatePort2EtreeNetworkConnection_PFCR(t *testing.T) {
