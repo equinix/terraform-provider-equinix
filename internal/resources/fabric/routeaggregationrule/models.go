@@ -16,11 +16,25 @@ type dataSourceByIDModel struct {
 	baseRouteAggregationRuleModel
 }
 
-type datsSourceAllRouteAggregationRulesModel struct {
+type dataSourceRouteAggregationRulesModel struct {
 	ID                 types.String                                                   `tfsdk:"id"`
 	Data               fwtypes.ListNestedObjectValueOf[baseRouteAggregationRuleModel] `tfsdk:"data"`
+	Filter             fwtypes.ListNestedObjectValueOf[filterModel]                   `tfsdk:"filter"`
+	Sort               fwtypes.ListNestedObjectValueOf[sortModel]                     `tfsdk:"sort"`
 	Pagination         fwtypes.ObjectValueOf[paginationModel]                         `tfsdk:"pagination"`
 	RouteAggregationID types.String                                                   `tfsdk:"route_aggregation_id"`
+	OuterOperator      types.String                                                   `tfsdk:"outer_operator"`
+}
+
+type filterModel struct {
+	Property types.String                      `tfsdk:"property"`
+	Operator types.String                      `tfsdk:"operator"`
+	Values   fwtypes.ListValueOf[types.String] `tfsdk:"values"`
+}
+
+type sortModel struct {
+	Property  types.String `tfsdk:"property"`
+	Direction types.String `tfsdk:"direction"`
 }
 
 type paginationModel struct {
@@ -78,7 +92,7 @@ func (m *dataSourceByIDModel) parse(ctx context.Context, routeAggregationRule *f
 	return diags
 }
 
-func (m *datsSourceAllRouteAggregationRulesModel) parse(ctx context.Context, routeAggregationRulesResponse *fabricv4.GetRouteAggregationRulesResponse) diag.Diagnostics {
+func (m *dataSourceRouteAggregationRulesModel) parse(ctx context.Context, routeAggregationRulesResponse *fabricv4.RouteAggregationRulesSearchResponse) diag.Diagnostics {
 	var diags diag.Diagnostics
 
 	if len(routeAggregationRulesResponse.GetData()) < 1 {
