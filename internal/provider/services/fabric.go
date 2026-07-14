@@ -46,7 +46,7 @@ func FabricDatasources() []func() datasource.DataSource {
 		routeaggregation.NewDataSourceByRouteAggregationID,
 		routeaggregation.NewDataSourceAllRouteAggregation,
 		routeaggregationrule.NewDataSourceByRouteAggregationRuleID,
-		routeaggregationrule.NewDataSourceAllRouteAggregationRule,
+		routeaggregationrule.NewDataSourceSearchRouteAggregationRules,
 		stream.NewDataSourceByStreamID,
 		stream.NewDataSourceAllStreams,
 		streamattachment.NewDataSourceAllStreamAttachments,

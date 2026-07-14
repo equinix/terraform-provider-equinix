@@ -4,10 +4,10 @@ subcategory: "Fabric"
 
 # equinix_fabric_route_aggregation_rule (Resource)
 
-Fabric V4 API compatible resource allows creation and management of Equinix Fabric Route Aggregation 
+Fabric V4 API compatible resource allows creation and management of Equinix Fabric Route Aggregation Rule
 
 Additional Documentation:
-* API: https://docs.equinix.com/api-catalog/fabricv4/#tag/Route-Aggregations
+* API: https://docs.equinix.com/api-catalog/fabricv4/#tag/Route-Aggregations-Rules
 
 ## Example Usage
 
@@ -45,24 +45,24 @@ output "route_aggregation_rule_state" {
 
 ### Required
 
-- `name` (String) Customer provided name of the route aggregation rule
-- `prefix` (String) Customer-provided route aggregation rule prefix
-- `route_aggregation_id` (String) UUID of the Route Aggregation to apply this Rule to
+- `name` (String) Customer provided name of the Route Aggregation Rule
+- `prefix` (String) Customer-provided Route Aggregation Rule prefix
+- `route_aggregation_id` (String) UUID of the Route Aggregation that this rule is applied to
 
 ### Optional
 
-- `description` (String) Customer-provided route aggregation rule description
+- `description` (String) Customer-provided Route Aggregation Rule description
 - `timeouts` (Attributes) (see [below for nested schema](#nestedatt--timeouts))
 
 ### Read-Only
 
-- `change` (Attributes) Current state of latest route aggregation rule change (see [below for nested schema](#nestedatt--change))
-- `change_log` (Attributes) Details of the last change on the stream resource (see [below for nested schema](#nestedatt--change_log))
-- `href` (String) Equinix auto generated URI to the route aggregation rule resource
+- `change` (Attributes) Current state of latest Route Aggregation Rule change (see [below for nested schema](#nestedatt--change))
+- `change_log` (Attributes) Details of the last change on the resource (see [below for nested schema](#nestedatt--change_log))
+- `href` (String) Equinix auto generated URI to the Route Aggregation Rule resource
 - `id` (String) The unique identifier of the resource
-- `state` (String) Value representing provisioning status for the route aggregation rule resource
+- `state` (String) Value representing provisioning status for the Route Aggregation Rule resource
 - `type` (String) Equinix defined Route Aggregation Type; BGP_IPv4_PREFIX_AGGREGATION, BGP_IPv6_PREFIX_AGGREGATION
-- `uuid` (String) Equinix-assigned unique id for the route aggregation rule resource
+- `uuid` (String) Equinix-assigned unique id for the Route Aggregation Rule resource
 
 <a id="nestedatt--timeouts"></a>
 ### Nested Schema for `timeouts`
@@ -85,7 +85,7 @@ Required:
 
 Read-Only:
 
-- `href` (String) Equinix auto generated URI to the route aggregation change
+- `href` (String) Equinix auto generated URI to the Route Aggregation Rule change
 
 
 <a id="nestedatt--change_log"></a>
@@ -93,15 +93,15 @@ Read-Only:
 
 Read-Only:
 
-- `created_by` (String) User name of creator of the stream resource
-- `created_by_email` (String) Email of creator of the stream resource
-- `created_by_full_name` (String) Legal name of creator of the stream resource
-- `created_date_time` (String) Creation time of the stream resource
-- `deleted_by` (String) User name of deleter of the stream resource
-- `deleted_by_email` (String) Email of deleter of the stream resource
-- `deleted_by_full_name` (String) Legal name of deleter of the stream resource
-- `deleted_date_time` (String) Deletion time of the stream resource
-- `updated_by` (String) User name of last updater of the stream resource
-- `updated_by_email` (String) Email of last updater of the stream resource
-- `updated_by_full_name` (String) Legal name of last updater of the stream resource
-- `updated_date_time` (String) Last update time of the stream resource
+- `created_by` (String) User name of creator of the resource
+- `created_by_email` (String) Email of creator of the resource
+- `created_by_full_name` (String) Legal name of creator of the resource
+- `created_date_time` (String) Creation time of the resource
+- `deleted_by` (String) User name of deleter of the resource
+- `deleted_by_email` (String) Email of deleter of the resource
+- `deleted_by_full_name` (String) Legal name of deleter of the resource
+- `deleted_date_time` (String) Deletion time of the resource
+- `updated_by` (String) User name of last updater of the resource
+- `updated_by_email` (String) Email of last updater of the resource
+- `updated_by_full_name` (String) Legal name of last updater of the resource
+- `updated_date_time` (String) Last update time of the resource

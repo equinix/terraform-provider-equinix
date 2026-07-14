@@ -98,7 +98,7 @@ func CheckRouteAggregationRuleDelete(s *terraform.State) error {
 				}
 			}
 			if routeAggregationRule.GetState() == fabricv4.ROUTEAGGREGATIONRULESTATE_PROVISIONED {
-				return fmt.Errorf("fabric stream %s still exists and is %s",
+				return fmt.Errorf("fabric route aggregation rule %s still exists and is %s",
 					rs.Primary.ID, routeAggregationRule.GetState())
 			}
 
