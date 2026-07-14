@@ -8,7 +8,8 @@ import (
 	"net/http"
 
 	equinix_errors "github.com/equinix/terraform-provider-equinix/internal/errors"
-	"github.com/equinix/terraform-provider-equinix/internal/sweep"
+	"github.com/equinix/terraform-provider-equinix/internal/fabric/sweep"
+	testinghelpers "github.com/equinix/terraform-provider-equinix/internal/fabric/testing_helpers"
 
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 )
@@ -26,7 +27,7 @@ func testSweepStreamAlertRules(_ string) error {
 	var errs []error
 	log.Printf("[DEBUG] Sweeping Fabric Stream Alert Rules")
 	ctx := context.Background()
-	meta, err := sweep.GetConfigForFabric()
+	meta, err := testinghelpers.GetConfigForFabric()
 	if err != nil {
 		return fmt.Errorf("error getting configuration for sweeping Stream Alert Rules: %s", err)
 	}

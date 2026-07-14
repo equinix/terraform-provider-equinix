@@ -9,7 +9,8 @@ import (
 
 	"github.com/equinix/equinix-sdk-go/services/fabricv4"
 	equinix_errors "github.com/equinix/terraform-provider-equinix/internal/errors"
-	"github.com/equinix/terraform-provider-equinix/internal/sweep"
+	"github.com/equinix/terraform-provider-equinix/internal/fabric/sweep"
+	testinghelpers "github.com/equinix/terraform-provider-equinix/internal/fabric/testing_helpers"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 )
 
@@ -25,7 +26,7 @@ func testSweepCloudRouters(region string) error {
 	var errs []error
 	log.Printf("[DEBUG] Sweeping Fabric Cloud Routers")
 	ctx := context.Background()
-	meta, err := sweep.GetConfigForFabric()
+	meta, err := testinghelpers.GetConfigForFabric()
 	if err != nil {
 		return fmt.Errorf("error getting configuration for sweeping Fabric Cloud Routers: %s", err)
 	}

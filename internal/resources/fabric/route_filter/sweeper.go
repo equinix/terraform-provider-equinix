@@ -8,7 +8,8 @@ import (
 	"net/http"
 
 	equinix_errors "github.com/equinix/terraform-provider-equinix/internal/errors"
-	"github.com/equinix/terraform-provider-equinix/internal/sweep"
+	"github.com/equinix/terraform-provider-equinix/internal/fabric/sweep"
+	testinghelpers "github.com/equinix/terraform-provider-equinix/internal/fabric/testing_helpers"
 
 	"github.com/equinix/equinix-sdk-go/services/fabricv4"
 
@@ -27,7 +28,7 @@ func testSweepRouteFilters(region string) error {
 	var errs []error
 	log.Printf("[DEBUG] Sweeping Fabric Route Filters")
 	ctx := context.Background()
-	meta, err := sweep.GetConfigForFabric()
+	meta, err := testinghelpers.GetConfigForFabric()
 	if err != nil {
 		return fmt.Errorf("error getting configuration for sweeping Route Filters: %s", err)
 	}
