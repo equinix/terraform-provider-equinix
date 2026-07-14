@@ -53,7 +53,7 @@ func testSweepConnections(region string) error {
 				{
 					Property: &equinixStatus,
 					Operator: &equalOperator,
-					Values:   []string{string(fabricv4.EQUINIXSTATUS_PROVISIONED)},
+					Values:   []string{string(fabricv4.EQUINIXSTATUS_PROVISIONED), string(fabricv4.EQUINIXSTATUS_PENDING_INTERFACE_CONFIGURATION)},
 				},
 			},
 		},
