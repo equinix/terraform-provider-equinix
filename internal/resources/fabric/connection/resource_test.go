@@ -3,6 +3,7 @@ package connection_test
 import (
 	"context"
 	"fmt"
+	"regexp"
 	"testing"
 	"time"
 
@@ -876,6 +877,14 @@ func TestAccFabricCreatePort2EtreeNetworkConnection_PFCR(t *testing.T) {
 						})),
 				},
 				ExpectNonEmptyPlan: true,
+			},
+			{
+				Config: port2EtreeNetworkConfig,
+				ConfigVariables: config.Variables{
+					"vlan_tag":  config.IntegerVariable(1322),
+					"port_uuid": config.StringVariable(portUUID),
+				},
+				ExpectError: regexp.MustCompile("vlan update not allowed for connection of type EVPTREE_VC"),
 			},
 		},
 	})

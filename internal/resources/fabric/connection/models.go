@@ -700,7 +700,6 @@ func getUpdateRequests(conn *fabricv4.Connection, d *schema.ResourceData) ([][]f
 	updateNameVal := d.Get("name").(string)
 	updateBandwidthVal := d.Get("bandwidth").(int)
 	updateAsideVlan := getVlan(connectionSideTerraformToGo(d.Get("a_side").(*schema.Set).List()).AccessPoint)
-	log.Printf("VLANS %d %d", existingAsideVlan, updateAsideVlan)
 	additionalInfo := d.Get("additional_info").([]any)
 
 	awsSecrets, hasAWSSecrets := additionalInfoContainsAWSSecrets(additionalInfo)
