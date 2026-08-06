@@ -662,8 +662,8 @@ func supportedBandwidthsGoToTerraform(supportedBandwidths []int32) []any {
 	return mappedSupportedBandwidths
 }
 
-func appendReplaceOp[T comparable](changeOps [][]fabricv4.ConnectionChangeOperation, op string, existing T, updated T, payloadValue any) [][]fabricv4.ConnectionChangeOperation {
-	if existing == updated {
+func appendReplaceOp(changeOps [][]fabricv4.ConnectionChangeOperation, op string, shouldAppend bool, payloadValue any) [][]fabricv4.ConnectionChangeOperation {
+	if !shouldAppend {
 		return changeOps
 	}
 
@@ -671,8 +671,7 @@ func appendReplaceOp[T comparable](changeOps [][]fabricv4.ConnectionChangeOperat
 		Op:    "replace",
 		Path:  op,
 		Value: payloadValue,
-	},
-	})
+	}})
 
 	return changeOps
 }
@@ -717,18 +716,19 @@ func getUpdateRequests(conn *fabricv4.Connection, d *schema.ResourceData) ([][]f
 		string(existingNotifications[0].GetType()) != string(updateNotificationsVal[0].GetType()) ||
 		!reflect.DeepEqual(prevEmails, nextEmails)
 
-	changeOps = appendReplaceOp(changeOps, "/name", existingName, updateNameVal, updateNameVal)
-	changeOps = appendReplaceOp(changeOps, "/aSide/accessPoint/linkProtocols", existingAsideVlan, updateAsideVlan, map[string]int32{"vlanTag": updateAsideVlan})
-	changeOps = appendReplaceOp(changeOps, "/bandwidth", existingBandwidth, updateBandwidthVal, updateBandwidthVal)
+	changeSet := []struct {
+		op           string
+		shouldAppend bool
+		payloadValue any
+	}{
+		{"/name", existingName != updateNameVal, updateNameVal},
+		{"/aSide/accessPoint/linkProtocols", existingAsideVlan != updateAsideVlan, map[string]int32{"vlanTag": updateAsideVlan}},
+		{"/bandwidth", existingBandwidth != updateBandwidthVal, updateBandwidthVal},
+		{"/notifications", notificationsNeedsUpdate, updateNotificationsVal},
+	}
 
-	if notificationsNeedsUpdate {
-		changeOps = append(changeOps, []fabricv4.ConnectionChangeOperation{
-			{
-				Op:    "replace",
-				Path:  "/notifications",
-				Value: updateNotificationsVal,
-			},
-		})
+	for _, c := range changeSet {
+		changeOps = appendReplaceOp(changeOps, c.op, c.shouldAppend, c.payloadValue)
 	}
 
 	if *conn.Operation.ProviderStatus == fabricv4.PROVIDERSTATUS_PENDING_APPROVAL && hasAWSSecrets {
