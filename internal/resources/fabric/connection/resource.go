@@ -48,23 +48,17 @@ func Resource() *schema.Resource {
 			oldAside := connectionSideTerraformToGo(_oldASide.(*schema.Set).List())
 			newAside := connectionSideTerraformToGo(_newASide.(*schema.Set).List())
 
-			getLinkProtocol := func(s fabricv4.ConnectionSide) fabricv4.SimplifiedLinkProtocol {
-				linkProtocol := s.GetAccessPoint().LinkProtocol
+			oldLinkProtocol := oldAside.GetAccessPoint().LinkProtocol
+			newLinkProtocol := newAside.GetAccessPoint().LinkProtocol
 
-				if linkProtocol == nil {
-					return fabricv4.SimplifiedLinkProtocol{}
-				}
-
-				return *linkProtocol
+			if oldLinkProtocol == nil || newLinkProtocol == nil {
+				return nil
 			}
-
-			oldLinkProtocol := getLinkProtocol(oldAside)
-			newLinkProtocol := getLinkProtocol(newAside)
 
 			allowedTypesForVlanChange := []string{string(fabricv4.CONNECTIONTYPE_EVPL_VC), string(fabricv4.CONNECTIONTYPE_EIA_VC)}
 
 			connType := d.Get("type").(string)
-			if *oldLinkProtocol.VlanTag != *newLinkProtocol.VlanTag {
+			if oldLinkProtocol.VlanTag != nil && newLinkProtocol.VlanTag != nil && *oldLinkProtocol.VlanTag != *newLinkProtocol.VlanTag {
 				if !slices.Contains(allowedTypesForVlanChange, connType) {
 					return fmt.Errorf(
 						"vlan update not allowed for connection of type %s",
