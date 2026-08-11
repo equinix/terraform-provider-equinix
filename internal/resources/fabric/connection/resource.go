@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"log"
+	"slices"
 	"strings"
 	"time"
 
@@ -34,6 +35,55 @@ func Resource() *schema.Resource {
 			StateContext: schema.ImportStatePassthroughContext,
 		},
 		Schema: fabricConnectionResourceSchema(),
+		CustomizeDiff: func(ctx context.Context, d *schema.ResourceDiff, meta any) error {
+			if d.Id() == "" {
+				return nil
+			}
+
+			if !d.HasChange("a_side") {
+				return nil
+			}
+
+			_oldASide, _newASide := d.GetChange("a_side")
+			oldAside := connectionSideTerraformToGo(_oldASide.(*schema.Set).List())
+			newAside := connectionSideTerraformToGo(_newASide.(*schema.Set).List())
+
+			oldLinkProtocol := oldAside.GetAccessPoint().LinkProtocol
+			newLinkProtocol := newAside.GetAccessPoint().LinkProtocol
+
+			if oldLinkProtocol == nil || newLinkProtocol == nil {
+				return nil
+			}
+
+			allowedTypesForVlanChange := []string{string(fabricv4.CONNECTIONTYPE_EVPL_VC), string(fabricv4.CONNECTIONTYPE_EIA_VC)}
+
+			connType := d.Get("type").(string)
+			if oldLinkProtocol.VlanTag != nil && newLinkProtocol.VlanTag != nil && *oldLinkProtocol.VlanTag != *newLinkProtocol.VlanTag {
+				if !slices.Contains(allowedTypesForVlanChange, connType) {
+					return fmt.Errorf(
+						"vlan update not allowed for connection of type %s",
+						connType,
+					)
+				}
+
+				if newLinkProtocol.Type == nil || oldLinkProtocol.Type == nil {
+					return fmt.Errorf("invalid link protocol state")
+				}
+
+				if *oldLinkProtocol.Type != *newLinkProtocol.Type {
+					return fmt.Errorf("link protocol type update not allowed")
+				}
+
+				if *newLinkProtocol.Type != fabricv4.LINKPROTOCOLTYPE_DOT1_Q {
+					return fmt.Errorf(
+						"vlan update not allowed for link protocol of type %s",
+						*newLinkProtocol.Type,
+					)
+				}
+			}
+
+			return nil
+		},
 
 		Description: "Fabric V4 API compatible resource allows creation and management of Equinix Fabric connection",
 	}
