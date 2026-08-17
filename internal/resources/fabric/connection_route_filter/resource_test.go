@@ -45,7 +45,8 @@ func TestAccFabricConnectionRouteFilter_PFCR(t *testing.T) {
 		CheckDestroy: CheckConnectionRouteFilterDelete,
 		Steps: []resource.TestStep{
 			{
-				Config: connectionRouteFilterConfig,
+				ExpectNonEmptyPlan: true,
+				Config:             connectionRouteFilterConfig,
 				ConfigVariables: config.Variables{
 					"port_uuid": config.StringVariable(portUUID),
 					"vlan_tag":  config.IntegerVariable(targetVlan),
