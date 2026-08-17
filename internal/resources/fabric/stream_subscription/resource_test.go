@@ -254,7 +254,7 @@ func testAccFabricStreamSubscriptionConfig(streamTestData map[string]map[string]
 
 func TestAccFabricStreamSubscription_PFCR(t *testing.T) {
 	streamTestData := testinghelpers.GetFabricStreamTestData(t)
-	resource.ParallelTest(t, resource.TestCase{
+	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { acceptance.TestAccPreCheck(t); acceptance.TestAccPreCheckProviderConfigured(t) },
 		ExternalProviders:        acceptance.TestExternalProviders,
 		ProtoV6ProviderFactories: acceptance.ProtoV6ProviderFactories,
