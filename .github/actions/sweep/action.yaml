@@ -1,0 +1,160 @@
+name: Run sweeper
+
+inputs:
+  resource-identifier:
+    description: 'The identifier to identify which resources are sweepable'
+    required: true
+    type: string
+  project:
+    description: 'ID for the project to sweep on'
+    required: true
+    type: string
+
+runs:
+  using: composite
+  steps:
+  # Manual checking, because https://stackoverflow.com/questions/68804484/why-are-required-inputs-to-github-actions-not-enforced
+  - name: Check inputs
+    shell: bash
+    run: |
+      if [[ -z "${{inputs.resource-identifier}}" ]]; then
+        echo "resource identifier not set"
+        exit 1
+      fi
+
+      if [[ -z "${{inputs.project}}" ]]; then
+        echo "project not set"
+        exit 1
+      fi
+    
+  - name: Authenticate
+    id: auth
+    shell: bash
+    run: |
+        TOKEN=$(curl -X POST "${UAT_API_ENDPOINT}/oauth2/v1/token" \
+          -H 'content-type: application/json' \
+          --data-raw "{\"grant_type\":\"client_credentials\",\"client_id\": \"${EQUINIX_API_CLIENTID}\",\"client_secret\":\"${EQUINIX_API_CLIENTSECRET}\"}" \
+          | jq -r '.access_token')
+
+        echo "::add-mask::$TOKEN"
+        echo "token=$TOKEN" >> "$GITHUB_OUTPUT"
+
+  - name: Sweep resources
+    shell: bash
+    run: |
+      find_sweepable_resources() {
+        resource="$1"
+        states="$2"
+        flag="$3"
+        query="$4"
+
+        case $flag in
+          no_name)
+            jq --compact-output -n --argjson states "$states" '{"filter":{"and":[{"property":"/state","operator":"IN","values":$states},{"property":"/project/projectId","operator":"IN","values":["${{ inputs.project }}"]}]},"pagination":{"offset":0,"limit":100},"sort":[{"property":"/changeLog/updatedDateTime","direction":"DESC"}]}' > payload
+            ;;
+          no_wildcard)
+            name_filter="${{inputs.resource-identifier}}"
+            ;;&
+          "")
+            name_filter="%${{inputs.resource-identifier}}%"
+            ;;&
+          *)
+            jq --compact-output -n --arg name $name_filter --argjson states "$states" '{"filter":{"and":[{"property":"/name","operator":"LIKE","values":[$name]}, {"property":"/state","operator":"IN","values":$states},{"property":"/project/projectId","operator":"IN","values":["${{ inputs.project }}"]}]},"pagination":{"offset":0,"limit":100},"sort":[{"property":"/changeLog/updatedDateTime","direction":"DESC"}]}' > payload
+            ;;
+        esac
+
+        echo "Sweeping $resource"
+        export ENDPOINT="fabric/v4/$resource"
+
+        if ! curl --silent --fail-with-body "${UAT_API_ENDPOINT}/{$ENDPOINT}/search${query}" \
+          -H 'accept: application/json' \
+          -H 'content-type: application/json; charset=utf-8' \
+          -H "authorization: Bearer ${{steps.auth.outputs.token}}" \
+          --data @payload > response.json; then
+
+            echo "List ${ENDPOINT} resource failed"
+            jq < response.json
+            return 1
+        fi
+
+        echo "API responded $(jq --raw-output '.pagination.total' < response.json) $resource"
+
+        jq -r '[.data[] | select(.name? and (.name | startswith("${{inputs.resource-identifier}}") or endswith("${{inputs.resource-identifier}}"))) | .uuid].[]' < response.json > uuids
+      }
+
+
+      sweep() {
+        find_sweepable_resources "$@"
+
+        xargs -I{} bash -c '
+            echo "Deleting ${ENDPOINT}/{}"
+
+            if ! curl --silent --fail-with-body -X DELETE "${UAT_API_ENDPOINT}/{$ENDPOINT}/{}" \
+              -H "authorization: Bearer ${{steps.auth.outputs.token}}" \
+              > delete_response.json; then
+
+              echo "Delete ${ENDPOINT} {} resource failed"
+              jq < delete_response.json
+            fi
+        ' < uuids
+      }
+
+      sweep_streams() {
+        find_sweepable_resources 'streams' '["PROVISIONED","PROVISIONING","REPROVISIONING","NOT_DEPROVISIONED"]'
+
+        while IFS= read -r uuid; do
+            echo "Deleting stream ${uuid}"
+
+            if ! curl --silent --fail-with-body "${UAT_API_ENDPOINT}/fabric/v4/streams/${uuid}/subscriptions" \
+              -H 'accept: application/json' \
+              -H "authorization: Bearer ${{steps.auth.outputs.token}}" > subscriptions.json; then
+
+                echo "List subscriptions failed"
+                jq < subscriptions.json
+                return 1
+            fi
+
+            echo "API responded $(jq --raw-output '.pagination.total' < subscriptions.json) subscriptions"
+
+            jq '.data | map (.uuid) | .[]' < subscriptions.json > subscription_uuids
+
+            xargs -I{} bash -c '
+                uuid="$1"
+                echo "Deleting subscription {} on stream ${uuid}"
+
+                if ! curl --silent --fail-with-body -X DELETE "${UAT_API_ENDPOINT}/fabric/v4/streams/${uuid}/subscriptions/{}" \
+                  -H "authorization: Bearer ${{steps.auth.outputs.token}}" \
+                  > delete_response.json; then
+
+                  echo "Delete {} subscription failed"
+                  jq < delete_response.json
+                fi
+            ' _ "$uuid" < subscription_uuids
+
+            if ! curl --silent --fail-with-body -X DELETE "${UAT_API_ENDPOINT}/fabric/v4/streams/${uuid}" \
+              -H "authorization: Bearer ${{steps.auth.outputs.token}}" \
+              > delete_response.json; then
+
+              echo "Delete streams ${uuid} resource failed"
+              jq < delete_response.json
+            fi
+        done < uuids
+      }
+
+      sweep 'connections' '["ACTIVE", "DRAFT", "PENDING", "PROVISIONING"]' "no_wildcard"
+
+      sweep 'routers' '["PROVISIONED","PROVISIONING","REPROVISIONING","NOT_DEPROVISIONED"]'
+
+      sweep 'timeServices' '["PROVISIONED", "CONFIGURING","CONFIGURING_FAILED"]'
+
+      sweep 'routeFilters' '["PROVISIONED","PROVISIONING"]'
+
+      sweep 'routeAggregations' '["PROVISIONED","PROVISIONING"]'
+
+      sweep 'serviceProfiles' '["ACTIVE", "PENDING_APPROVAL"]' "no_name" "?viewPoint=zSide"
+
+      sweep 'serviceTokens' '["ACTIVE", "INACTIVE"]' "no_name"
+
+      sweep 'networks' '["ACTIVE"]'
+
+      sweep_streams
