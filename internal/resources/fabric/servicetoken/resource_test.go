@@ -421,7 +421,7 @@ func testAccFabricZsideVirtualDeviceServiceTokenConfig(serviceTokenName string, 
 			}
 			notifications {
     			type   = "ALL"
-    			emails = ["panthers_auto@equinix.com", "test1@equinix.com", "example@equinix.com"]
+    			emails = ["panthers_auto@equinix.com",  "panthersne@equinix.com", "test1@equinix.com", "example@equinix.com"]
   			}
 
 		}
