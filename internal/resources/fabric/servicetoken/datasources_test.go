@@ -71,7 +71,7 @@ func testAccFabricServiceTokenConfigDataSourceConfig(expiration string, virtualD
 			}
 			notifications {
     			type   = "ALL"
-    			emails = ["panthers_auto@equinix.com", "test1@equinix.com", "example@equinix.com"]
+    			emails = ["panthers_auto@equinix.com", "panthersne@equinix.com", "test1@equinix.com", "example@equinix.com"]
   			}
             project {
     			project_id = "4f855852-eb47-4721-8e40-b386a3676abf"

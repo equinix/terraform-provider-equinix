@@ -42,7 +42,8 @@ func TestAccFabricCreateRoutingProtocols_PFCR(t *testing.T) {
 		CheckDestroy: checkRoutingProtocolDelete,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccFabricCreateRoutingProtocolConfig("RP_Conn_Test_PFCR", portUUID, targetVlan),
+				ExpectNonEmptyPlan: true,
+				Config:             testAccFabricCreateRoutingProtocolConfig("RP_Conn_Test_PFCR", portUUID, targetVlan),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttrSet("equinix_fabric_routing_protocol.direct", "id"),
 					resource.TestCheckResourceAttr("equinix_fabric_routing_protocol.direct", "type", "DIRECT"),
