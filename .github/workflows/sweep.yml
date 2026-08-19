@@ -1,0 +1,25 @@
+name: Run sweepers
+on:
+  workflow_dispatch:
+    inputs:
+      resource-identifier:
+        description: 'The identifier to identify which resources are sweepable'
+        required: true
+        type: string
+      project:
+        description: 'ID for the project to sweep on'
+        required: true
+        type: string
+
+jobs:
+  sweep:
+    name: Run sweeper
+    runs-on: ubuntu-latest
+    env:
+        UAT_API_ENDPOINT: "https://uatapi.equinix.com"
+    steps:
+      - uses: actions/checkout@v4
+      - uses: ./.github/actions/sweep
+        with:
+          resource-identifier: ${{ inputs.resource-identifier }}
+          project: ${{ inputs.project }}
