@@ -342,7 +342,35 @@ func resourceFabricCloudRouterRead(ctx context.Context, d *schema.ResourceData, 
 	return setCloudRouterMap(d, cloudRouter)
 }
 
-func fabricCloudRouterMap(fcr *fabricv4.CloudRouter) map[string]any {
+type CloudRouter interface {
+	GetPackage() fabricv4.CloudRouterPostRequestPackage
+	GetLocation() fabricv4.SimplifiedLocationWithoutIBX
+	GetChangeLog() fabricv4.Changelog
+	GetAccount() fabricv4.SimplifiedAccount
+	GetNotifications() []fabricv4.SimplifiedNotification
+	GetProject() fabricv4.Project
+	GetOrder() fabricv4.Order
+	GetMarketplaceSubscription() fabricv4.MarketplaceSubscription
+	GetName() string
+	GetUuid() string
+	GetHref() string
+	GetType() fabricv4.CloudRouterReadResponseType
+	GetState() fabricv4.CloudRouterAccessPointState
+	GetEquinixAsn() int64
+	GetConnectionsCount() int32
+}
+
+type CloudRouterAdapter struct {
+	*fabricv4.CloudRouter
+}
+
+func (r CloudRouterAdapter) GetType() fabricv4.CloudRouterReadResponseType {
+	t, _ := fabricv4.NewCloudRouterReadResponseTypeFromValue(string(r.GetType()))
+
+	return *t
+}
+
+func fabricCloudRouterMap(fcr CloudRouter) map[string]any {
 	cloudRouterPackage := fcr.GetPackage()
 	location := fcr.GetLocation()
 	changeLog := fcr.GetChangeLog()
@@ -370,7 +398,7 @@ func fabricCloudRouterMap(fcr *fabricv4.CloudRouter) map[string]any {
 	}
 }
 
-func setCloudRouterMap(d *schema.ResourceData, fcr *fabricv4.CloudRouter) diag.Diagnostics {
+func setCloudRouterMap(d *schema.ResourceData, fcr CloudRouter) diag.Diagnostics {
 	diags := diag.Diagnostics{}
 	cloudRouterMap := fabricCloudRouterMap(fcr)
 	err := equinix_schema.SetMap(d, cloudRouterMap)
@@ -497,7 +525,7 @@ func resourceFabricCloudRouterUpdate(ctx context.Context, d *schema.ResourceData
 	}
 
 	d.SetId(dbCR.GetUuid())
-	return append(diags, setCloudRouterMap(d, dbCR)...)
+	return append(diags, setCloudRouterMap(d, CloudRouterAdapter{dbCR})...)
 }
 
 func waitForCloudRouterUpdateCompletion(ctx context.Context, uuid string, meta any, d *schema.ResourceData, timeout time.Duration) (*fabricv4.CloudRouter, error) {
