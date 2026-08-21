@@ -121,7 +121,7 @@ type StreamAssetAdapter struct {
 }
 
 func (sa StreamAssetAdapter) GetType() string {
-	return string(sa.GetType())
+	return string(sa.StreamAsset.GetType())
 }
 
 type StreamAsset interface {
