@@ -39,7 +39,7 @@ func testSweeperNetworks(_ string) error {
 	fabric := meta.NewFabricClientForTesting(ctx)
 
 	name := fabricv4.NETWORKSEARCHFIELDNAME_NAME
-	likeOperator := fabricv4.NETWORKFILTEROPERATOR_LIKE
+	likeOperator := fabricv4.INTERCONNECTFILTEROPERATOR_LIKE
 	limit := int32(100)
 	offset := int32(0)
 
