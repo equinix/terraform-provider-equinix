@@ -68,12 +68,12 @@ type BaseAssetModel struct {
 func (m *DataSourceByIDModel) parse(ctx context.Context, stream *fabricv4.StreamAsset) diag.Diagnostics {
 	m.ID = types.StringValue(stream.GetUuid())
 
-	diags := m.BaseAssetModel.parse(ctx, stream)
+	diags := m.BaseAssetModel.parse(ctx, StreamAssetAdapter{stream})
 
 	return diags
 }
 
-func (m *DataSourceAllAssetsModel) parse(ctx context.Context, streamsResponse *fabricv4.GetAllStreamAssetResponse) diag.Diagnostics {
+func (m *DataSourceAllAssetsModel) parse(ctx context.Context, streamsResponse *fabricv4.SearchStreamAssetResponse) diag.Diagnostics {
 	var diags diag.Diagnostics
 
 	if len(streamsResponse.GetData()) < 1 {
@@ -111,19 +111,35 @@ func (m *DataSourceAllAssetsModel) parse(ctx context.Context, streamsResponse *f
 func (m *ResourceModel) parse(ctx context.Context, stream *fabricv4.StreamAsset) diag.Diagnostics {
 	m.ID = types.StringValue(stream.GetUuid())
 
-	diags := m.BaseAssetModel.parse(ctx, stream)
+	diags := m.BaseAssetModel.parse(ctx, StreamAssetAdapter{stream})
 
 	return diags
 }
 
-func (m *BaseAssetModel) parse(_ context.Context, stream *fabricv4.StreamAsset) diag.Diagnostics {
+type StreamAssetAdapter struct {
+	*fabricv4.StreamAsset
+}
+
+func (sa StreamAssetAdapter) GetType() string {
+	return string(sa.GetType())
+}
+
+type StreamAsset interface {
+	GetMetricsEnabled() bool
+	GetType() string
+	GetHref() string
+	GetUuid() string
+	GetAttachmentStatus() fabricv4.StreamAssetAttachmentStatus
+}
+
+func (m *BaseAssetModel) parse(_ context.Context, streamAsset StreamAsset) diag.Diagnostics {
 	var diag diag.Diagnostics
 
-	m.MetricsEnabled = types.BoolValue(stream.GetMetricsEnabled())
-	m.Type = types.StringValue(string(stream.GetType()))
-	m.Href = types.StringValue(stream.GetHref())
-	m.UUID = types.StringValue(stream.GetUuid())
-	m.AttachmentStatus = types.StringValue(string(stream.GetAttachmentStatus()))
+	m.MetricsEnabled = types.BoolValue(streamAsset.GetMetricsEnabled())
+	m.Type = types.StringValue(streamAsset.GetType())
+	m.Href = types.StringValue(streamAsset.GetHref())
+	m.UUID = types.StringValue(streamAsset.GetUuid())
+	m.AttachmentStatus = types.StringValue(string(streamAsset.GetAttachmentStatus()))
 
 	return diag
 }
