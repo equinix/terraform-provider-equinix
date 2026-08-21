@@ -123,7 +123,7 @@ func networkFiltersTerraformToGo(filters []any, outerOperator string) (fabricv4.
 			networkFilter.SetProperty(fabricv4.NetworkSearchFieldName(property.(string)))
 		}
 		if operator, ok := filterMap["operator"]; ok {
-			networkFilter.SetOperator(fabricv4.NetworkFilterOperator(operator.(string)))
+			networkFilter.SetOperator(fabricv4.InterconnectFilterOperator(operator.(string)))
 		}
 		if values, ok := filterMap["values"]; ok {
 			stringValues := converters.IfArrToStringArr(values.([]any))
