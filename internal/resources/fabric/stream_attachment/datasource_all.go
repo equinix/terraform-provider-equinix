@@ -52,7 +52,7 @@ func (r *DataSourceAllStreamAttachments) Read(ctx context.Context, request datas
 	}
 
 	// Use API client to get the current state of the resource
-	assets, _, err := client.StreamsApi.GetStreamsAssets(ctx).StreamAssetSearchRequest(searchRequest).Execute()
+	assets, _, err := client.StreamsApi.SearchStreamAssets(ctx).StreamAssetSearchRequest(searchRequest).Execute()
 
 	if err != nil {
 		response.State.RemoveResource(ctx)
