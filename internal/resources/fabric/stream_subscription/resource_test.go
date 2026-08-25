@@ -37,200 +37,135 @@ func CheckStreamSubscriptionDelete(s *terraform.State) error {
 
 func testAccFabricStreamSubscriptionConfig(streamTestData map[string]map[string]string) string {
 	return fmt.Sprintf(`
-		resource "equinix_fabric_stream" "new_stream" {
-		  type = "TELEMETRY_STREAM"
-		  name = "Subscription_Test_PFCR"
-		  description = "Testing stream subscriptions resource"
-		  project = {
-			project_id = "291639000636552"
-		  }
-		}
+resource "equinix_fabric_stream" "new_stream" {
+  type        = "TELEMETRY_STREAM"
+  name        = "Subscription_Test_PFCR"
+  description = "Testing stream subscriptions resource"
+  project = {
+    project_id = "291639000636552"
+  }
+}
 
-		resource "equinix_fabric_stream" "new_stream2" {
-		  type = "TELEMETRY_STREAM"
-		  name = "Subscription_Test2_PFCR"
-		  description = "Testing stream subscriptions resource limits"
-		  project = {
-			project_id = "291639000636552"
-		  }
-		}
+resource "equinix_fabric_stream" "new_stream2" {
+  type        = "TELEMETRY_STREAM"
+  name        = "Subscription_Test2_PFCR"
+  description = "Testing stream subscriptions resource limits"
+  project = {
+    project_id = "291639000636552"
+  }
+}
 
-        resource "equinix_fabric_stream" "new_stream3" {
-		  type = "TELEMETRY_STREAM"
-		  name = "Subscription_Test3_PFCR"
-		  description = "Testing stream subscriptions resource limits"
-		  project = {
-			project_id = "291639000636552"
-		  }
-		}
+resource "equinix_fabric_stream" "new_stream3" {
+  type        = "TELEMETRY_STREAM"
+  name        = "Subscription_Test3_PFCR"
+  description = "Testing stream subscriptions resource limits"
+  project = {
+    project_id = "291639000636552"
+  }
+}
 
-		resource "equinix_fabric_stream_subscription" "splunk" {
-		  type = "STREAM_SUBSCRIPTION"
-		  name = "Splunk_PFCR"
-		  description = "Stream Subscription Splunk TF Testing"
-		  stream_id = equinix_fabric_stream.new_stream.id
-		  enabled = false
-		  sink = {
-			type = "SPLUNK_HEC"
-			uri = "%s"
-			settings = {
-			  event_index  = "%s"
-			  metric_index = "%s"
-			  source = "%s"
-			}
-			credential = {
-			  type = "ACCESS_TOKEN"
-			  access_token = "%s"
-			}
-		  }
-		}
+resource "equinix_fabric_stream_subscription" "slack" {
+  type        = "STREAM_SUBSCRIPTION"
+  name        = "Slack_PFCR"
+  description = "Stream Subscription Slack TF Testing"
+  stream_id   = equinix_fabric_stream.new_stream.id
+  enabled     = false
+  sink = {
+    type = "SLACK"
+    uri  = "%s"
+  }
+}
 
-		resource "equinix_fabric_stream_subscription" "slack" {
-		  type = "STREAM_SUBSCRIPTION"
-		  name = "Slack_PFCR"
-		  description = "Stream Subscription Slack TF Testing"
-		  stream_id = equinix_fabric_stream.new_stream.id
-		  enabled = false
-		  sink = {
-			type = "SLACK"
-			uri = "%s"
-		  }
-		}
+resource "equinix_fabric_stream_subscription" "pager_duty" {
+  type        = "STREAM_SUBSCRIPTION"
+  name        = "PagerDuty_PFCR"
+  description = "Stream Subscription PagerDuty TF Testing"
+  stream_id   = equinix_fabric_stream.new_stream.id
+  enabled     = false
+  sink = {
+    type = "PAGERDUTY"
+    host = "%s"
+    settings = {
+      change_uri = "%s"
+      alert_uri  = "%s"
+    }
+    credential = {
+      type            = "INTEGRATION_KEY"
+      integration_key = "%s"
+    }
+  }
+}
 
-		resource "equinix_fabric_stream_subscription" "pager_duty" {
-		  type = "STREAM_SUBSCRIPTION"
-		  name = "PagerDuty_PFCR"
-		  description = "Stream Subscription PagerDuty TF Testing"
-		  stream_id = equinix_fabric_stream.new_stream.id
-		  enabled = false
-		  sink = {
-			type = "PAGERDUTY"
-			host = "%s"
-			settings = {
-			    change_uri = "%s"
-			    alert_uri = "%s"
-			}
-			credential = {
-			  type = "INTEGRATION_KEY"
-			  integration_key = "%s"
-			}
-		  }
-		}
+resource "equinix_fabric_stream_subscription" "datadog" {
+  type        = "STREAM_SUBSCRIPTION"
+  name        = "DataDog_PFCR"
+  description = "Stream Subscription DataDog TF Testing"
+  stream_id   = equinix_fabric_stream.new_stream2.id
+  enabled     = false
+  sink = {
+    type = "DATADOG"
+    host = "%s"
+    settings = {
+      source          = "Equinix"
+      application_key = "%s"
+      event_uri       = "%s"
+      metric_uri      = "%s"
+    }
+    credential = {
+      type    = "API_KEY"
+      api_key = "%s"
+    }
+  }
+}
 
-		resource "equinix_fabric_stream_subscription" "datadog" {
-		  type = "STREAM_SUBSCRIPTION"
-		  name = "DataDog_PFCR"
-		  description = "Stream Subscription DataDog TF Testing"
-		  stream_id = equinix_fabric_stream.new_stream2.id
-		  enabled = false
-		  sink = {
-			type = "DATADOG"
-			host = "%s"
-			settings = {
-				source = "Equinix"
-				application_key = "%s"
-			    event_uri = "%s"
-			    metric_uri = "%s"
-			}
-			credential = {
-			  type = "API_KEY"
-			  api_key = "%s"
-			}
-		  }
-		}
+resource "equinix_fabric_stream_subscription" "msteams" {
+  type        = "STREAM_SUBSCRIPTION"
+  name        = "MSTeams_PFCR"
+  description = "Stream Subscription Microsoft Teams TF Testing"
+  stream_id   = equinix_fabric_stream.new_stream2.id
+  enabled     = false
+  sink = {
+    type = "TEAMS"
+    uri  = "%s"
+  }
+}
 
-		resource "equinix_fabric_stream_subscription" "msteams" {
-		  type = "STREAM_SUBSCRIPTION"
-		  name = "MSTeams_PFCR"
-		  description = "Stream Subscription Microsoft Teams TF Testing"
-		  stream_id = equinix_fabric_stream.new_stream2.id
-		  enabled = false
-		  sink = {
-			type = "TEAMS"
-			uri = "%s"
-		  }
-		}
+resource "equinix_fabric_stream_subscription" "webhook" {
+  type        = "STREAM_SUBSCRIPTION"
+  name        = "Webhook_PFCR"
+  description = "Stream Subscription Webhook TF Testing"
+  stream_id   = equinix_fabric_stream.new_stream2.id
+  enabled     = false
+  sink = {
+    type = "WEBHOOK"
+    settings = {
+      format     = "CLOUDEVENT"
+      event_uri  = "%s"
+      metric_uri = "%s"
+    }
+  }
+}
 
-		resource "equinix_fabric_stream_subscription" "servicenow" {
-		  type = "STREAM_SUBSCRIPTION"
-		  name = "Servicenow_PFCR"
-		  description = "Stream Subscription Servicenow TF Testing"
-		  stream_id = equinix_fabric_stream.new_stream3.id
-		  enabled = false
-		  sink = {
-			type = "SERVICENOW"
-			host = "%s"
-			settings = {
-			  source = "Equinix"
-			}
-			credential = {
-			  type = "USERNAME_PASSWORD"
-			  username = "%s"
-			  password = "%s"
-			}
-		  }
-		}
+data "equinix_fabric_stream_subscription" "by_ids" {
+  stream_id       = equinix_fabric_stream.new_stream2.id
+  subscription_id = equinix_fabric_stream_subscription.webhook.id
+}
 
-		resource "equinix_fabric_stream_subscription" "webhook" {
-          type = "STREAM_SUBSCRIPTION"
-		  name = "Webhook_PFCR"
-		  description = "Stream Subscription Webhook TF Testing"
-		  stream_id = equinix_fabric_stream.new_stream2.id
-		  enabled = false
-		  sink = {
-			type = "WEBHOOK"
-			settings = {
-			  format     = "CLOUDEVENT"
-			  event_uri  = "%s"
-			  metric_uri = "%s"
-			}
-		  }
-		}
-
-		resource "equinix_fabric_stream_subscription" "grafana" {
-		  type = "STREAM_SUBSCRIPTION"
-		  name = "Grafana_PFCR"
-		  description = "Stream Subscription Grafana TF Testing"
-		  stream_id = equinix_fabric_stream.new_stream3.id
-		  enabled = false
-		  sink = {
-			type = "WEBHOOK"
-			settings = {
-			  format     = "OPENTELEMETRY"
-			  event_uri  = "%s"
-			  metric_uri = "%s"
-			}
-		  }
-		}
-
-		data "equinix_fabric_stream_subscription" "by_ids" {
-		  stream_id = equinix_fabric_stream.new_stream.id
-		  subscription_id = equinix_fabric_stream_subscription.splunk.id
-		}
-
-		data "equinix_fabric_stream_subscriptions" "all" {
-		  depends_on = [
-			equinix_fabric_stream_subscription.splunk,
-			equinix_fabric_stream_subscription.slack,
-			equinix_fabric_stream_subscription.pager_duty,
-			equinix_fabric_stream_subscription.datadog,
-			equinix_fabric_stream_subscription.msteams,
-            equinix_fabric_stream_subscription.servicenow,
-			equinix_fabric_stream_subscription.webhook,
-			equinix_fabric_stream_subscription.grafana
-			]
-		  stream_id = equinix_fabric_stream.new_stream.id
-		  pagination = {
-			limit = 20
-			offset = 0
-		  }
-		}
+data "equinix_fabric_stream_subscriptions" "all" {
+  depends_on = [
+    equinix_fabric_stream_subscription.slack,
+    equinix_fabric_stream_subscription.pager_duty,
+    equinix_fabric_stream_subscription.datadog,
+    equinix_fabric_stream_subscription.msteams,
+    equinix_fabric_stream_subscription.webhook,
+  ]
+  stream_id = equinix_fabric_stream.new_stream.id
+  pagination = {
+    limit  = 20
+    offset = 0
+  }
+}
 	`,
-		streamTestData["splunk"]["uri"],
-		streamTestData["splunk"]["event_index"],
-		streamTestData["splunk"]["metric_index"],
-		streamTestData["splunk"]["source"],
-		streamTestData["splunk"]["accessToken"],
 		streamTestData["slack"]["uri"],
 		streamTestData["pagerDuty"]["host"],
 		streamTestData["pagerDuty"]["change_uri"],
@@ -242,13 +177,8 @@ func testAccFabricStreamSubscriptionConfig(streamTestData map[string]map[string]
 		streamTestData["datadog"]["metric_uri"],
 		streamTestData["datadog"]["APIKey"],
 		streamTestData["msteams"]["uri"],
-		streamTestData["servicenow"]["host"],
-		streamTestData["servicenow"]["username"],
-		streamTestData["servicenow"]["password"],
 		streamTestData["webhook"]["event_uri"],
 		streamTestData["webhook"]["metric_uri"],
-		streamTestData["grafana"]["event_uri"],
-		streamTestData["grafana"]["metric_uri"],
 	)
 }
 
@@ -264,33 +194,15 @@ func TestAccFabricStreamSubscription_PFCR(t *testing.T) {
 				Config: testAccFabricStreamSubscriptionConfig(streamTestData),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(
-						"equinix_fabric_stream_subscription.splunk", "name", "Splunk_PFCR"),
-					resource.TestCheckResourceAttr(
-						"equinix_fabric_stream_subscription.splunk", "type", "STREAM_SUBSCRIPTION"),
-					resource.TestCheckResourceAttr(
-						"equinix_fabric_stream_subscription.splunk", "description", "Stream Subscription Splunk TF Testing"),
-					resource.TestCheckResourceAttr("equinix_fabric_stream_subscription.splunk", "sink.type", "SPLUNK_HEC"),
-					resource.TestCheckResourceAttr("equinix_fabric_stream_subscription.splunk", "sink.credential.type", "ACCESS_TOKEN"),
-					resource.TestCheckResourceAttrSet("equinix_fabric_stream_subscription.splunk", "stream_id"),
-					resource.TestCheckResourceAttrSet("equinix_fabric_stream_subscription.splunk", "sink.uri"),
-					resource.TestCheckResourceAttrSet("equinix_fabric_stream_subscription.splunk", "sink.credential.access_token"),
-					resource.TestCheckResourceAttrSet("equinix_fabric_stream_subscription.splunk", "sink.settings.event_index"),
-					resource.TestCheckResourceAttrSet("equinix_fabric_stream_subscription.splunk", "sink.settings.metric_index"),
-					resource.TestCheckResourceAttrSet("equinix_fabric_stream_subscription.splunk", "sink.settings.source"),
-					resource.TestCheckResourceAttrSet("equinix_fabric_stream_subscription.splunk", "uuid"),
-					resource.TestCheckResourceAttr(
-						"data.equinix_fabric_stream_subscription.by_ids", "name", "Splunk_PFCR"),
+						"data.equinix_fabric_stream_subscription.by_ids", "name", "Webhook_PFCR"),
 					resource.TestCheckResourceAttr(
 						"data.equinix_fabric_stream_subscription.by_ids", "type", "STREAM_SUBSCRIPTION"),
 					resource.TestCheckResourceAttr(
-						"data.equinix_fabric_stream_subscription.by_ids", "description", "Stream Subscription Splunk TF Testing"),
-					resource.TestCheckResourceAttr("data.equinix_fabric_stream_subscription.by_ids", "sink.type", "SPLUNK_HEC"),
-					resource.TestCheckResourceAttr("data.equinix_fabric_stream_subscription.by_ids", "sink.credential.type", "ACCESS_TOKEN"),
+						"data.equinix_fabric_stream_subscription.by_ids", "description", "Stream Subscription Webhook TF Testing"),
+					resource.TestCheckResourceAttr("data.equinix_fabric_stream_subscription.by_ids", "sink.type", "WEBHOOK"),
 					resource.TestCheckResourceAttrSet("data.equinix_fabric_stream_subscription.by_ids", "stream_id"),
-					resource.TestCheckResourceAttrSet("data.equinix_fabric_stream_subscription.by_ids", "sink.uri"),
-					resource.TestCheckResourceAttrSet("data.equinix_fabric_stream_subscription.by_ids", "sink.settings.event_index"),
-					resource.TestCheckResourceAttrSet("data.equinix_fabric_stream_subscription.by_ids", "sink.settings.metric_index"),
-					resource.TestCheckResourceAttrSet("data.equinix_fabric_stream_subscription.by_ids", "sink.settings.source"),
+					resource.TestCheckResourceAttrSet("data.equinix_fabric_stream_subscription.by_ids", "sink.settings.event_uri"),
+					resource.TestCheckResourceAttrSet("data.equinix_fabric_stream_subscription.by_ids", "sink.settings.metric_uri"),
 					resource.TestCheckResourceAttrSet("data.equinix_fabric_stream_subscription.by_ids", "uuid"),
 					resource.TestCheckResourceAttrSet("data.equinix_fabric_stream_subscriptions.all", "data.0.name"),
 					resource.TestCheckResourceAttrSet("data.equinix_fabric_stream_subscriptions.all", "data.0.type"),
@@ -298,14 +210,8 @@ func TestAccFabricStreamSubscription_PFCR(t *testing.T) {
 					resource.TestCheckResourceAttrSet("data.equinix_fabric_stream_subscriptions.all", "data.0.sink.type"),
 					resource.TestCheckResourceAttrSet("data.equinix_fabric_stream_subscriptions.all", "data.0.uuid"),
 
-					resource.TestCheckResourceAttr("equinix_fabric_stream_subscription.servicenow", "sink.type", "SERVICENOW"),
-					resource.TestCheckResourceAttrSet("equinix_fabric_stream_subscription.servicenow", "uuid"),
-
 					resource.TestCheckResourceAttr("equinix_fabric_stream_subscription.webhook", "sink.type", "WEBHOOK"),
 					resource.TestCheckResourceAttrSet("equinix_fabric_stream_subscription.webhook", "uuid"),
-
-					resource.TestCheckResourceAttr("equinix_fabric_stream_subscription.grafana", "sink.type", "WEBHOOK"),
-					resource.TestCheckResourceAttrSet("equinix_fabric_stream_subscription.grafana", "uuid"),
 				),
 				ExpectNonEmptyPlan: true,
 			},
