@@ -69,7 +69,7 @@ func (r *Resource) Create(
 		return
 	}
 
-	createTimeout, diags := plan.Timeouts.Create(ctx, 10*time.Minute)
+	createTimeout, diags := plan.Timeouts.Create(ctx, 30*time.Minute)
 	if diags.HasError() {
 		resp.Diagnostics.Append(diags...)
 		return
@@ -173,7 +173,7 @@ func (r *Resource) Update(
 		}
 	}
 
-	updateTimeout, diags := plan.Timeouts.Create(ctx, 10*time.Minute)
+	updateTimeout, diags := plan.Timeouts.Create(ctx, 30*time.Minute)
 	if diags.HasError() {
 		resp.Diagnostics.Append(diags...)
 		return
@@ -227,7 +227,7 @@ func (r *Resource) Delete(
 		}
 	}
 
-	deleteTimeout, diags := state.Timeouts.Create(ctx, 10*time.Minute)
+	deleteTimeout, diags := state.Timeouts.Create(ctx, 30*time.Minute)
 	if diags.HasError() {
 		resp.Diagnostics.Append(diags...)
 		return
