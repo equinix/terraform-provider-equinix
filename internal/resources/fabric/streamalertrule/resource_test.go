@@ -58,28 +58,6 @@ variable "zside_port_uuid" {
   type = string
 }
 
-variable "uri" {
-  type = string
-}
-
-variable "event_index" {
-  type = string
-}
-
-variable "metric_index" {
-  type = string
-}
-
-
-variable "alert_source" {
-  type = string
-}
-
-variable "access_token" {
-  type      = string
-  sensitive = true
-}
-
 variable "name" {
   type = string
 }
@@ -98,33 +76,7 @@ resource "equinix_fabric_stream" "new_stream" {
   }
 }
 
-resource "equinix_fabric_stream_subscription" "SPLUNK" {
-  depends_on = [
-    equinix_fabric_stream.new_stream
-  ]
 
-  type        = "STREAM_SUBSCRIPTION"
-  name        = "Stream_Sub_PFCR"
-  description = "Stream Subscription for Splunk PFCR"
-  stream_id   = equinix_fabric_stream.new_stream.uuid
-  enabled     = true
-  sink = {
-    type = "SPLUNK_HEC"
-    uri  = var.uri
-    settings = {
-      event_index  = var.event_index
-      metric_index = var.metric_index
-      source       = var.alert_source
-    }
-    credential = {
-      type         = "ACCESS_TOKEN"
-      access_token = var.access_token
-    }
-  }
-  lifecycle {
-    create_before_destroy = true
-  }
-}
 resource "equinix_fabric_connection" "test_connection" {
   name = "Test Connection PFCR"
   type = "EVPL_VC"
@@ -218,13 +170,6 @@ data "equinix_fabric_stream_alert_rules" "all" {
 `
 
 func TestAccFabricStreamAlertRule_PFCR(t *testing.T) {
-	streamData := testinghelpers.GetFabricStreamTestData(t)
-	uri := streamData["splunk"]["uri"]
-	accessToken := streamData["splunk"]["accessToken"]
-	eventIndex := streamData["splunk"]["event_index"]
-	metricIndex := streamData["splunk"]["metric_index"]
-	source := streamData["splunk"]["source"]
-
 	ports := testinghelpers.GetFabricEnvPorts(t)
 	var aSidePortUUID, zSidePortUUID string
 	if len(ports) > 0 {
@@ -259,11 +204,6 @@ func TestAccFabricStreamAlertRule_PFCR(t *testing.T) {
 					"aside_port_uuid": config.StringVariable(aSidePortUUID),
 					"zside_vlan":      config.IntegerVariable(zsideVlan),
 					"zside_port_uuid": config.StringVariable(zSidePortUUID),
-					"uri":             config.StringVariable(uri),
-					"event_index":     config.StringVariable(eventIndex),
-					"metric_index":    config.StringVariable(metricIndex),
-					"alert_source":    config.StringVariable(source),
-					"access_token":    config.StringVariable(accessToken),
 				},
 				ConfigStateChecks: []statecheck.StateCheck{
 					testinghelpers.ExpectKnownAttributes("equinix_fabric_stream_alert_rule.alert_rule",
@@ -336,11 +276,6 @@ func TestAccFabricStreamAlertRule_PFCR(t *testing.T) {
 					"aside_port_uuid": config.StringVariable(aSidePortUUID),
 					"zside_vlan":      config.IntegerVariable(zsideVlan),
 					"zside_port_uuid": config.StringVariable(zSidePortUUID),
-					"uri":             config.StringVariable(uri),
-					"event_index":     config.StringVariable(eventIndex),
-					"metric_index":    config.StringVariable(metricIndex),
-					"alert_source":    config.StringVariable(source),
-					"access_token":    config.StringVariable(accessToken),
 				},
 				ConfigStateChecks: []statecheck.StateCheck{
 					testinghelpers.ExpectKnownAttributes("equinix_fabric_stream_alert_rule.alert_rule",

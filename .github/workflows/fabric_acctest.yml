@@ -347,7 +347,7 @@ jobs:
         run: |
           html_file="uat_test_report.html"
           total=$(grep -c '<tr>' "$html_file" | awk '{print $1-1}')
-          failures=$(grep -c 'class="status-fail"' "$html_file")
+          failures=$(grep -c 'class="status-fail"' "$html_file" || true)
           
           message="*Results:* $((total-failures)) Passed, $failures Failures"
           echo "message<<EOF" >> $GITHUB_OUTPUT
