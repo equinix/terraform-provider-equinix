@@ -4,8 +4,6 @@ import (
 	"context"
 	"fmt"
 	"os"
-	"regexp"
-	"strings"
 	"testing"
 
 	"github.com/equinix/terraform-provider-equinix/internal/config"
@@ -50,11 +48,6 @@ var (
 	}
 )
 
-type testAccConfig struct {
-	ctx    map[string]any
-	config string
-}
-
 func init() {
 	testAccProvider = Provider()
 	testAccProviders = map[string]*schema.Provider{
@@ -96,55 +89,9 @@ func testAccPreCheck(t *testing.T) {
 	}
 }
 
-func newTestAccConfig(ctx map[string]any) *testAccConfig {
-	return &testAccConfig{
-		ctx:    ctx,
-		config: "",
-	}
-}
-
-func (t *testAccConfig) build() string {
-	return t.config
-}
-
-// nprintf returns a string with all the placeholders replaced by the values from the params map
-//
-// Deprecated: nprintf is shared between NE resource tests and has been
-// centralized ahead of those NE resources moving to separate packages.
-// Use github.com/equinix/terraform-provider-equinix/internal/nprintf.NPrintf instead
-func nprintf(format string, params map[string]any) string {
-	for key, val := range params {
-		var strVal string
-		switch val.(type) {
-		case []string:
-			r := regexp.MustCompile(`" "`)
-			strVal = r.ReplaceAllString(fmt.Sprintf("%q", val), `", "`)
-		default:
-			strVal = fmt.Sprintf("%v", val)
-		}
-		format = strings.ReplaceAll(format, "%{"+key+"}", strVal)
-	}
-	return format
-}
-
 func getFromEnv(varName string) (string, error) {
 	if v := os.Getenv(varName); v != "" {
 		return v, nil
 	}
 	return "", fmt.Errorf("environmental variable '%s' is not set", varName)
-}
-
-func getFromEnvDefault(varName string, defaultValue string) string {
-	if v := os.Getenv(varName); v != "" {
-		return v
-	}
-	return defaultValue
-}
-
-func copyMap(source map[string]any) map[string]any {
-	target := make(map[string]any)
-	for k, v := range source {
-		target[k] = v
-	}
-	return target
 }
