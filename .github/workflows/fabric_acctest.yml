@@ -136,6 +136,7 @@ jobs:
           SWEEP: "all" #Flag required to define the regions that the sweeper is to be ran in
           SWEEP_ALLOW_FAILURES: "true" #Enable to allow Sweeper Tests to continue after failures
           SWEEP_DIR: "./equinix"
+          SWEEP_TARGET: "PNFV"
         run: |
           # Added sweep-run to filter Fabric PNFV test
           go test -json $(go list ./... | grep 'internal/sweep\|equinix/equinix') -v -timeout 180m -sweep=${SWEEP} -sweep-allow-failures=${SWEEP_ALLOW_FAILURES} -sweep-run=$(grep -or 'AddTestSweepers("[^"]*"' | grep "_fabric_" | cut -d '"' -f2 | paste -s -d, -)
@@ -210,6 +211,7 @@ jobs:
           EQUINIX_API_CLIENTSECRET: ${{ secrets.EQUINIX_API_CLIENTSECRET_PFCR }}
           SWEEP: "all" #Flag required to define the regions that the sweeper is to be ran in
           SWEEP_ALLOW_FAILURES: "true" #Enable to allow Sweeper Tests to continue after failures
+          SWEEP_TARGET: "PFCR"
         run: |
           # Added sweep-run to filter Fabric PFCR test
           go test $(go list ./... | grep 'internal/sweep\|equinix/equinix') -v -timeout 180m -sweep=${SWEEP} -sweep-allow-failures=${SWEEP_ALLOW_FAILURES} -sweep-run=$(grep -or 'AddTestSweepers("[^"]*"' | grep "_fabric_" | cut -d '"' -f2 | paste -s -d, -)
@@ -292,6 +294,8 @@ jobs:
           EQUINIX_TOKEN_EXCHANGE_SCOPE: ${{ secrets.EQUINIX_STS_AUTH_SCOPE_PFCR }}
           ${{ matrix.sts_config.env_var_name }}: ${{ steps.get_id_token.outputs.id_token }}
           ${{ matrix.sts_config.set_custom_env_var && 'EQUINIX_TOKEN_EXCHANGE_SUBJECT_TOKEN_ENV_VAR' || 'SKIP' }}: ${{ matrix.sts_config.token_exchange_subject_token_env_var || '' }}
+          SWEEP_TARGET: "STS"
+
         run: |
           go test ./... --run "(TestAccFabricCreatePort2SPConnection_PFCR|TestAccCloudRouterCreateOnlyRequiredParameters_PFCR)" -v -coverprofile coverage_pfcr.txt -covermode=atomic -count 1
 
