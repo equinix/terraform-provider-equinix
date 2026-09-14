@@ -28,8 +28,8 @@ type DataSourceAllInternetAccessServicesModel struct {
 	ID         types.String                                                    `tfsdk:"id"`
 	Data       fwtypes.ListNestedObjectValueOf[BaseInternetAccessServiceModel] `tfsdk:"data"`
 	Filter     types.List                                                      `tfsdk:"filter"`
-	Pagination fwtypes.ObjectValueOf[PaginationModel]                         `tfsdk:"pagination"`
-	Sort       fwtypes.ObjectValueOf[SortModel]                               `tfsdk:"sort"`
+	Pagination fwtypes.ObjectValueOf[PaginationModel]                          `tfsdk:"pagination"`
+	Sort       fwtypes.ObjectValueOf[SortModel]                                `tfsdk:"sort"`
 }
 
 type FilterModel struct {
@@ -52,22 +52,22 @@ type SortModel struct {
 }
 
 type BaseInternetAccessServiceModel struct {
-	Href            types.String                                    `tfsdk:"href"`
-	Type            types.String                                    `tfsdk:"type"`
-	UUID            types.String                                    `tfsdk:"uuid"`
-	Name            types.String                                    `tfsdk:"name"`
-	Bandwidth       types.Int32                                     `tfsdk:"bandwidth"`
-	BandwidthCommit types.Int32                                     `tfsdk:"bandwidth_commit"`
-	State           types.String                                    `tfsdk:"state"`
-	UseCase         types.String                                    `tfsdk:"use_case"`
-	Change          fwtypes.ObjectValueOf[ChangeModel]              `tfsdk:"change"`
-	Locations       fwtypes.ListNestedObjectValueOf[LocationModel]  `tfsdk:"locations"`
-	RoutingProtocol fwtypes.ObjectValueOf[RoutingProtocolModel]     `tfsdk:"routing_protocol"`
-	Billing         fwtypes.ObjectValueOf[BillingModel]             `tfsdk:"billing"`
-	Account         fwtypes.ObjectValueOf[AccountModel]             `tfsdk:"account"`
-	Project         fwtypes.ObjectValueOf[ProjectModel]             `tfsdk:"project"`
-	Order           fwtypes.ObjectValueOf[OrderModel]               `tfsdk:"order"`
-	ChangeLog       fwtypes.ObjectValueOf[ChangeLogModel]           `tfsdk:"change_log"`
+	Href            types.String                                   `tfsdk:"href"`
+	Type            types.String                                   `tfsdk:"type"`
+	UUID            types.String                                   `tfsdk:"uuid"`
+	Name            types.String                                   `tfsdk:"name"`
+	Bandwidth       types.Int32                                    `tfsdk:"bandwidth"`
+	BandwidthCommit types.Int32                                    `tfsdk:"bandwidth_commit"`
+	State           types.String                                   `tfsdk:"state"`
+	UseCase         types.String                                   `tfsdk:"use_case"`
+	Change          fwtypes.ObjectValueOf[ChangeModel]             `tfsdk:"change"`
+	Locations       fwtypes.ListNestedObjectValueOf[LocationModel] `tfsdk:"locations"`
+	RoutingProtocol fwtypes.ObjectValueOf[RoutingProtocolModel]    `tfsdk:"routing_protocol"`
+	Billing         fwtypes.ObjectValueOf[BillingModel]            `tfsdk:"billing"`
+	Account         fwtypes.ObjectValueOf[AccountModel]            `tfsdk:"account"`
+	Project         fwtypes.ObjectValueOf[ProjectModel]            `tfsdk:"project"`
+	Order           fwtypes.ObjectValueOf[OrderModel]              `tfsdk:"order"`
+	ChangeLog       fwtypes.ObjectValueOf[ChangeLogModel]          `tfsdk:"change_log"`
 }
 
 type ChangeModel struct {
@@ -82,9 +82,9 @@ type LocationModel struct {
 }
 
 type RoutingProtocolModel struct {
-	Type           types.String                                          `tfsdk:"type"`
-	CustomerRoutes fwtypes.ListNestedObjectValueOf[CustomerRouteModel]   `tfsdk:"customer_routes"`
-	Connections    fwtypes.ListNestedObjectValueOf[ConnectionRefModel]   `tfsdk:"connections"`
+	Type           types.String                                        `tfsdk:"type"`
+	CustomerRoutes fwtypes.ListNestedObjectValueOf[CustomerRouteModel] `tfsdk:"customer_routes"`
+	Connections    fwtypes.ListNestedObjectValueOf[ConnectionRefModel] `tfsdk:"connections"`
 }
 
 type CustomerRouteModel struct {

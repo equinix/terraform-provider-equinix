@@ -22,11 +22,11 @@ type DataSourceByIDModel struct {
 // ---- datasource search ----
 
 type DataSourceAllIpBlocksModel struct {
-	ID         types.String                                     `tfsdk:"id"`
+	ID         types.String                                      `tfsdk:"id"`
 	Data       fwtypes.ListNestedObjectValueOf[BaseIpBlockModel] `tfsdk:"data"`
-	Filter     types.Object                                     `tfsdk:"filter"`
-	Pagination fwtypes.ObjectValueOf[PaginationModel]           `tfsdk:"pagination"`
-	Sort       fwtypes.ObjectValueOf[SortModel]                 `tfsdk:"sort"`
+	Filter     types.Object                                      `tfsdk:"filter"`
+	Pagination fwtypes.ObjectValueOf[PaginationModel]            `tfsdk:"pagination"`
+	Sort       fwtypes.ObjectValueOf[SortModel]                  `tfsdk:"sort"`
 }
 
 type FilterModel struct {
@@ -51,20 +51,20 @@ type SortModel struct {
 // ---- base model ----
 
 type BaseIpBlockModel struct {
-	UUID         types.String                                    `tfsdk:"uuid"`
-	Href         types.String                                    `tfsdk:"href"`
-	Type         types.String                                    `tfsdk:"type"`
-	State        types.String                                    `tfsdk:"state"`
-	Ownership    types.String                                    `tfsdk:"ownership"`
-	PrefixLength types.Int32                                     `tfsdk:"prefix_length"`
-	Prefix       types.String                                    `tfsdk:"prefix"`
-	Location     fwtypes.ObjectValueOf[LocationModel]            `tfsdk:"location"`
-	Order        fwtypes.ObjectValueOf[OrderModel]               `tfsdk:"order"`
-	Account      fwtypes.ObjectValueOf[AccountModel]             `tfsdk:"account"`
-	Project      fwtypes.ObjectValueOf[ProjectModel]             `tfsdk:"project"`
-	Assets       fwtypes.ListNestedObjectValueOf[AssetModel]     `tfsdk:"assets"`
-	Change       fwtypes.ObjectValueOf[ChangeModel]              `tfsdk:"change"`
-	ChangeLog    fwtypes.ObjectValueOf[ChangeLogModel]           `tfsdk:"change_log"`
+	UUID         types.String                                `tfsdk:"uuid"`
+	Href         types.String                                `tfsdk:"href"`
+	Type         types.String                                `tfsdk:"type"`
+	State        types.String                                `tfsdk:"state"`
+	Ownership    types.String                                `tfsdk:"ownership"`
+	PrefixLength types.Int32                                 `tfsdk:"prefix_length"`
+	Prefix       types.String                                `tfsdk:"prefix"`
+	Location     fwtypes.ObjectValueOf[LocationModel]        `tfsdk:"location"`
+	Order        fwtypes.ObjectValueOf[OrderModel]           `tfsdk:"order"`
+	Account      fwtypes.ObjectValueOf[AccountModel]         `tfsdk:"account"`
+	Project      fwtypes.ObjectValueOf[ProjectModel]         `tfsdk:"project"`
+	Assets       fwtypes.ListNestedObjectValueOf[AssetModel] `tfsdk:"assets"`
+	Change       fwtypes.ObjectValueOf[ChangeModel]          `tfsdk:"change"`
+	ChangeLog    fwtypes.ObjectValueOf[ChangeLogModel]       `tfsdk:"change_log"`
 }
 
 type LocationModel struct {

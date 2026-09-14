@@ -9,12 +9,12 @@ import (
 )
 
 const (
-	FabricDedicatedPortEnvVar          = "TF_ACC_FABRIC_DEDICATED_PORTS"
-	FabricConnectionsTestDataEnvVar    = "TF_ACC_FABRIC_CONNECTIONS_TEST_DATA"
-	FabricSubscriptionEnvVar           = "TF_ACC_FABRIC_MARKET_PLACE_SUBSCRIPTION_ID"
-	FabricStreamEnvVar                 = "TF_ACC_FABRIC_STREAM_TEST_DATA"
-	FabricIpBlockEnvVar                = "TF_ACC_FABRIC_IP_BLOCK_TEST_DATA"
-	FabricInternetAccessEnvVar         = "TF_ACC_FABRIC_INTERNET_ACCESS_TEST_DATA"
+	FabricDedicatedPortEnvVar       = "TF_ACC_FABRIC_DEDICATED_PORTS"
+	FabricConnectionsTestDataEnvVar = "TF_ACC_FABRIC_CONNECTIONS_TEST_DATA"
+	FabricSubscriptionEnvVar        = "TF_ACC_FABRIC_MARKET_PLACE_SUBSCRIPTION_ID"
+	FabricStreamEnvVar              = "TF_ACC_FABRIC_STREAM_TEST_DATA"
+	FabricIpBlockEnvVar             = "TF_ACC_FABRIC_IP_BLOCK_TEST_DATA"
+	FabricInternetAccessEnvVar      = "TF_ACC_FABRIC_INTERNET_ACCESS_TEST_DATA"
 )
 
 type EnvPorts map[string]map[string][]fabricv4.Port
