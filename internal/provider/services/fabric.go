@@ -4,6 +4,7 @@ package services
 import (
 	advertisedRoutes "github.com/equinix/terraform-provider-equinix/internal/resources/fabric/advertised_route"
 	"github.com/equinix/terraform-provider-equinix/internal/resources/fabric/connectionrouteaggregation"
+	ipblock "github.com/equinix/terraform-provider-equinix/internal/resources/fabric/ip_block"
 	"github.com/equinix/terraform-provider-equinix/internal/resources/fabric/metro"
 	"github.com/equinix/terraform-provider-equinix/internal/resources/fabric/port"
 	precisiontime "github.com/equinix/terraform-provider-equinix/internal/resources/fabric/precision_time"
@@ -57,5 +58,7 @@ func FabricDatasources() []func() datasource.DataSource {
 		streamalertrule.NewDataSourceByStreamAlertRuleIDs,
 		advertisedRoutes.NewDataSourceAdvertisedRoutes,
 		receivedRoutes.NewDataSourceReceivedRoutes,
+		ipblock.NewDataSourceByIpBlockID,
+		ipblock.NewDataSourceAllIpBlocks,
 	}
 }
