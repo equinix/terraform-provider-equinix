@@ -10,6 +10,7 @@ import (
 func TestMain(m *testing.M) {
 	// Register sweepers for individual resource packages
 	services.AddFabricTestSweepers()
+	services.AddNetworkEdgeTestSweepers()
 
 	resource.TestMain(m)
 }
