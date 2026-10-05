@@ -108,14 +108,14 @@ type ChangeLogModel struct {
 type ResourceModel struct {
 	ID           types.String                                `tfsdk:"id"`
 	Timeouts     timeouts.Value                              `tfsdk:"timeouts"`
-	UUID         types.String                               `tfsdk:"uuid"`
-	Href         types.String                               `tfsdk:"href"`
-	Type         types.String                               `tfsdk:"type"`
-	State        types.String                               `tfsdk:"state"`
-	Ownership    types.String                               `tfsdk:"ownership"`
-	PrefixLength types.Int32                                `tfsdk:"prefix_length"`
-	Prefix       types.String                               `tfsdk:"prefix"`
-	Location     fwtypes.ObjectValueOf[LocationModel]       `tfsdk:"location"`
+	UUID         types.String                                `tfsdk:"uuid"`
+	Href         types.String                                `tfsdk:"href"`
+	Type         types.String                                `tfsdk:"type"`
+	State        types.String                                `tfsdk:"state"`
+	Ownership    types.String                                `tfsdk:"ownership"`
+	PrefixLength types.Int32                                 `tfsdk:"prefix_length"`
+	Prefix       types.String                                `tfsdk:"prefix"`
+	Location     fwtypes.ObjectValueOf[LocationModel]        `tfsdk:"location"`
 	Project      fwtypes.ObjectValueOf[ResourceProjectModel] `tfsdk:"project"`
 	Account      fwtypes.ObjectValueOf[AccountModel]         `tfsdk:"account"`
 	Assets       fwtypes.ListNestedObjectValueOf[AssetModel] `tfsdk:"assets"`
