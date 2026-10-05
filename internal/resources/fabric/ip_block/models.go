@@ -5,6 +5,7 @@ import (
 
 	"github.com/equinix/equinix-sdk-go/services/fabricv4"
 	fwtypes "github.com/equinix/terraform-provider-equinix/internal/framework/types"
+	"github.com/hashicorp/terraform-plugin-framework-timeouts/resource/timeouts"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 )
@@ -100,6 +101,31 @@ type ChangeLogModel struct {
 	CreatedDateTime types.String `tfsdk:"created_date_time"`
 	UpdatedDateTime types.String `tfsdk:"updated_date_time"`
 	DeletedDateTime types.String `tfsdk:"deleted_date_time"`
+}
+
+// ---- resource model ----
+
+type ResourceModel struct {
+	ID           types.String                                `tfsdk:"id"`
+	Timeouts     timeouts.Value                              `tfsdk:"timeouts"`
+	UUID         types.String                               `tfsdk:"uuid"`
+	Href         types.String                               `tfsdk:"href"`
+	Type         types.String                               `tfsdk:"type"`
+	State        types.String                               `tfsdk:"state"`
+	Ownership    types.String                               `tfsdk:"ownership"`
+	PrefixLength types.Int32                                `tfsdk:"prefix_length"`
+	Prefix       types.String                               `tfsdk:"prefix"`
+	Location     fwtypes.ObjectValueOf[LocationModel]       `tfsdk:"location"`
+	Project      fwtypes.ObjectValueOf[ResourceProjectModel] `tfsdk:"project"`
+	Account      fwtypes.ObjectValueOf[AccountModel]         `tfsdk:"account"`
+	Assets       fwtypes.ListNestedObjectValueOf[AssetModel] `tfsdk:"assets"`
+	Change       fwtypes.ObjectValueOf[ChangeModel]          `tfsdk:"change"`
+	ChangeLog    fwtypes.ObjectValueOf[ChangeLogModel]       `tfsdk:"change_log"`
+	Order        fwtypes.ObjectValueOf[OrderModel]           `tfsdk:"order"`
+}
+
+type ResourceProjectModel struct {
+	ProjectID types.String `tfsdk:"project_id"`
 }
 
 // ---- parse functions ----
@@ -204,6 +230,84 @@ func (m *BaseIpBlockModel) parse(ctx context.Context, ipBlock *fabricv4.IpBlock)
 	m.Change = fwtypes.NewObjectValueOf[ChangeModel](ctx, &ChangeModel{
 		Href: types.StringValue(change.GetHref()),
 	})
+
+	cl := ipBlock.GetChangeLog()
+	clModel := ChangeLogModel{
+		CreatedDateTime: types.StringValue(cl.GetCreatedDateTime().Format(timeFormat)),
+	}
+	if updatedAt, ok := cl.GetUpdatedDateTimeOk(); ok && updatedAt != nil {
+		clModel.UpdatedDateTime = types.StringValue(updatedAt.Format(timeFormat))
+	} else {
+		clModel.UpdatedDateTime = types.StringNull()
+	}
+	if deletedAt, ok := cl.GetDeletedDateTimeOk(); ok && deletedAt != nil {
+		clModel.DeletedDateTime = types.StringValue(deletedAt.Format(timeFormat))
+	} else {
+		clModel.DeletedDateTime = types.StringNull()
+	}
+	m.ChangeLog = fwtypes.NewObjectValueOf[ChangeLogModel](ctx, &clModel)
+
+	return diags
+}
+
+func (m *ResourceModel) parse(ctx context.Context, ipBlock *fabricv4.IpBlock) diag.Diagnostics {
+	var diags diag.Diagnostics
+
+	m.ID = types.StringValue(ipBlock.GetUuid())
+	m.UUID = types.StringValue(ipBlock.GetUuid())
+	m.Href = types.StringValue(ipBlock.GetHref())
+	m.Type = types.StringValue(string(ipBlock.GetType()))
+	m.State = types.StringValue(string(ipBlock.GetState()))
+	m.Ownership = types.StringValue(string(ipBlock.GetOwnership()))
+	m.PrefixLength = types.Int32Value(ipBlock.GetPrefixLength())
+	m.Prefix = types.StringValue(ipBlock.GetPrefix())
+
+	if loc, ok := ipBlock.GetLocationOk(); ok && loc != nil {
+		m.Location = fwtypes.NewObjectValueOf[LocationModel](ctx, &LocationModel{
+			MetroHref: types.StringValue(loc.GetMetroHref()),
+			MetroCode: types.StringValue(loc.GetMetroCode()),
+		})
+	} else {
+		m.Location = fwtypes.NewObjectValueOfNull[LocationModel](ctx)
+	}
+
+	project := ipBlock.GetProject()
+	m.Project = fwtypes.NewObjectValueOf[ResourceProjectModel](ctx, &ResourceProjectModel{
+		ProjectID: types.StringValue(project.GetProjectId()),
+	})
+
+	if account, ok := ipBlock.GetAccountOk(); ok && account != nil {
+		m.Account = fwtypes.NewObjectValueOf[AccountModel](ctx, &AccountModel{
+			AccountNumber: types.StringValue(account.GetAccountNumber()),
+		})
+	} else {
+		m.Account = fwtypes.NewObjectValueOfNull[AccountModel](ctx)
+	}
+
+	assets := ipBlock.GetAssets()
+	assetModels := make([]*AssetModel, len(assets))
+	for i, asset := range assets {
+		assetModels[i] = &AssetModel{
+			Type: types.StringValue(string(asset.GetType())),
+			UUID: types.StringValue(asset.GetUuid()),
+			Href: types.StringValue(asset.GetHref()),
+		}
+	}
+	m.Assets = fwtypes.NewListNestedObjectValueOfSlice[AssetModel](ctx, assetModels)
+
+	change := ipBlock.GetChange()
+	m.Change = fwtypes.NewObjectValueOf[ChangeModel](ctx, &ChangeModel{
+		Href: types.StringValue(change.GetHref()),
+	})
+
+	if order, ok := ipBlock.GetOrderOk(); ok && order != nil {
+		m.Order = fwtypes.NewObjectValueOf[OrderModel](ctx, &OrderModel{
+			Href:        types.StringValue(order.GetHref()),
+			OrderNumber: types.StringValue(order.GetOrderNumber()),
+		})
+	} else {
+		m.Order = fwtypes.NewObjectValueOfNull[OrderModel](ctx)
+	}
 
 	cl := ipBlock.GetChangeLog()
 	clModel := ChangeLogModel{
