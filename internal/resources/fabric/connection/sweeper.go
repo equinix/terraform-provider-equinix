@@ -12,7 +12,6 @@ import (
 	equinix_errors "github.com/equinix/terraform-provider-equinix/internal/errors"
 	"github.com/equinix/terraform-provider-equinix/internal/fabric/sweep"
 	testinghelpers "github.com/equinix/terraform-provider-equinix/internal/fabric/testing_helpers"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/retry"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 )
 
@@ -113,45 +112,17 @@ func testSweepConnections(region string) error {
 	// (cloud routers, networks) fail with "active connections" errors unless
 	// the connections have finished deprovisioning first.
 	for _, uuid := range deleted {
-		if err := waitForConnectionDeprovisioned(ctx, fabric, uuid); err != nil {
+		_, err := waitForConnection(ctx, fabric, uuid,
+			sweepableConnectionStates,
+			[]string{string(fabricv4.CONNECTIONSTATE_DEPROVISIONED)},
+			connectionDeprovisionTimeout,
+			withNotFoundAs(string(fabricv4.CONNECTIONSTATE_DEPROVISIONED)),
+			withPollInterval(10*time.Second),
+		)
+		if err != nil {
 			errs = append(errs, fmt.Errorf("error waiting for fabric connection %s to deprovision: %s", uuid, err))
 		}
 	}
 
 	return errors.Join(errs...)
-}
-
-// isConnectionAlreadyDeleted reports whether err is the API's
-// EQ-3142509 "Connection already deleted" validation error.
-func isConnectionAlreadyDeleted(err error) bool {
-	var genericError *fabricv4.GenericOpenAPIError
-	if !errors.As(err, &genericError) {
-		return false
-	}
-	fabricErrs, ok := genericError.Model().([]fabricv4.Error)
-	return ok && equinix_errors.HasErrorCode(fabricErrs, "EQ-3142509")
-}
-
-func waitForConnectionDeprovisioned(ctx context.Context, fabric *fabricv4.APIClient, uuid string) error {
-	stateConf := &retry.StateChangeConf{
-		Pending: sweepableConnectionStates,
-		Target: []string{
-			string(fabricv4.CONNECTIONSTATE_DEPROVISIONED),
-		},
-		Refresh: func() (any, string, error) {
-			conn, resp, err := fabric.ConnectionsApi.GetConnectionByUuid(ctx, uuid).Execute()
-			if err != nil {
-				if resp != nil && resp.StatusCode == http.StatusNotFound {
-					return uuid, string(fabricv4.CONNECTIONSTATE_DEPROVISIONED), nil
-				}
-				return nil, "", equinix_errors.FormatFabricError(err)
-			}
-			return conn, string(conn.GetState()), nil
-		},
-		Timeout:    connectionDeprovisionTimeout,
-		Delay:      10 * time.Second,
-		MinTimeout: 10 * time.Second,
-	}
-	_, err := stateConf.WaitForStateContext(ctx)
-	return err
 }

@@ -2,8 +2,10 @@ package connection
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"log"
+	"net/http"
 	"slices"
 	"strings"
 	"time"
@@ -251,129 +253,134 @@ func resourceFabricConnectionUpdate(ctx context.Context, d *schema.ResourceData,
 	return append(diags, setFabricMap(d, updatedConn)...)
 }
 
-func waitForConnectionUpdateCompletion(ctx context.Context, uuid string, meta any, d *schema.ResourceData, timeout time.Duration) (*fabricv4.Connection, error) {
-	log.Printf("[DEBUG] Waiting for connection update to complete, uuid %s", uuid)
+// connectionWait holds the knobs that differ between connection waiters.
+type connectionWait struct {
+	status        func(*fabricv4.Connection) string
+	notFoundState string
+	pollInterval  time.Duration
+}
+
+// connectionWaitOption customizes waitForConnection.
+type connectionWaitOption func(*connectionWait)
+
+// withConnectionStatus reads the polled status from somewhere other than the
+// connection state (e.g. operation.providerStatus or change.status).
+func withConnectionStatus(status func(*fabricv4.Connection) string) connectionWaitOption {
+	return func(w *connectionWait) { w.status = status }
+}
+
+// withNotFoundAs reports a 404 as the given status instead of failing the wait.
+func withNotFoundAs(status string) connectionWaitOption {
+	return func(w *connectionWait) { w.notFoundState = status }
+}
+
+// withPollInterval overrides the initial delay and minimum poll interval.
+func withPollInterval(interval time.Duration) connectionWaitOption {
+	return func(w *connectionWait) { w.pollInterval = interval }
+}
+
+// waitForConnection polls the connection until its status (the connection
+// state, unless overridden) reaches one of target. An empty pending list
+// keeps waiting through any non-target status.
+func waitForConnection(ctx context.Context, client *fabricv4.APIClient, uuid string, pending, target []string, timeout time.Duration, opts ...connectionWaitOption) (*fabricv4.Connection, error) {
+	w := connectionWait{
+		status:       func(c *fabricv4.Connection) string { return string(c.GetState()) },
+		pollInterval: 30 * time.Second,
+	}
+	for _, opt := range opts {
+		opt(&w)
+	}
+
 	stateConf := &retry.StateChangeConf{
-		Target: []string{"COMPLETED", "SUBMITTED_FOR_APPROVAL"},
+		Pending: pending,
+		Target:  target,
 		Refresh: func() (any, string, error) {
-			client := meta.(*config.Config).NewFabricClientForSDK(ctx, d)
-			dbConn, _, err := client.ConnectionsApi.GetConnectionByUuid(ctx, uuid).Execute()
+			dbConn, resp, err := client.ConnectionsApi.GetConnectionByUuid(ctx, uuid).Execute()
 			if err != nil {
+				if w.notFoundState != "" && resp != nil && resp.StatusCode == http.StatusNotFound {
+					return &fabricv4.Connection{}, w.notFoundState, nil
+				}
 				return "", "", equinix_errors.FormatFabricError(err)
 			}
-			updatableState := ""
-			change := dbConn.GetChange()
-			status := change.GetStatus()
-			if string(status) == "COMPLETED" {
-				updatableState = string(status)
-			}
-			return dbConn, updatableState, nil
+			return dbConn, w.status(dbConn), nil
 		},
 		Timeout:    timeout,
-		Delay:      30 * time.Second,
-		MinTimeout: 30 * time.Second,
+		Delay:      w.pollInterval,
+		MinTimeout: w.pollInterval,
 	}
 
 	inter, err := stateConf.WaitForStateContext(ctx)
-	var dbConn *fabricv4.Connection
-
-	if err == nil {
-		dbConn = inter.(*fabricv4.Connection)
+	if err != nil {
+		return nil, err
 	}
-	return dbConn, err
+	return inter.(*fabricv4.Connection), nil
+}
+
+func waitForConnectionUpdateCompletion(ctx context.Context, uuid string, meta any, d *schema.ResourceData, timeout time.Duration) (*fabricv4.Connection, error) {
+	log.Printf("[DEBUG] Waiting for connection update to complete, uuid %s", uuid)
+	client := meta.(*config.Config).NewFabricClientForSDK(ctx, d)
+	return waitForConnection(ctx, client, uuid,
+		nil,
+		[]string{"COMPLETED", "SUBMITTED_FOR_APPROVAL"},
+		timeout,
+		withConnectionStatus(func(c *fabricv4.Connection) string {
+			change := c.GetChange()
+			if status := string(change.GetStatus()); status == "COMPLETED" {
+				return status
+			}
+			return ""
+		}),
+	)
 }
 
 func waitUntilConnectionIsCreated(ctx context.Context, uuid string, meta any, d *schema.ResourceData, timeout time.Duration) error {
 	log.Printf("Waiting for connection to be created, uuid %s", uuid)
-	stateConf := &retry.StateChangeConf{
-		Pending: []string{
+	client := meta.(*config.Config).NewFabricClientForSDK(ctx, d)
+	_, err := waitForConnection(ctx, client, uuid,
+		[]string{
 			string(fabricv4.CONNECTIONSTATE_PROVISIONING),
 		},
-		Target: []string{
+		[]string{
 			string(fabricv4.CONNECTIONSTATE_PENDING),
 			string(fabricv4.CONNECTIONSTATE_PROVISIONED),
 			string(fabricv4.CONNECTIONSTATE_ACTIVE),
 		},
-		Refresh: func() (any, string, error) {
-			client := meta.(*config.Config).NewFabricClientForSDK(ctx, d)
-			dbConn, _, err := client.ConnectionsApi.GetConnectionByUuid(ctx, uuid).Execute()
-			if err != nil {
-				return "", "", equinix_errors.FormatFabricError(err)
-			}
-			return dbConn, string(dbConn.GetState()), nil
-		},
-		Timeout:    timeout,
-		Delay:      30 * time.Second,
-		MinTimeout: 30 * time.Second,
-	}
-
-	_, err := stateConf.WaitForStateContext(ctx)
-
+		timeout,
+	)
 	return err
 }
 
 func waitForConnectionProviderStatusChange(ctx context.Context, uuid string, meta any, d *schema.ResourceData, timeout time.Duration) (*fabricv4.Connection, error) {
 	log.Printf("DEBUG: wating for provider status to update. Connection uuid: %s", uuid)
-	stateConf := &retry.StateChangeConf{
-		Pending: []string{
+	client := meta.(*config.Config).NewFabricClientForSDK(ctx, d)
+	return waitForConnection(ctx, client, uuid,
+		[]string{
 			string(fabricv4.PROVIDERSTATUS_PENDING_APPROVAL),
 			string(fabricv4.PROVIDERSTATUS_PROVISIONING),
 		},
-		Target: []string{
+		[]string{
 			string(fabricv4.PROVIDERSTATUS_PROVISIONED),
 		},
-		Refresh: func() (any, string, error) {
-			client := meta.(*config.Config).NewFabricClientForSDK(ctx, d)
-			dbConn, _, err := client.ConnectionsApi.GetConnectionByUuid(ctx, uuid).Execute()
-			if err != nil {
-				return "", "", equinix_errors.FormatFabricError(err)
-			}
-			operation := dbConn.GetOperation()
-			providerStatus := operation.GetProviderStatus()
-			return dbConn, string(providerStatus), nil
-		},
-		Timeout:    timeout,
-		Delay:      30 * time.Second,
-		MinTimeout: 30 * time.Second,
-	}
-
-	inter, err := stateConf.WaitForStateContext(ctx)
-	var dbConn *fabricv4.Connection
-
-	if err == nil {
-		dbConn = inter.(*fabricv4.Connection)
-	}
-	return dbConn, err
+		timeout,
+		withConnectionStatus(func(c *fabricv4.Connection) string {
+			operation := c.GetOperation()
+			return string(operation.GetProviderStatus())
+		}),
+	)
 }
 
 func verifyConnectionCreated(ctx context.Context, uuid string, meta any, d *schema.ResourceData, timeout time.Duration) (*fabricv4.Connection, error) {
 	log.Printf("Waiting for the connection to be in created state, uuid %s", uuid)
-	stateConf := &retry.StateChangeConf{
-		Target: []string{
+	client := meta.(*config.Config).NewFabricClientForSDK(ctx, d)
+	return waitForConnection(ctx, client, uuid,
+		nil,
+		[]string{
 			string(fabricv4.CONNECTIONSTATE_ACTIVE),
 			string(fabricv4.CONNECTIONSTATE_PROVISIONED),
 			string(fabricv4.CONNECTIONSTATE_PENDING),
 		},
-		Refresh: func() (any, string, error) {
-			client := meta.(*config.Config).NewFabricClientForSDK(ctx, d)
-			dbConn, _, err := client.ConnectionsApi.GetConnectionByUuid(ctx, uuid).Execute()
-			if err != nil {
-				return "", "", equinix_errors.FormatFabricError(err)
-			}
-			return dbConn, string(dbConn.GetState()), nil
-		},
-		Timeout:    timeout,
-		Delay:      30 * time.Second,
-		MinTimeout: 30 * time.Second,
-	}
-
-	inter, err := stateConf.WaitForStateContext(ctx)
-	var dbConn *fabricv4.Connection
-
-	if err == nil {
-		dbConn = inter.(*fabricv4.Connection)
-	}
-	return dbConn, err
+		timeout,
+	)
 }
 
 func resourceFabricConnectionDelete(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
@@ -382,13 +389,8 @@ func resourceFabricConnectionDelete(ctx context.Context, d *schema.ResourceData,
 	start := time.Now()
 	_, _, err := client.ConnectionsApi.DeleteConnectionByUuid(ctx, d.Id()).Execute()
 	if err != nil {
-		if genericError, ok := err.(*fabricv4.GenericOpenAPIError); ok {
-			if fabricErrs, ok := genericError.Model().([]fabricv4.Error); ok {
-				// EQ-3142509 = Connection already deleted
-				if equinix_errors.HasErrorCode(fabricErrs, "EQ-3142509") {
-					return diags
-				}
-			}
+		if isConnectionAlreadyDeleted(err) {
+			return diags
 		}
 		return diag.FromErr(equinix_errors.FormatFabricError(err))
 	}
@@ -404,29 +406,29 @@ func resourceFabricConnectionDelete(ctx context.Context, d *schema.ResourceData,
 // WaitUntilConnectionDeprovisioned waits until the connection is in DEPROVISIONED state, which indicates that the connection has been deleted successfully. This is required as the API allows deletion of the resource, but the actual resource gets deleted only after it is in DEPROVISIONED state.
 func WaitUntilConnectionDeprovisioned(ctx context.Context, uuid string, meta any, d *schema.ResourceData, timeout time.Duration) error {
 	log.Printf("Waiting for connection to be deprovisioned, uuid %s", uuid)
-	stateConf := &retry.StateChangeConf{
-		Pending: []string{
+	client := meta.(*config.Config).NewFabricClientForSDK(ctx, d)
+	_, err := waitForConnection(ctx, client, uuid,
+		[]string{
 			string(fabricv4.CONNECTIONSTATE_DEPROVISIONING),
 			string(fabricv4.CONNECTIONSTATE_ACTIVE),
 			string(fabricv4.CONNECTIONSTATE_PROVISIONED),
 			string(fabricv4.CONNECTIONSTATE_PENDING),
 		},
-		Target: []string{
+		[]string{
 			string(fabricv4.CONNECTIONSTATE_DEPROVISIONED),
 		},
-		Refresh: func() (any, string, error) {
-			client := meta.(*config.Config).NewFabricClientForSDK(ctx, d)
-			dbConn, _, err := client.ConnectionsApi.GetConnectionByUuid(ctx, uuid).Execute()
-			if err != nil {
-				return "", "", equinix_errors.FormatFabricError(err)
-			}
-			return dbConn, string(dbConn.GetState()), nil
-		},
-		Timeout:    timeout,
-		Delay:      30 * time.Second,
-		MinTimeout: 30 * time.Second,
-	}
-
-	_, err := stateConf.WaitForStateContext(ctx)
+		timeout,
+	)
 	return err
+}
+
+// isConnectionAlreadyDeleted reports whether err is the API's
+// EQ-3142509 "Connection already deleted" validation error.
+func isConnectionAlreadyDeleted(err error) bool {
+	var genericError *fabricv4.GenericOpenAPIError
+	if !errors.As(err, &genericError) {
+		return false
+	}
+	fabricErrs, ok := genericError.Model().([]fabricv4.Error)
+	return ok && equinix_errors.HasErrorCode(fabricErrs, "EQ-3142509")
 }
