@@ -15,21 +15,29 @@ import (
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 )
 
-// sweepableConnectionStates are the states a connection can be in while it
-// still counts against its dependents (cloud routers, networks, ports).
-// Connections stuck mid-provisioning block those deletes just like
-// provisioned ones, so they are swept too. DEPROVISIONING connections are
-// not deleted again but are waited on.
-var sweepableConnectionStates = []string{
+// sweepableConnectionSearchStates are the states a connection can be in
+// while it still counts against its dependents (cloud routers, networks,
+// ports). Connections stuck mid-provisioning block those deletes just like
+// active ones, so they are swept too. DEPROVISIONING connections are not
+// deleted again but are waited on.
+//
+// The connections search only accepts a subset of fabricv4.ConnectionState
+// (it rejects PROVISIONED and REPROVISIONING, which GET can still return).
+var sweepableConnectionSearchStates = []string{
 	string(fabricv4.CONNECTIONSTATE_ACTIVE),
 	string(fabricv4.CONNECTIONSTATE_DEPROVISIONING),
 	string(fabricv4.CONNECTIONSTATE_DRAFT),
 	string(fabricv4.CONNECTIONSTATE_FAILED),
 	string(fabricv4.CONNECTIONSTATE_PENDING),
-	string(fabricv4.CONNECTIONSTATE_PROVISIONED),
 	string(fabricv4.CONNECTIONSTATE_PROVISIONING),
-	string(fabricv4.CONNECTIONSTATE_REPROVISIONING),
 }
+
+// deprovisionPendingStates are the states GET may report while a swept
+// connection is on its way to DEPROVISIONED.
+var deprovisionPendingStates = append([]string{
+	string(fabricv4.CONNECTIONSTATE_PROVISIONED),
+	string(fabricv4.CONNECTIONSTATE_REPROVISIONING),
+}, sweepableConnectionSearchStates...)
 
 const connectionDeprovisionTimeout = 15 * time.Minute
 
@@ -72,7 +80,7 @@ func testSweepConnections(region string) error {
 				{
 					Property: &state,
 					Operator: &inOperator,
-					Values:   sweepableConnectionStates,
+					Values:   sweepableConnectionSearchStates,
 				},
 			},
 		},
@@ -113,7 +121,7 @@ func testSweepConnections(region string) error {
 	// the connections have finished deprovisioning first.
 	for _, uuid := range deleted {
 		_, err := waitForConnection(ctx, fabric, uuid,
-			sweepableConnectionStates,
+			deprovisionPendingStates,
 			[]string{string(fabricv4.CONNECTIONSTATE_DEPROVISIONED)},
 			connectionDeprovisionTimeout,
 			withNotFoundAs(string(fabricv4.CONNECTIONSTATE_DEPROVISIONED)),
