@@ -172,6 +172,7 @@ func sweepConnection(ctx context.Context, fabric *fabricv4.APIClient, connection
 		}
 	}
 
+	log.Printf("[DEBUG] Waiting for Connection %s (%s) to deprovision", name, uuid)
 	_, err := waitForConnection(ctx, fabric, uuid,
 		deprovisionPendingStates,
 		[]string{string(fabricv4.CONNECTIONSTATE_DEPROVISIONED)},
