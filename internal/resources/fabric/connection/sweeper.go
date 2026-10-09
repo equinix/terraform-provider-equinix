@@ -6,12 +6,14 @@ import (
 	"fmt"
 	"log"
 	"net/http"
+	"sync"
 	"time"
 
 	"github.com/equinix/equinix-sdk-go/services/fabricv4"
 	equinix_errors "github.com/equinix/terraform-provider-equinix/internal/errors"
 	"github.com/equinix/terraform-provider-equinix/internal/fabric/sweep"
 	testinghelpers "github.com/equinix/terraform-provider-equinix/internal/fabric/testing_helpers"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/retry"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 )
 
@@ -39,7 +41,23 @@ var deprovisionPendingStates = append([]string{
 	string(fabricv4.CONNECTIONSTATE_REPROVISIONING),
 }, sweepableConnectionSearchStates...)
 
-const connectionDeprovisionTimeout = 15 * time.Minute
+// connectionSweepTimeout bounds the whole connection sweep. Connections are
+// swept concurrently, so this is the budget for the slowest one, not for
+// each of them in turn.
+const connectionSweepTimeout = 15 * time.Minute
+
+// connectionSweepPollInterval is how often deprovisioning is polled.
+var connectionSweepPollInterval = 10 * time.Second
+
+// remainingSweepTime returns how long until ctx's deadline, less a margin so
+// that retry/wait timeouts fire (and report the last state) before ctx does.
+func remainingSweepTime(ctx context.Context) time.Duration {
+	deadline, ok := ctx.Deadline()
+	if !ok {
+		return connectionSweepTimeout
+	}
+	return time.Until(deadline) - time.Second
+}
 
 func AddTestSweeper() {
 	resource.AddTestSweepers("equinix_fabric_connection", &resource.Sweeper{
@@ -94,43 +112,75 @@ func testSweepConnections(region string) error {
 		return fmt.Errorf("error getting connections list for sweeping fabric connections: %s", err)
 	}
 
-	var deleted []string
+	ctx, cancel := context.WithTimeout(ctx, connectionSweepTimeout)
+	defer cancel()
+
+	var (
+		wg sync.WaitGroup
+		mu sync.Mutex
+	)
 	for _, connection := range fabricConnections.Data {
 		if !sweep.IsSweepableFabricTestResource(connection.GetName()) {
 			continue
 		}
-		if connection.GetState() == fabricv4.CONNECTIONSTATE_DEPROVISIONING {
-			deleted = append(deleted, connection.GetUuid())
-			continue
-		}
-		log.Printf("[DEBUG] Deleting Connection: %s", connection.GetName())
-		_, resp, err := fabric.ConnectionsApi.DeleteConnectionByUuid(ctx, connection.GetUuid()).Execute()
-		if isConnectionAlreadyDeleted(err) {
-			log.Printf("[DEBUG] Connection %s (%s) already deleted", connection.GetName(), connection.GetUuid())
-			continue
-		}
-		if equinix_errors.IgnoreHttpResponseErrors(http.StatusForbidden, http.StatusNotFound)(resp, err) != nil {
-			errs = append(errs, fmt.Errorf("error deleting fabric connection: %s", err))
-			continue
-		}
-		deleted = append(deleted, connection.GetUuid())
+		wg.Add(1)
+		go func(connection fabricv4.Connection) {
+			defer wg.Done()
+			if err := sweepConnection(ctx, fabric, connection); err != nil {
+				mu.Lock()
+				errs = append(errs, err)
+				mu.Unlock()
+			}
+		}(connection)
 	}
-
-	// Connection deletes are asynchronous. Sweepers that depend on this one
-	// (cloud routers, networks) fail with "active connections" errors unless
-	// the connections have finished deprovisioning first.
-	for _, uuid := range deleted {
-		_, err := waitForConnection(ctx, fabric, uuid,
-			deprovisionPendingStates,
-			[]string{string(fabricv4.CONNECTIONSTATE_DEPROVISIONED)},
-			connectionDeprovisionTimeout,
-			withNotFoundAs(string(fabricv4.CONNECTIONSTATE_DEPROVISIONED)),
-			withPollInterval(10*time.Second),
-		)
-		if err != nil {
-			errs = append(errs, fmt.Errorf("error waiting for fabric connection %s to deprovision: %s", uuid, err))
-		}
-	}
+	wg.Wait()
 
 	return errors.Join(errs...)
+}
+
+// sweepConnection deletes a connection and waits for it to finish
+// deprovisioning, so that sweepers depending on this one (cloud routers,
+// networks) don't fail with "active connections" errors. Deletes rejected
+// because the connection is mid-operation are retried until ctx expires.
+func sweepConnection(ctx context.Context, fabric *fabricv4.APIClient, connection fabricv4.Connection) error {
+	name, uuid := connection.GetName(), connection.GetUuid()
+
+	if connection.GetState() != fabricv4.CONNECTIONSTATE_DEPROVISIONING {
+		log.Printf("[DEBUG] Deleting Connection: %s", name)
+		alreadyDeleted := false
+		err := retry.RetryContext(ctx, remainingSweepTime(ctx), func() *retry.RetryError {
+			_, resp, err := fabric.ConnectionsApi.DeleteConnectionByUuid(ctx, uuid).Execute()
+			switch {
+			case isConnectionAlreadyDeleted(err):
+				alreadyDeleted = true
+				return nil
+			case isConnectionInTransientState(err):
+				log.Printf("[DEBUG] Connection %s (%s) is in a transient state, retrying delete", name, uuid)
+				return retry.RetryableError(err)
+			}
+			if err := equinix_errors.IgnoreHttpResponseErrors(http.StatusForbidden, http.StatusNotFound)(resp, err); err != nil {
+				return retry.NonRetryableError(err)
+			}
+			return nil
+		})
+		if err != nil {
+			return fmt.Errorf("error deleting fabric connection %s (%s): %s", name, uuid, err)
+		}
+		if alreadyDeleted {
+			log.Printf("[DEBUG] Connection %s (%s) already deleted", name, uuid)
+			return nil
+		}
+	}
+
+	_, err := waitForConnection(ctx, fabric, uuid,
+		deprovisionPendingStates,
+		[]string{string(fabricv4.CONNECTIONSTATE_DEPROVISIONED)},
+		remainingSweepTime(ctx),
+		withNotFoundAs(string(fabricv4.CONNECTIONSTATE_DEPROVISIONED)),
+		withPollInterval(connectionSweepPollInterval),
+	)
+	if err != nil {
+		return fmt.Errorf("error waiting for fabric connection %s (%s) to deprovision: %s", name, uuid, err)
+	}
+	return nil
 }

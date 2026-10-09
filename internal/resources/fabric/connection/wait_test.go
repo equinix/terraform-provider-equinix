@@ -15,10 +15,13 @@ import (
 
 const testConnectionUUID = "11111111-2222-3333-4444-555555555555"
 
+// testResponse writes one canned API response.
+type testResponse func(w http.ResponseWriter, r *http.Request)
+
 // newTestFabricClient returns a fabricv4 client pointed at a server that
-// answers GET /fabric/v4/connections/{uuid} with responses[n] on the nth
-// call, repeating the last response once they run out.
-func newTestFabricClient(t *testing.T, responses ...func(w http.ResponseWriter)) (*fabricv4.APIClient, *atomic.Int32) {
+// answers the nth request with responses[n], repeating the last response
+// once they run out.
+func newTestFabricClient(t *testing.T, responses ...testResponse) (*fabricv4.APIClient, *atomic.Int32) {
 	t.Helper()
 	var calls atomic.Int32
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
@@ -27,7 +30,7 @@ func newTestFabricClient(t *testing.T, responses ...func(w http.ResponseWriter))
 			n = len(responses) - 1
 		}
 		w.Header().Set("Content-Type", "application/json")
-		responses[n](w)
+		responses[n](w, r)
 	}))
 	t.Cleanup(server.Close)
 
@@ -39,18 +42,18 @@ func newTestFabricClient(t *testing.T, responses ...func(w http.ResponseWriter))
 
 // connectionJSON renders a minimal connection that satisfies the SDK's
 // required properties, plus the given extra fields.
-func connectionJSON(fields string) func(w http.ResponseWriter) {
-	return func(w http.ResponseWriter) {
+func connectionJSON(fields string) testResponse {
+	return func(w http.ResponseWriter, _ *http.Request) {
 		fmt.Fprintf(w, `{"uuid":%q,"type":"EVPL_VC","name":"tfacc_wait","bandwidth":1,"aSide":{},"zSide":{},%s}`, testConnectionUUID, fields)
 	}
 }
 
-func withState(state fabricv4.ConnectionState) func(w http.ResponseWriter) {
+func withState(state fabricv4.ConnectionState) testResponse {
 	return connectionJSON(fmt.Sprintf(`"state":%q`, state))
 }
 
-func statusResponse(code int, body string) func(w http.ResponseWriter) {
-	return func(w http.ResponseWriter) {
+func statusResponse(code int, body string) testResponse {
+	return func(w http.ResponseWriter, _ *http.Request) {
 		w.WriteHeader(code)
 		fmt.Fprint(w, body)
 	}
@@ -207,7 +210,7 @@ func TestWaitForConnection_WithConnectionStatus(t *testing.T) {
 func TestIsConnectionAlreadyDeleted(t *testing.T) {
 	tests := []struct {
 		name     string
-		response func(w http.ResponseWriter)
+		response testResponse
 		want     bool
 	}{
 		{

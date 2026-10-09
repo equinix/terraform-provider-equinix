@@ -425,10 +425,21 @@ func WaitUntilConnectionDeprovisioned(ctx context.Context, uuid string, meta any
 // isConnectionAlreadyDeleted reports whether err is the API's
 // EQ-3142509 "Connection already deleted" validation error.
 func isConnectionAlreadyDeleted(err error) bool {
+	return hasFabricErrorCode(err, "EQ-3142509")
+}
+
+// isConnectionInTransientState reports whether err is the API's
+// EQ-3142510 "Connection is in transient state" validation error, returned
+// when a delete is attempted while another operation is still in flight.
+func isConnectionInTransientState(err error) bool {
+	return hasFabricErrorCode(err, "EQ-3142510")
+}
+
+func hasFabricErrorCode(err error, code string) bool {
 	var genericError *fabricv4.GenericOpenAPIError
 	if !errors.As(err, &genericError) {
 		return false
 	}
 	fabricErrs, ok := genericError.Model().([]fabricv4.Error)
-	return ok && equinix_errors.HasErrorCode(fabricErrs, "EQ-3142509")
+	return ok && equinix_errors.HasErrorCode(fabricErrs, code)
 }
