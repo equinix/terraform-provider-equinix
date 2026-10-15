@@ -7,6 +7,7 @@ import (
 
 	fabric_cloud_router "github.com/equinix/terraform-provider-equinix/internal/resources/fabric/cloud_router"
 	fabric_connection "github.com/equinix/terraform-provider-equinix/internal/resources/fabric/connection"
+	fabric_ip_block "github.com/equinix/terraform-provider-equinix/internal/resources/fabric/ip_block"
 	fabric_network "github.com/equinix/terraform-provider-equinix/internal/resources/fabric/network"
 	fabric_route_filter "github.com/equinix/terraform-provider-equinix/internal/resources/fabric/route_filter"
 	fabric_route_aggregation "github.com/equinix/terraform-provider-equinix/internal/resources/fabric/routeaggregation"
@@ -16,6 +17,7 @@ import (
 
 // AddFabricTestSweepers registers test sweepers for Fabric resources
 func AddFabricTestSweepers() {
+	fabric_ip_block.AddTestSweeper()
 	fabric_cloud_router.AddTestSweeper()
 	fabric_connection.AddTestSweeper()
 	fabric_route_filter.AddTestSweeper()

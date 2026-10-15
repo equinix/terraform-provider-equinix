@@ -23,6 +23,7 @@ import (
 // FabricResources represents fabric resources
 func FabricResources() []func() resource.Resource {
 	return []func() resource.Resource{
+		ipblock.NewResource,
 		connectionrouteaggregation.NewResource,
 		port.NewResource,
 		precisiontime.NewResource,

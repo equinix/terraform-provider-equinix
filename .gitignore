@@ -42,6 +42,8 @@ vendor
 
 # Local environment variables
 .env
+*_test_data.json
+run_*.sh
 
 # Test exclusions
 !command/test-fixtures/**/*.tfstate
