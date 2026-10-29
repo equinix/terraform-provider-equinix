@@ -392,7 +392,7 @@ func checkEptServiceDelete(s *terraform.State) error {
 			continue
 		}
 
-		if eptService, _, err := client.PrecisionTimeApi.GetTimeServicesById(ctx, rs.Primary.ID).Execute(); err == nil {
+		if eptService, _, err := client.PrecisionTimeServicesApi.GetTimeServicesById(ctx, rs.Primary.ID).Execute(); err == nil {
 			if eptService.GetState() == fabricv4.PRECISIONTIMESERVICERESPONSESTATE_PROVISIONED {
 				return fmt.Errorf("fabric EPT service %s still exists and is %s",
 					rs.Primary.ID, eptService.GetState())

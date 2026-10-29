@@ -8,12 +8,16 @@ import (
 	"log"
 	"net/http"
 	"os"
+	"time"
 
 	"github.com/equinix/equinix-sdk-go/services/fabricv4"
 	equinix_errors "github.com/equinix/terraform-provider-equinix/internal/errors"
 	testinghelpers "github.com/equinix/terraform-provider-equinix/internal/fabric/testing_helpers"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 )
+
+// sweepMinAge keeps the sweeper away from blocks owned by tests that are still running.
+const sweepMinAge = 30 * time.Minute
 
 func AddTestSweeper() {
 	resource.AddTestSweepers("equinix_fabric_ip_block", &resource.Sweeper{
@@ -24,7 +28,9 @@ func AddTestSweeper() {
 }
 
 // testSweepIpBlocks deletes ACTIVE IP blocks created during acceptance tests.
-// IP blocks have no name field, so we search by state=ACTIVE within the test project.
+// IP blocks have no name field and the API cannot filter by prefix, so we search by state=ACTIVE
+// within the test project and keep only blocks whose prefix is in testinghelpers.IpBlockTestPool
+// and that are older than sweepMinAge.
 // Requires TF_ACC_FABRIC_IP_BLOCK_TEST_DATA JSON:
 //
 //	{"pfcr": {"project_id": "<uuid>", "metro_code": "SV"}}
@@ -53,12 +59,12 @@ func testSweepIpBlocks(_ string) error {
 			And: []fabricv4.IpBlockAndQuery{
 				{
 					Property: "/state",
-					Operator: fabricv4.EXCHANGESERVICEPROPERTYEXPRESSIONOPERATOR_EQUAL,
+					Operator: fabricv4.IPBLOCKANDQUERYOPERATOR_EQUAL,
 					Values:   []string{string(fabricv4.IPBLOCKSTATE_ACTIVE)},
 				},
 				{
 					Property: "/project/projectId",
-					Operator: fabricv4.EXCHANGESERVICEPROPERTYEXPRESSIONOPERATOR_EQUAL,
+					Operator: fabricv4.IPBLOCKANDQUERYOPERATOR_EQUAL,
 					Values:   []string{projectID},
 				},
 			},
@@ -71,6 +77,14 @@ func testSweepIpBlocks(_ string) error {
 	}
 
 	for _, block := range result.GetData() {
+		if !testinghelpers.IsIpBlockTestPrefix(block.GetPrefix()) {
+			log.Printf("[DEBUG] Skipping IP block %s (prefix %q is outside the test pool %s)", block.GetUuid(), block.GetPrefix(), testinghelpers.IpBlockTestPool)
+			continue
+		}
+		if age := time.Since(block.ChangeLog.GetCreatedDateTime()); age < sweepMinAge {
+			log.Printf("[DEBUG] Skipping IP block %s: created %s ago, newer than %s", block.GetUuid(), age.Round(time.Second), sweepMinAge)
+			continue
+		}
 		log.Printf("[DEBUG] Deleting IP block: %s (prefix: %s)", block.GetUuid(), block.GetPrefix())
 		_, resp, delErr := fabric.IPBlocksApi.DeleteIpBlockById(ctx, block.GetUuid()).Execute()
 		if equinix_errors.IgnoreHttpResponseErrors(http.StatusForbidden, http.StatusNotFound)(resp, delErr) != nil {

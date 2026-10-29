@@ -61,7 +61,7 @@ func (r *DataSourceAllIpBlocks) Read(ctx context.Context, request datasource.Rea
 
 	filterItem := fabricv4.IpBlockAndQuery{
 		Property: tffilter.Property.ValueString(),
-		Operator: fabricv4.ExchangeServicePropertyExpressionOperator(tffilter.Operator.ValueString()),
+		Operator: fabricv4.IpBlockAndQueryOperator(tffilter.Operator.ValueString()),
 		Values:   values,
 	}
 
