@@ -51,7 +51,7 @@ func (r *DataSourceByEptServiceID) Read(
 
 	eptServiceID := data.EptServiceID.ValueString()
 
-	ept, _, err := client.PrecisionTimeApi.GetTimeServicesById(ctx, eptServiceID).Execute()
+	ept, _, err := client.PrecisionTimeServicesApi.GetTimeServicesById(ctx, eptServiceID).Execute()
 
 	if err != nil {
 		response.State.RemoveResource(ctx)

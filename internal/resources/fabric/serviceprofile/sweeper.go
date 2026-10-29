@@ -59,7 +59,7 @@ func testSweepServiceProfiles(_ string) error {
 		},
 	}
 
-	viewPoint := fabricv4.GETSERVICEPROFILESVIEWPOINTPARAMETER_Z_SIDE
+	viewPoint := fabricv4.LISTSERVICEPROFILESVIEWPOINTPARAMETER_Z_SIDE
 	fabricServiceProfiles, _, err := fabric.ServiceProfilesApi.SearchServiceProfiles(ctx).ServiceProfileSearchRequest(serviceProfileSearchRequest).ViewPoint(viewPoint).Execute()
 
 	if err != nil {
