@@ -53,12 +53,12 @@ func testSweepIpBlocks(_ string) error {
 			And: []fabricv4.IpBlockAndQuery{
 				{
 					Property: "/state",
-					Operator: fabricv4.EXCHANGESERVICEPROPERTYEXPRESSIONOPERATOR_EQUAL,
+					Operator: fabricv4.IPBLOCKANDQUERYOPERATOR_EQUAL,
 					Values:   []string{string(fabricv4.IPBLOCKSTATE_ACTIVE)},
 				},
 				{
 					Property: "/project/projectId",
-					Operator: fabricv4.EXCHANGESERVICEPROPERTYEXPRESSIONOPERATOR_EQUAL,
+					Operator: fabricv4.IPBLOCKANDQUERYOPERATOR_EQUAL,
 					Values:   []string{projectID},
 				},
 			},
