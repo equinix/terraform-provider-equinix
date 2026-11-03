@@ -66,14 +66,14 @@ func (a *attemptT) run(fn func(t *attemptT)) {
 }
 
 func TestAccFabricIpBlockCreate_PFCR(t *testing.T) {
-	testData := testinghelpers.GetFabricIpBlockTestData(t)
+	testData := testinghelpers.GetFabricEiaTestData(t)
 	pfcr, ok := testData["pfcr"]
 	if !ok {
-		t.Skip("skipping: no 'pfcr' key in TF_ACC_FABRIC_IP_BLOCK_TEST_DATA")
+		t.Skip("skipping: no 'pfcr' key in TF_ACC_FABRIC_EIA_TEST_DATA")
 	}
 	projectID := pfcr["project_id"]
 	if projectID == "" {
-		t.Skip("skipping: TF_ACC_FABRIC_IP_BLOCK_TEST_DATA missing project_id")
+		t.Skip("skipping: TF_ACC_FABRIC_EIA_TEST_DATA missing project_id")
 	}
 
 	// A fixed prefix from the env data is used as-is; otherwise a random prefix from the

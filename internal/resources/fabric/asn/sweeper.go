@@ -47,7 +47,7 @@ func testSweepAsns(_ string) error {
 
 	projectID := sweepProjectID()
 	if projectID == "" {
-		log.Printf("[WARN] Skipping ASN sweep: no project_id found. Set TF_ACC_FABRIC_IP_BLOCK_TEST_DATA with {'pfcr': {'project_id': '<uuid>'}}")
+		log.Printf("[WARN] Skipping ASN sweep: no project_id found. Set TF_ACC_FABRIC_EIA_TEST_DATA with {'pfcr': {'project_id': '<uuid>'}}")
 		return nil
 	}
 
@@ -101,14 +101,14 @@ func testSweepAsns(_ string) error {
 }
 
 func sweepProjectID() string {
-	raw := os.Getenv(testinghelpers.FabricIpBlockEnvVar)
+	raw := os.Getenv(testinghelpers.FabricEiaEnvVar)
 	if raw == "" {
 		return ""
 	}
 
 	var data map[string]map[string]string
 	if err := json.Unmarshal([]byte(raw), &data); err != nil {
-		log.Printf("[WARN] sweeper: could not parse %s: %s", testinghelpers.FabricIpBlockEnvVar, err)
+		log.Printf("[WARN] sweeper: could not parse %s: %s", testinghelpers.FabricEiaEnvVar, err)
 		return ""
 	}
 

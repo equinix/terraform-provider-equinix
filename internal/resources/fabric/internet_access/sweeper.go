@@ -28,17 +28,6 @@ func AddTestSweeper() {
 	})
 }
 
-func isTestService(svc *fabricv4.InternetAccessService) bool {
-	return sweep.IsSweepableFabricTestResource(svc.GetName())
-}
-
-func sweepableStates() []string {
-	return []string{
-		string(fabricv4.INTERNETACCESSSERVICESTATE_PROVISIONING),
-		string(fabricv4.INTERNETACCESSSERVICESTATE_PROVISIONED),
-	}
-}
-
 func testSweepInternetAccessServices(_ string) error {
 	var errs []error
 	log.Printf("[DEBUG] Sweeping Internet Access services")
@@ -54,11 +43,16 @@ func testSweepInternetAccessServices(_ string) error {
 	fabric := meta.NewFabricClientForTesting(ctx)
 
 	property, operator := "/state", fabricv4.SearchExpressionOperator("IN")
+	states := []string{
+		string(fabricv4.INTERNETACCESSSERVICESTATE_PROVISIONING),
+		string(fabricv4.INTERNETACCESSSERVICESTATE_PROVISIONED),
+	}
 	filter := fabricv4.SearchExpression{
-		And: []fabricv4.SearchExpression{{Property: &property, Operator: &operator, Values: sweepableStates()}},
+		And: []fabricv4.SearchExpression{{Property: &property, Operator: &operator, Values: states}},
 	}
 
-	for offset := int32(0); ; {
+	var testServices []fabricv4.InternetAccessService
+	for offset := int32(0); ; offset += sweepPageSize {
 		limit, pageOffset := sweepPageSize, offset
 		searchReq := fabricv4.InternetAccessSearchRequest{
 			Filter:     &filter,
@@ -70,38 +64,27 @@ func testSweepInternetAccessServices(_ string) error {
 		}
 
 		services := result.GetData()
-		for i := range services {
-			svc := &services[i]
-			if !isTestService(svc) {
-				continue
-			}
-			log.Printf("[DEBUG] Deleting Internet Access service: %s (%s)", svc.GetName(), svc.GetUuid())
-			_, resp, delErr := fabric.InternetAccessServicesApi.DeleteEiaService(ctx, svc.GetUuid()).Execute()
-			if equinix_errors.IgnoreHttpResponseErrors(http.StatusForbidden, http.StatusNotFound)(resp, delErr) != nil {
-				errs = append(errs, fmt.Errorf("error deleting Internet Access service %s: %s", svc.GetUuid(), delErr))
-				continue
-			}
-			if _, waitErr := getDeleteWaiter(ctx, fabric, svc.GetUuid(), sweepDeleteLimit).WaitForStateContext(ctx); waitErr != nil {
-				errs = append(errs, fmt.Errorf("error waiting for Internet Access service %s to be deleted: %s", svc.GetUuid(), waitErr))
+		for _, svc := range services {
+			if sweep.IsSweepableFabricTestResource(svc.GetName()) {
+				testServices = append(testServices, svc)
 			}
 		}
-
 		if len(services) < int(sweepPageSize) {
 			break
 		}
+	}
 
-		offset += int32(countKept(services))
+	for _, svc := range testServices {
+		log.Printf("[DEBUG] Deleting Internet Access service: %s (%s)", svc.GetName(), svc.GetUuid())
+		_, resp, delErr := fabric.InternetAccessServicesApi.DeleteEiaService(ctx, svc.GetUuid()).Execute()
+		if equinix_errors.IgnoreHttpResponseErrors(http.StatusForbidden, http.StatusNotFound)(resp, delErr) != nil {
+			errs = append(errs, fmt.Errorf("error deleting Internet Access service %s: %s", svc.GetUuid(), delErr))
+			continue
+		}
+		if _, waitErr := getDeleteWaiter(ctx, fabric, svc.GetUuid(), sweepDeleteLimit).WaitForStateContext(ctx); waitErr != nil {
+			errs = append(errs, fmt.Errorf("error waiting for Internet Access service %s to be deleted: %s", svc.GetUuid(), waitErr))
+		}
 	}
 
 	return errors.Join(errs...)
-}
-
-func countKept(services []fabricv4.InternetAccessService) int {
-	kept := 0
-	for i := range services {
-		if !isTestService(&services[i]) {
-			kept++
-		}
-	}
-	return kept
 }

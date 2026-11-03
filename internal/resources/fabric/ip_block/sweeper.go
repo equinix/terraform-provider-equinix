@@ -31,7 +31,7 @@ func AddTestSweeper() {
 // IP blocks have no name field and the API cannot filter by prefix, so we search by state=ACTIVE
 // within the test project and keep only blocks whose prefix is in testinghelpers.IpBlockTestPool
 // and that are older than sweepMinAge.
-// Requires TF_ACC_FABRIC_IP_BLOCK_TEST_DATA JSON:
+// Requires TF_ACC_FABRIC_EIA_TEST_DATA JSON:
 //
 //	{"pfcr": {"project_id": "<uuid>", "metro_code": "SV"}}
 func testSweepIpBlocks(_ string) error {
@@ -50,7 +50,7 @@ func testSweepIpBlocks(_ string) error {
 
 	projectID := sweepProjectID()
 	if projectID == "" {
-		log.Printf("[WARN] Skipping IP block sweep: no project_id found. Set TF_ACC_FABRIC_IP_BLOCK_TEST_DATA with {'pfcr': {'project_id': '<uuid>'}}")
+		log.Printf("[WARN] Skipping IP block sweep: no project_id found. Set TF_ACC_FABRIC_EIA_TEST_DATA with {'pfcr': {'project_id': '<uuid>'}}")
 		return nil
 	}
 
@@ -95,17 +95,17 @@ func testSweepIpBlocks(_ string) error {
 	return errors.Join(errs...)
 }
 
-// sweepProjectID reads the test project ID from TF_ACC_FABRIC_IP_BLOCK_TEST_DATA.
+// sweepProjectID reads the test project ID from TF_ACC_FABRIC_EIA_TEST_DATA.
 // Expected JSON: {"pfcr": {"project_id": "<uuid>", ...}, ...}
 func sweepProjectID() string {
-	raw := os.Getenv(testinghelpers.FabricIpBlockEnvVar)
+	raw := os.Getenv(testinghelpers.FabricEiaEnvVar)
 	if raw == "" {
 		return ""
 	}
 
 	var data map[string]map[string]string
 	if err := json.Unmarshal([]byte(raw), &data); err != nil {
-		log.Printf("[WARN] sweeper: could not parse %s: %s", testinghelpers.FabricIpBlockEnvVar, err)
+		log.Printf("[WARN] sweeper: could not parse %s: %s", testinghelpers.FabricEiaEnvVar, err)
 		return ""
 	}
 

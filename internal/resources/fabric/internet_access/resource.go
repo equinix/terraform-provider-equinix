@@ -17,7 +17,7 @@ import (
 
 const deletedMarker = "tf-marker-for-deleted-internet-access-service"
 
-var (
+const (
 	waitDelay       = 10 * time.Second
 	waitMinInterval = 10 * time.Second
 )
