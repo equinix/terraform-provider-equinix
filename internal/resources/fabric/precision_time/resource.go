@@ -247,11 +247,11 @@ func buildUpdateRequest(ctx context.Context, state resourceModel, plan resourceM
 
 	updateRequest := make([]fabricv4.PrecisionTimeChangeOperation, 0)
 	if !state.Name.Equal(plan.Name) {
-		op := fabricv4.PRECISIONTIMECHANGEOPERATIONOP_REPLACE
+		op := fabricv4.CLOUDROUTERCHANGEOPERATIONOP_REPLACE
 		if plan.Name.ValueString() != "" && state.Name.ValueString() == "" {
-			op = fabricv4.PRECISIONTIMECHANGEOPERATIONOP_ADD
+			op = fabricv4.CLOUDROUTERCHANGEOPERATIONOP_ADD
 		} else if plan.Name.ValueString() == "" && state.Name.ValueString() != "" {
-			op = fabricv4.PRECISIONTIMECHANGEOPERATIONOP_REMOVE
+			op = fabricv4.CLOUDROUTERCHANGEOPERATIONOP_REMOVE
 		}
 		updateRequest = append(updateRequest, fabricv4.PrecisionTimeChangeOperation{
 			Op:    op,
@@ -279,7 +279,7 @@ func buildUpdateRequest(ctx context.Context, state resourceModel, plan resourceM
 
 		if statePackageModel.Code.ValueString() != planPackageModel.Code.ValueString() {
 			updateRequest = append(updateRequest, fabricv4.PrecisionTimeChangeOperation{
-				Op:    fabricv4.PRECISIONTIMECHANGEOPERATIONOP_REPLACE,
+				Op:    fabricv4.CLOUDROUTERCHANGEOPERATIONOP_REPLACE,
 				Path:  fabricv4.PRECISIONTIMECHANGEOPERATIONPATH_PACKAGE_CODE,
 				Value: planPackageModel.Code.ValueString(),
 			})
@@ -320,7 +320,7 @@ func buildUpdateRequest(ctx context.Context, state resourceModel, plan resourceM
 		}
 
 		updateRequest = append(updateRequest, fabricv4.PrecisionTimeChangeOperation{
-			Op:    fabricv4.PRECISIONTIMECHANGEOPERATIONOP_REPLACE,
+			Op:    fabricv4.CLOUDROUTERCHANGEOPERATIONOP_REPLACE,
 			Path:  fabricv4.PRECISIONTIMECHANGEOPERATIONPATH_IPV4,
 			Value: ipv4Value,
 		})
@@ -347,7 +347,7 @@ func buildUpdateRequest(ctx context.Context, state resourceModel, plan resourceM
 			})
 		}
 		updateRequest = append(updateRequest, fabricv4.PrecisionTimeChangeOperation{
-			Op:    fabricv4.PRECISIONTIMECHANGEOPERATIONOP_REPLACE,
+			Op:    fabricv4.CLOUDROUTERCHANGEOPERATIONOP_REPLACE,
 			Path:  fabricv4.PRECISIONTIMECHANGEOPERATIONPATH_NTP_ADVANCED_CONFIGURATION,
 			Value: ntpList,
 		})
@@ -400,7 +400,7 @@ func buildUpdateRequest(ctx context.Context, state resourceModel, plan resourceM
 		}
 
 		updateRequest = append(updateRequest, fabricv4.PrecisionTimeChangeOperation{
-			Op:    fabricv4.PRECISIONTIMECHANGEOPERATIONOP_REPLACE,
+			Op:    fabricv4.CLOUDROUTERCHANGEOPERATIONOP_REPLACE,
 			Path:  fabricv4.PRECISIONTIMECHANGEOPERATIONPATH_PTP_ADVANCED_CONFIGURATION,
 			Value: ptpAdvancedConfigurationValue,
 		})
@@ -414,7 +414,7 @@ func buildCreateRequest(ctx context.Context, plan resourceModel) (fabricv4.Preci
 	request := fabricv4.PrecisionTimeServiceRequest{}
 
 	request.SetName(plan.Name.ValueString())
-	request.SetType(fabricv4.PrecisionTimeServiceRequestType(plan.Type.ValueString()))
+	request.SetType(fabricv4.TimeServicePriceType(plan.Type.ValueString()))
 
 	var eptPackage packageModel
 

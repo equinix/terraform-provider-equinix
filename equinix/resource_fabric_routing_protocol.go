@@ -14,6 +14,7 @@ import (
 
 	equinix_errors "github.com/equinix/terraform-provider-equinix/internal/errors"
 	equinix_fabric_schema "github.com/equinix/terraform-provider-equinix/internal/fabric/schema"
+	"github.com/equinix/terraform-provider-equinix/internal/fabric/sdkcompat"
 	equinix_schema "github.com/equinix/terraform-provider-equinix/internal/schema"
 
 	"github.com/equinix/terraform-provider-equinix/internal/config"
@@ -469,7 +470,7 @@ func routingProtocolPayloadFromType(routingType string, d *schema.ResourceData) 
 	payload := fabricv4.RoutingProtocolBase{}
 	if routingType == "BGP" {
 		bgpRP := fabricv4.RoutingProtocolBGPType{}
-		bgpType := fabricv4.RoutingProtocolBGPTypeType(routingType)
+		bgpType := fabricv4.RoutingProtocolBGPDataType(routingType)
 		bgpRP.SetType(bgpType)
 
 		name := d.Get("name").(string)
@@ -522,7 +523,7 @@ func routingProtocolPayloadFromType(routingType string, d *schema.ResourceData) 
 	}
 	if routingType == "DIRECT" {
 		directRP := fabricv4.RoutingProtocolDirectType{}
-		directType := fabricv4.RoutingProtocolDirectTypeType(routingType)
+		directType := fabricv4.RoutingProtocolDirectDataType(routingType)
 		directRP.SetType(directType)
 
 		name := d.Get("name").(string)
@@ -629,11 +630,11 @@ func waitUntilRoutingProtocolIsProvisioned(ctx context.Context, uuid string, con
 	log.Printf("Waiting for routing protocol to be Provisioned, uuid %s", uuid)
 	stateConf := &retry.StateChangeConf{
 		Pending: []string{
-			string(fabricv4.CONNECTIONSTATE_PROVISIONING),
-			string(fabricv4.CONNECTIONSTATE_REPROVISIONING),
+			string(sdkcompat.CONNECTIONSTATE_PROVISIONING),
+			string(sdkcompat.CONNECTIONSTATE_REPROVISIONING),
 		},
 		Target: []string{
-			string(fabricv4.CONNECTIONSTATE_PROVISIONED),
+			string(sdkcompat.CONNECTIONSTATE_PROVISIONED),
 		},
 		Refresh: func() (any, string, error) {
 			client := meta.(*config.Config).NewFabricClientForSDK(ctx, d)
