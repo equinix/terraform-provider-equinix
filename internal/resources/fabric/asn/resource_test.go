@@ -16,8 +16,6 @@ import (
 	"github.com/hashicorp/terraform-plugin-testing/tfjsonpath"
 )
 
-// The ASN tests share the project of the IP block test data (TF_ACC_FABRIC_IP_BLOCK_TEST_DATA),
-// so they need no secret of their own.
 func asnTestProjectID(t *testing.T) string {
 	t.Helper()
 	pfcr, ok := testinghelpers.GetFabricIpBlockTestData(t)["pfcr"]
@@ -48,7 +46,7 @@ func TestAccFabricAsnPrivateCreate_PFCR(t *testing.T) {
 					statecheck.ExpectKnownValue("equinix_fabric_asn.test", tfjsonpath.New("number"), knownvalue.NotNull()),
 					statecheck.ExpectKnownValue("equinix_fabric_asn.test", tfjsonpath.New("range"), knownvalue.StringExact("16_BIT")),
 					statecheck.ExpectKnownValue("equinix_fabric_asn.test", tfjsonpath.New("location").AtMapKey("metro_code"), knownvalue.StringExact("SV")),
-					// the data source reads back what the resource created
+
 					statecheck.ExpectKnownValue("data.equinix_fabric_asn.test", tfjsonpath.New("state"), knownvalue.StringExact("PROVISIONED")),
 				},
 			},
@@ -81,8 +79,6 @@ data "equinix_fabric_asn" "test" {
 `, projectID)
 }
 
-// checkAsnDeprovisioned fails when an ASN of the test is still in use. A deprovisioned ASN
-// stays retrievable, so DEPROVISIONED (or a 404) counts as destroyed.
 func checkAsnDeprovisioned(s *terraform.State) error {
 	ctx := context.Background()
 	client := acceptance.TestAccProvider.Meta().(*config.Config).NewFabricClientForTesting(ctx)

@@ -12,7 +12,6 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/types/basetypes"
 )
 
-// ResourceModel is the tfsdk model of the equinix_fabric_internet_access_service resource.
 type ResourceModel struct {
 	ID              types.String                                   `tfsdk:"id"`
 	Timeouts        timeouts.Value                                 `tfsdk:"timeouts"`
@@ -56,8 +55,6 @@ type ResourceOrderModel struct {
 	Href                    types.String `tfsdk:"href"`
 }
 
-// ResourceRoutingModel holds the routing protocol configuration. The BGP-only inputs are not
-// returned by the API in a form the provider reads back, so they are kept as configured.
 type ResourceRoutingModel struct {
 	Type             types.String                                             `tfsdk:"type"`
 	CustomerRoutes   fwtypes.ListNestedObjectValueOf[CustomerRouteModel]      `tfsdk:"customer_routes"`
@@ -80,8 +77,6 @@ type ResourceConnectionModel struct {
 	PeeringIpv6 fwtypes.ObjectValueOf[PeeringModel] `tfsdk:"peering_ipv6"`
 }
 
-// parse maps an API response onto the resource model. Configured inputs the API does not
-// return (BGP options) are taken from the existing model value.
 func (m *ResourceModel) parse(ctx context.Context, svc *fabricv4.InternetAccessService) diag.Diagnostics {
 	var diags diag.Diagnostics
 
@@ -130,7 +125,6 @@ func (m *ResourceModel) parse(ctx context.Context, svc *fabricv4.InternetAccessS
 		Href:                    order.Href,
 	})
 
-	// BGP inputs are not read back; keep what was configured.
 	previous := ResourceRoutingModel{
 		ExportPolicy:     types.StringNull(),
 		CustomerAsn:      types.Int64Null(),
@@ -171,9 +165,6 @@ func (m *ResourceModel) parse(ctx context.Context, svc *fabricv4.InternetAccessS
 	return diags
 }
 
-// buildCreateRequest turns the plan into the POST body. The SDK request type for the routing
-// protocol only carries type and customer routes, so connections and BGP options are sent as
-// additional properties.
 func buildCreateRequest(ctx context.Context, plan ResourceModel) (fabricv4.InternetAccessPostRequest, error) {
 	var routing ResourceRoutingModel
 	if diags := plan.RoutingProtocol.As(ctx, &routing, basetypes.ObjectAsOptions{}); diags.HasError() {

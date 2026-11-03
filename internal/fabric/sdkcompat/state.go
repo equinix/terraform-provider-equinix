@@ -1,23 +1,13 @@
-// Package sdkcompat bridges gaps between the Fabric API and the generated
-// equinix-sdk-go models.
-//
-// Since equinix-sdk-go v0.69.0 the OpenAPI spec no longer declares the `state`
-// property on Connection, RouteFiltersData and RouteAggregationsData, although
-// the API still returns it. The generated models keep unknown JSON properties
-// in AdditionalProperties, so the state is read from (and written to) there.
 package sdkcompat
 
 import "github.com/equinix/equinix-sdk-go/services/fabricv4"
 
 const stateKey = "state"
 
-// ConnectionState is the provisioning state of a Fabric connection.
 type ConnectionState string
 
-// RouteFilterState is the provisioning state of a route filter.
 type RouteFilterState string
 
-// RouteAggregationState is the provisioning state of a route aggregation.
 type RouteAggregationState string
 
 const (
@@ -56,7 +46,6 @@ func get(props map[string]interface{}) string {
 	return ""
 }
 
-// GetConnectionState returns the state of the connection, or "" if unknown.
 func GetConnectionState(c *fabricv4.Connection) ConnectionState {
 	if c == nil {
 		return ""
@@ -64,7 +53,6 @@ func GetConnectionState(c *fabricv4.Connection) ConnectionState {
 	return ConnectionState(get(c.AdditionalProperties))
 }
 
-// SetConnectionState stores the state on the connection (mainly for tests).
 func SetConnectionState(c *fabricv4.Connection, s ConnectionState) {
 	if c.AdditionalProperties == nil {
 		c.AdditionalProperties = map[string]interface{}{}
@@ -72,7 +60,6 @@ func SetConnectionState(c *fabricv4.Connection, s ConnectionState) {
 	c.AdditionalProperties[stateKey] = string(s)
 }
 
-// GetRouteFilterState returns the state of the route filter, or "" if unknown.
 func GetRouteFilterState(r *fabricv4.RouteFiltersData) RouteFilterState {
 	if r == nil {
 		return ""
@@ -80,7 +67,6 @@ func GetRouteFilterState(r *fabricv4.RouteFiltersData) RouteFilterState {
 	return RouteFilterState(get(r.AdditionalProperties))
 }
 
-// GetRouteAggregationState returns the state of the route aggregation, or "" if unknown.
 func GetRouteAggregationState(r *fabricv4.RouteAggregationsData) RouteAggregationState {
 	if r == nil {
 		return ""

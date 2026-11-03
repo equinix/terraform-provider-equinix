@@ -9,11 +9,6 @@ import (
 	"github.com/equinix/equinix-sdk-go/services/fabricv4"
 )
 
-// getService retrieves an Internet Access service.
-//
-// The SDK model marks "order" as required, but the API leaves it out while a service is still
-// being provisioned, which makes the SDK fail to decode an otherwise valid response. In that case
-// the response body is decoded again with an empty "order" so that callers can see the state.
 func getService(ctx context.Context, client *fabricv4.APIClient, uuid string) (*fabricv4.InternetAccessService, *http.Response, error) {
 	svc, resp, err := client.InternetAccessServicesApi.GetEiaService(ctx, uuid).Execute()
 	if err == nil {

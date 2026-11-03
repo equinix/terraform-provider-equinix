@@ -64,8 +64,6 @@ func TestAccFabricAsnGetByUUIDDataSource_PFCR(t *testing.T) {
 	})
 }
 
-// The search matches any ASN that is not in a terminal state, so the test does not
-// depend on a particular provisioning state of the ASNs present in the environment.
 func testAccFabricAsnDataSourcesConfig() string {
 	return `
 data "equinix_fabric_asns" "search" {

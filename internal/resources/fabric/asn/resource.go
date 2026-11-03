@@ -21,7 +21,6 @@ const (
 	deletedMarker = "tf-marker-for-deleted-asn"
 )
 
-// polling intervals; variables so that unit tests can shorten them
 var (
 	waitDelay       = 5 * time.Second
 	waitMinInterval = 5 * time.Second
@@ -73,11 +72,10 @@ func (r *Resource) Create(ctx context.Context, req resource.CreateRequest, resp 
 		return
 	}
 
-	// A PUBLIC_ASN waits for the ownership signature in PENDING. Submit it right away when configured.
 	signature := signatureFromPlan(ctx, &plan)
 	waitForSignature := plan.Type.ValueString() == typePublic && signature == ""
 	if signature != "" {
-		// the ASN has to leave REQUESTED before a signature can be submitted
+
 		if _, waitErr := getWaiter(ctx, client, id, createTimeout, []string{string(fabricv4.ASNSTATE_REQUESTED)}, []string{string(fabricv4.ASNSTATE_PENDING)}).WaitForStateContext(ctx); waitErr != nil {
 			resp.Diagnostics.AddError(fmt.Sprintf("failed waiting for ASN %s to accept the ownership signature", id), waitErr.Error())
 			resp.State.SetAttribute(ctx, path.Root("id"), id)
@@ -126,7 +124,6 @@ func (r *Resource) Read(ctx context.Context, req resource.ReadRequest, resp *res
 		return
 	}
 
-	// a deprovisioned ASN stays retrievable, but it no longer exists as far as Terraform is concerned
 	if asn.GetState() == fabricv4.ASNSTATE_DEPROVISIONED {
 		resp.State.RemoveResource(ctx)
 		return
@@ -139,8 +136,6 @@ func (r *Resource) Read(ctx context.Context, req resource.ReadRequest, resp *res
 	resp.Diagnostics.Append(resp.State.Set(ctx, &state)...)
 }
 
-// Update only supports submitting the ownership signature of a PUBLIC_ASN; every other
-// input uses RequiresReplace.
 func (r *Resource) Update(ctx context.Context, req resource.UpdateRequest, resp *resource.UpdateResponse) {
 	client := r.Meta.NewFabricClientForFramework(ctx, req.ProviderMeta)
 
@@ -221,7 +216,7 @@ func buildCreateRequest(ctx context.Context, plan *ResourceModel) (fabricv4.Crea
 
 	req := fabricv4.CreateAsnRequest{
 		Project: fabricv4.Project{ProjectId: project.ProjectID.ValueString()},
-		// the API discriminates PUBLIC_ASN / PRIVATE_ASN on `type`, which the generated request model does not declare
+
 		AdditionalProperties: map[string]interface{}{typeKey: plan.Type.ValueString()},
 	}
 
@@ -284,8 +279,6 @@ func createPendingStates() []string {
 	}
 }
 
-// createTargetStates are the states in which an ASN is considered ready. A PUBLIC_ASN that
-// is waiting for its ownership signature rests in PENDING.
 func createTargetStates(allowPending bool) []string {
 	states := []string{
 		string(fabricv4.ASNSTATE_PROVISIONED),
@@ -316,7 +309,7 @@ func getWaiter(ctx context.Context, client *fabricv4.APIClient, id string, timeo
 
 func getDeleteWaiter(ctx context.Context, client *fabricv4.APIClient, id string, timeout time.Duration) *retry.StateChangeConf {
 	return &retry.StateChangeConf{
-		// right after the DELETE call the ASN can still report its previous state
+
 		Pending: []string{
 			string(fabricv4.ASNSTATE_REQUESTED),
 			string(fabricv4.ASNSTATE_PROVISIONING),
