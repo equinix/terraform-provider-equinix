@@ -8,7 +8,6 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/datasource"
 )
 
-// NewDataSourceByAsnID creates a new data source for fetching a single ASN by UUID
 func NewDataSourceByAsnID() datasource.DataSource {
 	return &DataSourceByAsnID{
 		BaseDataSource: framework.NewBaseDataSource(
@@ -19,12 +18,10 @@ func NewDataSourceByAsnID() datasource.DataSource {
 	}
 }
 
-// DataSourceByAsnID datasource for fetching a single ASN
 type DataSourceByAsnID struct {
 	framework.BaseDataSource
 }
 
-// Schema returns the data source schema
 func (r *DataSourceByAsnID) Schema(
 	ctx context.Context,
 	_ datasource.SchemaRequest,
@@ -33,7 +30,6 @@ func (r *DataSourceByAsnID) Schema(
 	resp.Schema = dataSourceSingleAsnSchema(ctx)
 }
 
-// Read fetches an ASN by its UUID
 func (r *DataSourceByAsnID) Read(ctx context.Context, request datasource.ReadRequest, response *datasource.ReadResponse) {
 	client := r.Meta.NewFabricClientForFramework(ctx, request.ProviderMeta)
 

@@ -8,7 +8,6 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/datasource"
 )
 
-// NewDataSourceByInternetAccessID creates a new data source for fetching a single Internet Access service by UUID
 func NewDataSourceByInternetAccessID() datasource.DataSource {
 	return &DataSourceByInternetAccessID{
 		BaseDataSource: framework.NewBaseDataSource(
@@ -19,12 +18,10 @@ func NewDataSourceByInternetAccessID() datasource.DataSource {
 	}
 }
 
-// DataSourceByInternetAccessID datasource for fetching a single Internet Access service
 type DataSourceByInternetAccessID struct {
 	framework.BaseDataSource
 }
 
-// Schema returns the data source schema
 func (r *DataSourceByInternetAccessID) Schema(
 	ctx context.Context,
 	_ datasource.SchemaRequest,
@@ -33,7 +30,6 @@ func (r *DataSourceByInternetAccessID) Schema(
 	resp.Schema = dataSourceSingleInternetAccessSchema(ctx)
 }
 
-// Read fetches an Internet Access service by its UUID
 func (r *DataSourceByInternetAccessID) Read(ctx context.Context, request datasource.ReadRequest, response *datasource.ReadResponse) {
 	client := r.Meta.NewFabricClientForFramework(ctx, request.ProviderMeta)
 

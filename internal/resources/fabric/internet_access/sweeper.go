@@ -20,7 +20,6 @@ const (
 	sweepDeleteLimit = 10 * time.Minute
 )
 
-// AddTestSweeper registers the sweeper for Internet Access services created by acceptance tests.
 func AddTestSweeper() {
 	resource.AddTestSweepers("equinix_fabric_internet_access_service", &resource.Sweeper{
 		Name:         "equinix_fabric_internet_access_service",
@@ -29,13 +28,10 @@ func AddTestSweeper() {
 	})
 }
 
-// isTestService tells services created by acceptance tests from everybody else's by the name suffix.
 func isTestService(svc *fabricv4.InternetAccessService) bool {
 	return sweep.IsSweepableFabricTestResource(svc.GetName())
 }
 
-// sweepableStates are the states in which a service still has to be deleted. FAILED is left out:
-// the API keeps failed services in that state after a DELETE, so they could never be swept away.
 func sweepableStates() []string {
 	return []string{
 		string(fabricv4.INTERNETACCESSSERVICESTATE_PROVISIONING),
@@ -43,9 +39,6 @@ func sweepableStates() []string {
 	}
 }
 
-// testSweepInternetAccessServices deprovisions Internet Access services whose name ends with one
-// of sweep.FabricTestResourceSuffixes. It waits for the deprovisioning because the connections
-// the services use cannot be removed before that (the connection sweeper runs afterwards).
 func testSweepInternetAccessServices(_ string) error {
 	var errs []error
 	log.Printf("[DEBUG] Sweeping Internet Access services")
@@ -96,15 +89,13 @@ func testSweepInternetAccessServices(_ string) error {
 		if len(services) < int(sweepPageSize) {
 			break
 		}
-		// deleted services leave the filtered result set, so only skip the ones that were kept
+
 		offset += int32(countKept(services))
 	}
 
 	return errors.Join(errs...)
 }
 
-// countKept counts the services of a page that the sweeper leaves alone and that therefore
-// stay in the result set of the next search.
 func countKept(services []fabricv4.InternetAccessService) int {
 	kept := 0
 	for i := range services {

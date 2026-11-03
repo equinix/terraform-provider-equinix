@@ -18,11 +18,6 @@ import (
 
 const eiaResource = "equinix_fabric_internet_access_service.test"
 
-// TestAccFabricInternetAccessServiceCreate_PFCR creates an IA_VC connection on a physical port and
-// an Internet Access service on top of it. Test data (TF_ACC_FABRIC_INTERNET_ACCESS_TEST_DATA):
-//
-//	{"pfcr": {"project_id": "...", "account_number": "...", "port_uuid": "...",
-//	          "service_profile_uuid": "...", "metro_code": "..."}}
 func TestAccFabricInternetAccessServiceCreate_PFCR(t *testing.T) {
 	testData := testinghelpers.GetFabricInternetAccessTestData(t)
 	pfcr, ok := testData["pfcr"]
@@ -60,7 +55,7 @@ func TestAccFabricInternetAccessServiceCreate_PFCR(t *testing.T) {
 				ResourceName:      eiaResource,
 				ImportState:       true,
 				ImportStateVerify: true,
-				// options the API does not return, and values that are only known after the first read
+
 				ImportStateVerifyIgnore: []string{"timeouts", "state"},
 			},
 		},

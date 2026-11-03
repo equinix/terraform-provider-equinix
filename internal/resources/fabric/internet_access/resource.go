@@ -17,7 +17,6 @@ import (
 
 const deletedMarker = "tf-marker-for-deleted-internet-access-service"
 
-// polling intervals; variables so that unit tests can shorten them
 var (
 	waitDelay       = 10 * time.Second
 	waitMinInterval = 10 * time.Second
@@ -62,8 +61,6 @@ func (r *Resource) Create(ctx context.Context, req resource.CreateRequest, resp 
 		return
 	}
 
-	// The API acknowledges the request with 201 and provisions asynchronously (the service can stay
-	// in PROVISIONING for a long time or end up FAILED), so we do not wait for a particular state.
 	resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("id"), svc.GetUuid())...)
 
 	resp.Diagnostics.Append(plan.parse(ctx, svc)...)
@@ -95,7 +92,6 @@ func (r *Resource) Read(ctx context.Context, req resource.ReadRequest, resp *res
 		return
 	}
 
-	// a deprovisioned service no longer exists from the user's point of view
 	if svc.GetState() == fabricv4.INTERNETACCESSSERVICESTATE_DEPROVISIONED {
 		resp.State.RemoveResource(ctx)
 		return
@@ -108,8 +104,6 @@ func (r *Resource) Read(ctx context.Context, req resource.ReadRequest, resp *res
 	resp.Diagnostics.Append(resp.State.Set(ctx, &state)...)
 }
 
-// Update is not implemented yet: only name, bandwidth, bandwidth_commit, customer_routes and
-// order.purchase_order_number can change in place and they will be sent as a PATCH.
 func (r *Resource) Update(_ context.Context, _ resource.UpdateRequest, resp *resource.UpdateResponse) {
 	resp.Diagnostics.AddError(
 		"in-place update of Internet Access service is not supported yet",
@@ -157,7 +151,7 @@ func getDeleteWaiter(ctx context.Context, client *fabricv4.APIClient, uuid strin
 			string(fabricv4.INTERNETACCESSSERVICESTATE_PROVISIONING),
 			string(fabricv4.INTERNETACCESSSERVICESTATE_DEPROVISIONING),
 		},
-		// FAILED is final: the API keeps failed services in that state even after a DELETE
+
 		Target: []string{deletedMarker, string(fabricv4.INTERNETACCESSSERVICESTATE_DEPROVISIONED), string(fabricv4.INTERNETACCESSSERVICESTATE_FAILED)},
 		Refresh: func() (any, string, error) {
 			svc, httpResp, err := getService(ctx, client, uuid)

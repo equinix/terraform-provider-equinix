@@ -16,7 +16,6 @@ import (
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 )
 
-// sweepMinAge keeps the sweeper away from ASNs owned by tests that are still running.
 const sweepMinAge = 30 * time.Minute
 
 func AddTestSweeper() {
@@ -27,19 +26,11 @@ func AddTestSweeper() {
 	})
 }
 
-// isTestAsn tells ASNs created by acceptance tests from everybody else's. Only PRIVATE_ASNs are
-// created by tests; PUBLIC_ASNs are registered by number and are never swept.
 func isTestAsn(asn *fabricv4.Asn) bool {
 	asnType, _ := asn.AdditionalProperties[typeKey].(string)
 	return asnType == "PRIVATE_ASN"
 }
 
-// testSweepAsns deprovisions ASNs created during acceptance tests.
-// ASNs have no name, so the sweeper only touches PRIVATE_ASNs in the test project that are older
-// than sweepMinAge.
-// The test project is read from TF_ACC_FABRIC_IP_BLOCK_TEST_DATA (shared with the IP block tests):
-//
-//	{"pfcr": {"project_id": "<uuid>"}}
 func testSweepAsns(_ string) error {
 	var errs []error
 	log.Printf("[DEBUG] Sweeping ASNs")
@@ -109,7 +100,6 @@ func testSweepAsns(_ string) error {
 	return errors.Join(errs...)
 }
 
-// sweepProjectID reads the test project ID from TF_ACC_FABRIC_IP_BLOCK_TEST_DATA.
 func sweepProjectID() string {
 	raw := os.Getenv(testinghelpers.FabricIpBlockEnvVar)
 	if raw == "" {

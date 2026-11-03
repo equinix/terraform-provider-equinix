@@ -10,7 +10,6 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/types/basetypes"
 )
 
-// NewDataSourceAllAsns creates a new data source for searching ASNs
 func NewDataSourceAllAsns() datasource.DataSource {
 	return &DataSourceAllAsns{
 		BaseDataSource: framework.NewBaseDataSource(
@@ -21,12 +20,10 @@ func NewDataSourceAllAsns() datasource.DataSource {
 	}
 }
 
-// DataSourceAllAsns datasource for searching ASNs
 type DataSourceAllAsns struct {
 	framework.BaseDataSource
 }
 
-// Schema returns the data source schema
 func (r *DataSourceAllAsns) Schema(
 	ctx context.Context,
 	_ datasource.SchemaRequest,
@@ -35,7 +32,6 @@ func (r *DataSourceAllAsns) Schema(
 	resp.Schema = dataSourceAllAsnsSchema(ctx)
 }
 
-// Read searches for ASNs using the provided filter, sort, and pagination
 func (r *DataSourceAllAsns) Read(ctx context.Context, request datasource.ReadRequest, response *datasource.ReadResponse) {
 	client := r.Meta.NewFabricClientForFramework(ctx, request.ProviderMeta)
 

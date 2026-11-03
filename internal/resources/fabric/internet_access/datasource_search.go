@@ -10,7 +10,6 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/types/basetypes"
 )
 
-// NewDataSourceAllInternetAccess creates a new data source for searching Internet Access services
 func NewDataSourceAllInternetAccess() datasource.DataSource {
 	return &DataSourceAllInternetAccess{
 		BaseDataSource: framework.NewBaseDataSource(
@@ -21,12 +20,10 @@ func NewDataSourceAllInternetAccess() datasource.DataSource {
 	}
 }
 
-// DataSourceAllInternetAccess datasource for searching Internet Access services
 type DataSourceAllInternetAccess struct {
 	framework.BaseDataSource
 }
 
-// Schema returns the data source schema
 func (r *DataSourceAllInternetAccess) Schema(
 	ctx context.Context,
 	_ datasource.SchemaRequest,
@@ -35,7 +32,6 @@ func (r *DataSourceAllInternetAccess) Schema(
 	resp.Schema = dataSourceAllInternetAccessSchema(ctx)
 }
 
-// Read searches for Internet Access services using the provided filter, sort, and pagination
 func (r *DataSourceAllInternetAccess) Read(ctx context.Context, request datasource.ReadRequest, response *datasource.ReadResponse) {
 	client := r.Meta.NewFabricClientForFramework(ctx, request.ProviderMeta)
 

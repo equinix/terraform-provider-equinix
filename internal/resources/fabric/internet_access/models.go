@@ -12,15 +12,11 @@ import (
 
 const timeFormat = "2006-01-02T15:04:05.000Z"
 
-// ---- datasource by UUID ----
-
 type DataSourceByIDModel struct {
 	InternetAccessServiceID types.String `tfsdk:"internet_access_service_id"`
 	ID                      types.String `tfsdk:"id"`
 	BaseInternetAccessModel
 }
-
-// ---- datasource search ----
 
 type DataSourceAllInternetAccessModel struct {
 	ID         types.String                                             `tfsdk:"id"`
@@ -48,8 +44,6 @@ type SortModel struct {
 	Direction types.String `tfsdk:"direction"`
 	Property  types.String `tfsdk:"property"`
 }
-
-// ---- base model ----
 
 type BaseInternetAccessModel struct {
 	UUID            types.String                                   `tfsdk:"uuid"`
@@ -143,8 +137,6 @@ type ChangeLogModel struct {
 	UpdatedDateTime types.String `tfsdk:"updated_date_time"`
 	DeletedDateTime types.String `tfsdk:"deleted_date_time"`
 }
-
-// ---- parse functions ----
 
 func (m *DataSourceByIDModel) parse(ctx context.Context, svc *fabricv4.InternetAccessService) diag.Diagnostics {
 	m.InternetAccessServiceID = types.StringValue(svc.GetUuid())

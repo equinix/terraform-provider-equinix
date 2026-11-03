@@ -13,15 +13,11 @@ import (
 
 const timeFormat = "2006-01-02T15:04:05.000Z"
 
-// ---- datasource by UUID ----
-
 type DataSourceByIDModel struct {
 	AsnID types.String `tfsdk:"asn_id"`
 	ID    types.String `tfsdk:"id"`
 	BaseAsnModel
 }
-
-// ---- datasource search ----
 
 type DataSourceAllAsnsModel struct {
 	ID         types.String                                  `tfsdk:"id"`
@@ -49,8 +45,6 @@ type SortModel struct {
 	Direction types.String `tfsdk:"direction"`
 	Property  types.String `tfsdk:"property"`
 }
-
-// ---- base model ----
 
 type BaseAsnModel struct {
 	UUID                      types.String                                   `tfsdk:"uuid"`
@@ -111,8 +105,6 @@ type ChangeLogModel struct {
 	UpdatedDateTime types.String `tfsdk:"updated_date_time"`
 	DeletedDateTime types.String `tfsdk:"deleted_date_time"`
 }
-
-// ---- parse functions ----
 
 func (m *DataSourceByIDModel) parse(ctx context.Context, asn *fabricv4.Asn) diag.Diagnostics {
 	m.AsnID = types.StringValue(asn.GetUuid())
@@ -237,10 +229,6 @@ func optionalTime(t *time.Time) types.String {
 	return types.StringValue(t.Format(timeFormat))
 }
 
-// ---- resource ----
-
-// Challenge-detail properties that the generated SDK model does not declare (it is a
-// discriminated union, so they end up in AdditionalProperties).
 const (
 	ownershipMessageKey   = "message"
 	ownershipSignatureKey = "signature"
@@ -275,8 +263,6 @@ type ResourceChallengeModel struct {
 	Signature types.String `tfsdk:"signature"`
 }
 
-// parse maps an API ASN onto the resource model. Values that the API never echoes back
-// (the signature when it has not been submitted yet) keep what is already in the model.
 func (m *ResourceModel) parse(ctx context.Context, asn *fabricv4.Asn) diag.Diagnostics {
 	var diags diag.Diagnostics
 
@@ -296,7 +282,6 @@ func (m *ResourceModel) parse(ctx context.Context, asn *fabricv4.Asn) diag.Diagn
 	m.Assets = base.Assets
 	m.ChangeLog = base.ChangeLog
 
-	// optional+computed inputs: keep null when the API does not return them
 	m.RirRegion = types.StringNull()
 	if v, ok := asn.GetRirRegionOk(); ok && v != nil {
 		m.RirRegion = types.StringValue(string(*v))
