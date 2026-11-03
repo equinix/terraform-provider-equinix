@@ -19,10 +19,10 @@ import (
 const eiaResource = "equinix_fabric_internet_access_service.test"
 
 func TestAccFabricInternetAccessServiceCreate_PFCR(t *testing.T) {
-	testData := testinghelpers.GetFabricInternetAccessTestData(t)
+	testData := testinghelpers.GetFabricEiaTestData(t)
 	pfcr, ok := testData["pfcr"]
 	if !ok {
-		t.Skip("skipping: no 'pfcr' key in TF_ACC_FABRIC_INTERNET_ACCESS_TEST_DATA")
+		t.Skip("skipping: no 'pfcr' key in TF_ACC_FABRIC_EIA_TEST_DATA")
 	}
 
 	vlan, err := testinghelpers.RandomVlan(pfcr["port_uuid"])

@@ -21,7 +21,7 @@ const (
 	deletedMarker = "tf-marker-for-deleted-asn"
 )
 
-var (
+const (
 	waitDelay       = 5 * time.Second
 	waitMinInterval = 5 * time.Second
 )
@@ -75,7 +75,6 @@ func (r *Resource) Create(ctx context.Context, req resource.CreateRequest, resp 
 	signature := signatureFromPlan(ctx, &plan)
 	waitForSignature := plan.Type.ValueString() == typePublic && signature == ""
 	if signature != "" {
-
 		if _, waitErr := getWaiter(ctx, client, id, createTimeout, []string{string(fabricv4.ASNSTATE_REQUESTED)}, []string{string(fabricv4.ASNSTATE_PENDING)}).WaitForStateContext(ctx); waitErr != nil {
 			resp.Diagnostics.AddError(fmt.Sprintf("failed waiting for ASN %s to accept the ownership signature", id), waitErr.Error())
 			resp.State.SetAttribute(ctx, path.Root("id"), id)
@@ -309,7 +308,6 @@ func getWaiter(ctx context.Context, client *fabricv4.APIClient, id string, timeo
 
 func getDeleteWaiter(ctx context.Context, client *fabricv4.APIClient, id string, timeout time.Duration) *retry.StateChangeConf {
 	return &retry.StateChangeConf{
-
 		Pending: []string{
 			string(fabricv4.ASNSTATE_REQUESTED),
 			string(fabricv4.ASNSTATE_PROVISIONING),
