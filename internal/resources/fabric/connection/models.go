@@ -7,6 +7,7 @@ import (
 	"sort"
 
 	equinix_fabric_schema "github.com/equinix/terraform-provider-equinix/internal/fabric/schema"
+	"github.com/equinix/terraform-provider-equinix/internal/fabric/sdkcompat"
 	equinix_schema "github.com/equinix/terraform-provider-equinix/internal/schema"
 
 	"github.com/equinix/equinix-sdk-go/services/fabricv4"
@@ -49,7 +50,7 @@ func connectionMap(conn *fabricv4.Connection) map[string]any {
 	connection["href"] = conn.GetHref()
 	connection["is_remote"] = conn.GetIsRemote()
 	connection["type"] = string(conn.GetType())
-	connection["state"] = string(conn.GetState())
+	connection["state"] = string(sdkcompat.GetConnectionState(conn))
 	connection["direction"] = conn.GetDirection()
 	if conn.Operation != nil {
 		operation := conn.GetOperation()

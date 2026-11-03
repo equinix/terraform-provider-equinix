@@ -224,10 +224,10 @@ func (r *Resource) Delete(
 func getCreateUpdateWaiter(ctx context.Context, client *fabricv4.APIClient, assetID, asset, streamID string, timeout time.Duration) *retry.StateChangeConf {
 	return &retry.StateChangeConf{
 		Pending: []string{
-			string(fabricv4.STREAMASSETATTACHMENTSTATUS_ATTACHING),
+			string(fabricv4.STREAMSEARCHASSETATTACHMENTSTATUS_ATTACHING),
 		},
 		Target: []string{
-			string(fabricv4.STREAMASSETATTACHMENTSTATUS_ATTACHED),
+			string(fabricv4.STREAMSEARCHASSETATTACHMENTSTATUS_ATTACHED),
 		},
 		Refresh: func() (any, string, error) {
 			stream, _, err := client.StreamsApi.GetStreamAssetByUuid(ctx, assetID, fabricv4.Asset(asset), streamID).Execute()
@@ -249,12 +249,12 @@ func getDeleteWaiter(ctx context.Context, client *fabricv4.APIClient, assetID, a
 	deletedMarker := "tf-marker-for-deleted-stream-attachment"
 	return &retry.StateChangeConf{
 		Pending: []string{
-			string(fabricv4.STREAMASSETATTACHMENTSTATUS_ATTACHED),
-			string(fabricv4.STREAMASSETATTACHMENTSTATUS_DETACHING),
+			string(fabricv4.STREAMSEARCHASSETATTACHMENTSTATUS_ATTACHED),
+			string(fabricv4.STREAMSEARCHASSETATTACHMENTSTATUS_DETACHING),
 		},
 		Target: []string{
 			deletedMarker,
-			string(fabricv4.STREAMASSETATTACHMENTSTATUS_DETACHED),
+			string(fabricv4.STREAMSEARCHASSETATTACHMENTSTATUS_DETACHED),
 		},
 		Refresh: func() (any, string, error) {
 			stream, resp, err := client.StreamsApi.GetStreamAssetByUuid(ctx, assetID, fabricv4.Asset(asset), streamID).Execute()
