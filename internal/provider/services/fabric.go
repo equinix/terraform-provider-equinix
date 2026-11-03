@@ -27,6 +27,7 @@ func FabricResources() []func() resource.Resource {
 	return []func() resource.Resource{
 		ipblock.NewResource,
 		asn.NewResource,
+		internetaccess.NewResource,
 		connectionrouteaggregation.NewResource,
 		port.NewResource,
 		precisiontime.NewResource,

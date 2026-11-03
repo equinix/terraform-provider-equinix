@@ -63,7 +63,7 @@ func remainingSweepTime(ctx context.Context) time.Duration {
 func AddTestSweeper() {
 	resource.AddTestSweepers("equinix_fabric_connection", &resource.Sweeper{
 		Name:         "equinix_fabric_connection",
-		Dependencies: []string{},
+		Dependencies: []string{"equinix_fabric_internet_access_service"},
 		F:            testSweepConnections,
 	})
 }

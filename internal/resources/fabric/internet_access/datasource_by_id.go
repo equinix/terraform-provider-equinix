@@ -43,7 +43,7 @@ func (r *DataSourceByInternetAccessID) Read(ctx context.Context, request datasou
 		return
 	}
 
-	service, _, err := client.InternetAccessServicesApi.GetEiaService(ctx, data.InternetAccessServiceID.ValueString()).Execute()
+	service, _, err := getService(ctx, client, data.InternetAccessServiceID.ValueString())
 	if err != nil {
 		response.State.RemoveResource(ctx)
 		response.Diagnostics.AddError("api error retrieving internet access service", equinix_errors.FormatFabricError(err).Error())

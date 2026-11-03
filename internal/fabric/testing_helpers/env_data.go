@@ -14,6 +14,7 @@ const (
 	FabricSubscriptionEnvVar        = "TF_ACC_FABRIC_MARKET_PLACE_SUBSCRIPTION_ID"
 	FabricStreamEnvVar              = "TF_ACC_FABRIC_STREAM_TEST_DATA"
 	FabricIpBlockEnvVar             = "TF_ACC_FABRIC_IP_BLOCK_TEST_DATA"
+	FabricInternetAccessEnvVar      = "TF_ACC_FABRIC_INTERNET_ACCESS_TEST_DATA"
 )
 
 type EnvPorts map[string]map[string][]fabricv4.Port
@@ -59,4 +60,19 @@ func GetFabricIpBlockTestData(t *testing.T) map[string]map[string]string {
 		t.Fatalf("failed reading ip block data from environment: %v, %s", err, ipBlockJSON)
 	}
 	return ipBlockTestData
+}
+
+// GetFabricInternetAccessTestData reads Internet Access test data from the
+// TF_ACC_FABRIC_INTERNET_ACCESS_TEST_DATA env var.
+// Expected JSON format:
+//
+//	{"pfcr": {"project_id": "<uuid>", "account_number": "<number>", "port_uuid": "<physical port uuid>",
+//	          "service_profile_uuid": "<uuid of the Equinix Internet Access service profile>", "metro_code": "<metro of the port>"}}
+func GetFabricInternetAccessTestData(t *testing.T) map[string]map[string]string {
+	var testData map[string]map[string]string
+	raw := os.Getenv(FabricInternetAccessEnvVar)
+	if err := json.Unmarshal([]byte(raw), &testData); raw != "" && err != nil {
+		t.Fatalf("failed reading internet access data from environment: %v, %s", err, raw)
+	}
+	return testData
 }
