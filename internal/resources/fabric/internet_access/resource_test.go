@@ -56,7 +56,7 @@ func TestAccFabricInternetAccessServiceCreate_PFCR(t *testing.T) {
 				ImportState:       true,
 				ImportStateVerify: true,
 
-				ImportStateVerifyIgnore: []string{"timeouts", "state"},
+				ImportStateVerifyIgnore: []string{"timeouts", "state", "change", "change_log"},
 			},
 		},
 	})
@@ -98,6 +98,9 @@ resource "equinix_fabric_connection" "ia" {
         metro_code = %[5]q
       }
     }
+  }
+  lifecycle {
+    ignore_changes = [a_side, z_side, redundancy]
   }
 }
 

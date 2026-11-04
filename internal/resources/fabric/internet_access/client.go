@@ -49,3 +49,54 @@ func decodeWithDefaultOrder(body []byte) (*fabricv4.InternetAccessService, error
 	}
 	return &svc, nil
 }
+
+func searchServices(ctx context.Context, client *fabricv4.APIClient, request fabricv4.InternetAccessSearchRequest) (*fabricv4.InternetAccessServices, *http.Response, error) {
+	services, resp, err := client.InternetAccessServicesApi.SearchEiaServices(ctx).InternetAccessSearchRequest(request).Execute()
+	if err == nil {
+		return services, resp, nil
+	}
+
+	if resp == nil || resp.StatusCode != http.StatusOK {
+		return services, resp, err
+	}
+	var apiErr *fabricv4.GenericOpenAPIError
+	if !errors.As(err, &apiErr) {
+		return services, resp, err
+	}
+	repaired, repairErr := decodeSearchWithDefaultOrder(apiErr.Body())
+	if repairErr != nil {
+		return services, resp, err
+	}
+	return repaired, resp, nil
+}
+
+func decodeSearchWithDefaultOrder(body []byte) (*fabricv4.InternetAccessServices, error) {
+	var raw map[string]json.RawMessage
+	if err := json.Unmarshal(body, &raw); err != nil {
+		return nil, err
+	}
+	var items []map[string]json.RawMessage
+	if err := json.Unmarshal(raw["data"], &items); err != nil {
+		return nil, err
+	}
+	for _, item := range items {
+		if _, ok := item["order"]; !ok {
+			item["order"] = json.RawMessage(`{}`)
+		}
+	}
+	data, err := json.Marshal(items)
+	if err != nil {
+		return nil, err
+	}
+	raw["data"] = data
+
+	fixed, err := json.Marshal(raw)
+	if err != nil {
+		return nil, err
+	}
+	var services fabricv4.InternetAccessServices
+	if err := json.Unmarshal(fixed, &services); err != nil {
+		return nil, err
+	}
+	return &services, nil
+}

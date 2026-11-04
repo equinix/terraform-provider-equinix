@@ -2,9 +2,11 @@ package internetaccess
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"net/http"
 	"slices"
+	"strings"
 	"time"
 
 	"github.com/equinix/equinix-sdk-go/services/fabricv4"
@@ -15,7 +17,10 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/retry"
 )
 
-const deletedMarker = "tf-marker-for-deleted-internet-access-service"
+const (
+	deletedMarker         = "tf-marker-for-deleted-internet-access-service"
+	activeChangeErrorCode = "EQ-7100063"
+)
 
 const (
 	waitDelay       = 10 * time.Second
@@ -63,7 +68,12 @@ func (r *Resource) Create(ctx context.Context, req resource.CreateRequest, resp 
 
 	resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("id"), svc.GetUuid())...)
 
-	resp.Diagnostics.Append(plan.parse(ctx, svc)...)
+	current, _, getErr := getService(ctx, client, svc.GetUuid())
+	if getErr != nil {
+		current = svc
+	}
+
+	resp.Diagnostics.Append(plan.parse(ctx, current)...)
 	if resp.Diagnostics.HasError() {
 		return
 	}
@@ -122,20 +132,30 @@ func (r *Resource) Delete(ctx context.Context, req resource.DeleteRequest, resp 
 
 	id := state.ID.ValueString()
 
-	_, deleteResp, err := client.InternetAccessServicesApi.DeleteEiaService(ctx, id).Execute()
-	if err != nil {
-		if deleteResp == nil || !slices.Contains([]int{http.StatusForbidden, http.StatusNotFound}, deleteResp.StatusCode) {
-			resp.Diagnostics.AddError(
-				fmt.Sprintf("failed deleting Internet Access service %s", id),
-				equinix_errors.FormatFabricError(err).Error(),
-			)
-			return
-		}
-	}
-
 	deleteTimeout, diags := state.Timeouts.Delete(ctx, 30*time.Minute)
 	resp.Diagnostics.Append(diags...)
 	if resp.Diagnostics.HasError() {
+		return
+	}
+
+	err := retry.RetryContext(ctx, deleteTimeout, func() *retry.RetryError {
+		_, deleteResp, deleteErr := client.InternetAccessServicesApi.DeleteEiaService(ctx, id).Execute()
+		switch {
+		case deleteErr == nil:
+			return nil
+		case deleteResp != nil && slices.Contains([]int{http.StatusForbidden, http.StatusNotFound}, deleteResp.StatusCode):
+			return nil
+		case hasActiveChange(deleteErr):
+			return retry.RetryableError(deleteErr)
+		default:
+			return retry.NonRetryableError(deleteErr)
+		}
+	})
+	if err != nil {
+		resp.Diagnostics.AddError(
+			fmt.Sprintf("failed deleting Internet Access service %s", id),
+			equinix_errors.FormatFabricError(err).Error(),
+		)
 		return
 	}
 
@@ -151,7 +171,6 @@ func getDeleteWaiter(ctx context.Context, client *fabricv4.APIClient, uuid strin
 			string(fabricv4.INTERNETACCESSSERVICESTATE_PROVISIONING),
 			string(fabricv4.INTERNETACCESSSERVICESTATE_DEPROVISIONING),
 		},
-
 		Target: []string{deletedMarker, string(fabricv4.INTERNETACCESSSERVICESTATE_DEPROVISIONED), string(fabricv4.INTERNETACCESSSERVICESTATE_FAILED)},
 		Refresh: func() (any, string, error) {
 			svc, httpResp, err := getService(ctx, client, uuid)
@@ -167,4 +186,9 @@ func getDeleteWaiter(ctx context.Context, client *fabricv4.APIClient, uuid strin
 		Delay:      waitDelay,
 		MinTimeout: waitMinInterval,
 	}
+}
+
+func hasActiveChange(err error) bool {
+	var apiErr *fabricv4.GenericOpenAPIError
+	return errors.As(err, &apiErr) && strings.Contains(string(apiErr.Body()), activeChangeErrorCode)
 }
