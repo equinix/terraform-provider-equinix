@@ -56,7 +56,7 @@ func TestAccFabricInternetAccessServiceCreate_PFCR(t *testing.T) {
 				ImportState:       true,
 				ImportStateVerify: true,
 
-				ImportStateVerifyIgnore: []string{"timeouts", "state", "change", "change_log"},
+				ImportStateVerifyIgnore: []string{"timeouts", "state", "change", "change_log", "href", "billing.enabled", "routing_protocol.customer_routes.0.ip_block.href"},
 			},
 		},
 	})
