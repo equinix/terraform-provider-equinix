@@ -103,9 +103,7 @@ func (r *DataSourceAllInternetAccess) Read(ctx context.Context, request datasour
 		}
 	}
 
-	services, _, err := client.InternetAccessServicesApi.SearchEiaServices(ctx).
-		InternetAccessSearchRequest(searchRequest).
-		Execute()
+	services, _, err := searchServices(ctx, client, searchRequest)
 	if err != nil {
 		response.Diagnostics.AddError("api error retrieving internet access services", equinix_errors.FormatFabricError(err).Error())
 		return

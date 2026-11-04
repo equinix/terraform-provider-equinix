@@ -58,7 +58,7 @@ func testSweepInternetAccessServices(_ string) error {
 			Filter:     &filter,
 			Pagination: &fabricv4.PaginationRequest{Offset: &pageOffset, Limit: &limit},
 		}
-		result, _, searchErr := fabric.InternetAccessServicesApi.SearchEiaServices(ctx).InternetAccessSearchRequest(searchReq).Execute()
+		result, _, searchErr := searchServices(ctx, fabric, searchReq)
 		if searchErr != nil {
 			return fmt.Errorf("error searching Internet Access services for sweep: %s", equinix_errors.FormatFabricError(searchErr))
 		}
