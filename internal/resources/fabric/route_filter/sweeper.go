@@ -8,6 +8,7 @@ import (
 	"net/http"
 
 	equinix_errors "github.com/equinix/terraform-provider-equinix/internal/errors"
+	"github.com/equinix/terraform-provider-equinix/internal/fabric/sdkcompat"
 	"github.com/equinix/terraform-provider-equinix/internal/fabric/sweep"
 	testinghelpers "github.com/equinix/terraform-provider-equinix/internal/fabric/testing_helpers"
 
@@ -52,7 +53,7 @@ func testSweepRouteFilters(region string) error {
 					SearchSimpleExpression: &fabricv4.SearchSimpleExpression{
 						Property: "/state",
 						Operator: "=",
-						Values:   []string{string(fabricv4.ROUTEFILTERSTATE_PROVISIONED)},
+						Values:   []string{string(sdkcompat.ROUTEFILTERSTATE_PROVISIONED)},
 					},
 				},
 			},

@@ -8,6 +8,7 @@ import (
 
 	"github.com/equinix/terraform-provider-equinix/internal/config"
 	equinix_errors "github.com/equinix/terraform-provider-equinix/internal/errors"
+	"github.com/equinix/terraform-provider-equinix/internal/fabric/sdkcompat"
 
 	"github.com/equinix/equinix-sdk-go/services/fabricv4"
 
@@ -121,11 +122,11 @@ func waitForStability(ctx context.Context, uuid string, meta any, d *schema.Reso
 	log.Printf("Waiting for route filter to be stable, uuid %s", uuid)
 	stateConf := &retry.StateChangeConf{
 		Pending: []string{
-			string(fabricv4.ROUTEFILTERSTATE_PROVISIONING),
-			string(fabricv4.ROUTEFILTERSTATE_REPROVISIONING),
+			string(sdkcompat.ROUTEFILTERSTATE_PROVISIONING),
+			string(sdkcompat.ROUTEFILTERSTATE_REPROVISIONING),
 		},
 		Target: []string{
-			string(fabricv4.ROUTEFILTERSTATE_PROVISIONED),
+			string(sdkcompat.ROUTEFILTERSTATE_PROVISIONED),
 		},
 		Refresh: func() (any, string, error) {
 			client := meta.(*config.Config).NewFabricClientForSDK(ctx, d)
@@ -133,7 +134,7 @@ func waitForStability(ctx context.Context, uuid string, meta any, d *schema.Reso
 			if err != nil {
 				return "", "", equinix_errors.FormatFabricError(err)
 			}
-			return routeFilter, string(routeFilter.GetState()), nil
+			return routeFilter, string(sdkcompat.GetRouteFilterState(routeFilter)), nil
 		},
 		Timeout:    timeout,
 		Delay:      30 * time.Second,
@@ -150,11 +151,11 @@ func WaitForDeletion(ctx context.Context, uuid string, meta any, d *schema.Resou
 	log.Printf("Waiting for route filter to be deleted, uuid %s", uuid)
 	stateConf := &retry.StateChangeConf{
 		Pending: []string{
-			string(fabricv4.ROUTEFILTERSTATE_PROVISIONED),
-			string(fabricv4.ROUTEFILTERSTATE_DEPROVISIONING),
+			string(sdkcompat.ROUTEFILTERSTATE_PROVISIONED),
+			string(sdkcompat.ROUTEFILTERSTATE_DEPROVISIONING),
 		},
 		Target: []string{
-			string(fabricv4.ROUTEFILTERSTATE_DEPROVISIONED),
+			string(sdkcompat.ROUTEFILTERSTATE_DEPROVISIONED),
 		},
 		Refresh: func() (any, string, error) {
 			client := meta.(*config.Config).NewFabricClientForSDK(ctx, d)
@@ -162,11 +163,11 @@ func WaitForDeletion(ctx context.Context, uuid string, meta any, d *schema.Resou
 			if err != nil {
 				if body.StatusCode >= 400 && body.StatusCode <= 499 {
 					// Already deleted resource
-					return routeFilter, string(fabricv4.ROUTEFILTERSTATE_DEPROVISIONED), nil
+					return routeFilter, string(sdkcompat.ROUTEFILTERSTATE_DEPROVISIONED), nil
 				}
 				return "", "", equinix_errors.FormatFabricError(err)
 			}
-			return routeFilter, string(routeFilter.GetState()), nil
+			return routeFilter, string(sdkcompat.GetRouteFilterState(routeFilter)), nil
 		},
 		Timeout:    timeout,
 		Delay:      30 * time.Second,

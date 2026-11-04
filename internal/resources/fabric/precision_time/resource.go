@@ -62,7 +62,7 @@ func (r *Resource) Create(
 		return
 	}
 
-	ept, _, err := client.PrecisionTimeApi.CreateTimeServices(ctx).PrecisionTimeServiceRequest(createRequest).Execute()
+	ept, _, err := client.PrecisionTimeServicesApi.CreateTimeServices(ctx).PrecisionTimeServiceRequest(createRequest).Execute()
 	if err != nil {
 		resp.Diagnostics.AddError(
 			"Error creating Precision Time Service", equinix_errors.FormatFabricError(err).Error())
@@ -111,7 +111,7 @@ func (r *Resource) Read(
 	// Extract the ID of the resource from the state
 	id := state.ID.ValueString()
 
-	ept, _, err := client.PrecisionTimeApi.GetTimeServicesById(ctx, id).Execute()
+	ept, _, err := client.PrecisionTimeServicesApi.GetTimeServicesById(ctx, id).Execute()
 	if err != nil {
 		resp.Diagnostics.AddError(
 			fmt.Sprintf("Failed retrieving Precision Time Service %s", id), err.Error())
@@ -160,7 +160,7 @@ func (r *Resource) Update(
 
 	for _, update := range updateRequest {
 		if !reflect.DeepEqual(updateRequest, fabricv4.PrecisionTimeChangeOperation{}) {
-			_, _, err := client.PrecisionTimeApi.UpdateTimeServicesById(ctx, serviceID).
+			_, _, err := client.PrecisionTimeServicesApi.UpdateTimeServicesById(ctx, serviceID).
 				PrecisionTimeChangeOperation([]fabricv4.PrecisionTimeChangeOperation{update}).
 				Execute()
 
@@ -218,7 +218,7 @@ func (r *Resource) Delete(
 	id := state.ID.ValueString()
 
 	// API call to delete the Precision Time Service
-	_, deleteResp, err := client.PrecisionTimeApi.DeleteTimeServiceById(ctx, id).Execute()
+	_, deleteResp, err := client.PrecisionTimeServicesApi.DeleteTimeServiceById(ctx, id).Execute()
 	if err != nil {
 		if deleteResp == nil || !slices.Contains([]int{http.StatusForbidden, http.StatusNotFound}, deleteResp.StatusCode) {
 			resp.Diagnostics.AddError(
@@ -247,11 +247,11 @@ func buildUpdateRequest(ctx context.Context, state resourceModel, plan resourceM
 
 	updateRequest := make([]fabricv4.PrecisionTimeChangeOperation, 0)
 	if !state.Name.Equal(plan.Name) {
-		op := fabricv4.PRECISIONTIMECHANGEOPERATIONOP_REPLACE
+		op := fabricv4.CLOUDROUTERCHANGEOPERATIONOP_REPLACE
 		if plan.Name.ValueString() != "" && state.Name.ValueString() == "" {
-			op = fabricv4.PRECISIONTIMECHANGEOPERATIONOP_ADD
+			op = fabricv4.CLOUDROUTERCHANGEOPERATIONOP_ADD
 		} else if plan.Name.ValueString() == "" && state.Name.ValueString() != "" {
-			op = fabricv4.PRECISIONTIMECHANGEOPERATIONOP_REMOVE
+			op = fabricv4.CLOUDROUTERCHANGEOPERATIONOP_REMOVE
 		}
 		updateRequest = append(updateRequest, fabricv4.PrecisionTimeChangeOperation{
 			Op:    op,
@@ -279,7 +279,7 @@ func buildUpdateRequest(ctx context.Context, state resourceModel, plan resourceM
 
 		if statePackageModel.Code.ValueString() != planPackageModel.Code.ValueString() {
 			updateRequest = append(updateRequest, fabricv4.PrecisionTimeChangeOperation{
-				Op:    fabricv4.PRECISIONTIMECHANGEOPERATIONOP_REPLACE,
+				Op:    fabricv4.CLOUDROUTERCHANGEOPERATIONOP_REPLACE,
 				Path:  fabricv4.PRECISIONTIMECHANGEOPERATIONPATH_PACKAGE_CODE,
 				Value: planPackageModel.Code.ValueString(),
 			})
@@ -320,7 +320,7 @@ func buildUpdateRequest(ctx context.Context, state resourceModel, plan resourceM
 		}
 
 		updateRequest = append(updateRequest, fabricv4.PrecisionTimeChangeOperation{
-			Op:    fabricv4.PRECISIONTIMECHANGEOPERATIONOP_REPLACE,
+			Op:    fabricv4.CLOUDROUTERCHANGEOPERATIONOP_REPLACE,
 			Path:  fabricv4.PRECISIONTIMECHANGEOPERATIONPATH_IPV4,
 			Value: ipv4Value,
 		})
@@ -347,7 +347,7 @@ func buildUpdateRequest(ctx context.Context, state resourceModel, plan resourceM
 			})
 		}
 		updateRequest = append(updateRequest, fabricv4.PrecisionTimeChangeOperation{
-			Op:    fabricv4.PRECISIONTIMECHANGEOPERATIONOP_REPLACE,
+			Op:    fabricv4.CLOUDROUTERCHANGEOPERATIONOP_REPLACE,
 			Path:  fabricv4.PRECISIONTIMECHANGEOPERATIONPATH_NTP_ADVANCED_CONFIGURATION,
 			Value: ntpList,
 		})
@@ -400,7 +400,7 @@ func buildUpdateRequest(ctx context.Context, state resourceModel, plan resourceM
 		}
 
 		updateRequest = append(updateRequest, fabricv4.PrecisionTimeChangeOperation{
-			Op:    fabricv4.PRECISIONTIMECHANGEOPERATIONOP_REPLACE,
+			Op:    fabricv4.CLOUDROUTERCHANGEOPERATIONOP_REPLACE,
 			Path:  fabricv4.PRECISIONTIMECHANGEOPERATIONPATH_PTP_ADVANCED_CONFIGURATION,
 			Value: ptpAdvancedConfigurationValue,
 		})
@@ -414,7 +414,7 @@ func buildCreateRequest(ctx context.Context, plan resourceModel) (fabricv4.Preci
 	request := fabricv4.PrecisionTimeServiceRequest{}
 
 	request.SetName(plan.Name.ValueString())
-	request.SetType(fabricv4.PrecisionTimeServiceRequestType(plan.Type.ValueString()))
+	request.SetType(fabricv4.TimeServicePriceType(plan.Type.ValueString()))
 
 	var eptPackage packageModel
 
@@ -527,7 +527,7 @@ func getCreateUpdateWaiter(ctx context.Context, client *fabricv4.APIClient, id s
 			string(fabricv4.PRECISIONTIMESERVICERESPONSESTATE_CONFIGURING),
 		},
 		Refresh: func() (any, string, error) {
-			ept, _, err := client.PrecisionTimeApi.GetTimeServicesById(ctx, id).Execute()
+			ept, _, err := client.PrecisionTimeServicesApi.GetTimeServicesById(ctx, id).Execute()
 			if err != nil {
 				return 0, "", err
 			}
@@ -550,7 +550,7 @@ func getDeleteWaiter(ctx context.Context, client *fabricv4.APIClient, id string,
 			string(fabricv4.PRECISIONTIMESERVICERESPONSESTATE_DEPROVISIONED),
 		},
 		Refresh: func() (any, string, error) {
-			ept, resp, err := client.PrecisionTimeApi.GetTimeServicesById(ctx, id).Execute()
+			ept, resp, err := client.PrecisionTimeServicesApi.GetTimeServicesById(ctx, id).Execute()
 			if err != nil {
 				if resp != nil && slices.Contains([]int{http.StatusForbidden, http.StatusNotFound}, resp.StatusCode) {
 					return ept, deletedMarker, nil

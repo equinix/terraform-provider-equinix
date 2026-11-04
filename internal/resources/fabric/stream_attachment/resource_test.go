@@ -32,9 +32,9 @@ func CheckStreamAttachmentDelete(s *terraform.State) error {
 		if attachment, deleteResp, err := client.StreamsApi.GetStreamAssetByUuid(ctx, assetID, fabricv4.Asset(asset), streamID).Execute(); err == nil {
 			if deleteResp == nil ||
 				!slices.Contains([]int{http.StatusBadRequest, http.StatusForbidden, http.StatusNotFound}, deleteResp.StatusCode) ||
-				attachment.GetAttachmentStatus() == fabricv4.STREAMASSETATTACHMENTSTATUS_ATTACHED {
+				attachment.GetAttachmentStatus() == fabricv4.STREAMSEARCHASSETATTACHMENTSTATUS_ATTACHED {
 				return fmt.Errorf("fabric stream %s still exists and is %s",
-					rs.Primary.ID, string(fabricv4.STREAMASSETATTACHMENTSTATUS_ATTACHED))
+					rs.Primary.ID, string(fabricv4.STREAMSEARCHASSETATTACHMENTSTATUS_ATTACHED))
 			}
 		}
 	}
