@@ -266,12 +266,20 @@ func appendUserAgentFromEnv(ua string) string {
 	return ua
 }
 
-// AddModuleToNEUserAgent injects the ModuleName into SDK resource metadata for analytics
+// AddModuleToNEUserAgent injects the ModuleName into SDK resource metadata for analytics.
+// It replaces *client with a copy that has its own headers, so the shared
+// Network Edge client is never written to by concurrent resource operations.
 func (c *Config) AddModuleToNEUserAgent(client *ne.Client, d *schema.ResourceData) {
-	cli := *client
-	rc := cli.(*ne.RestClient)
-	rc.SetHeader("User-agent", generateModuleUserAgentString(d, c.neUserAgent))
-	*client = rc
+	rc, ok := (*client).(*ne.RestClient)
+	if !ok {
+		return
+	}
+	restyClient := *rc.Client.Client
+	restyClient.Header = rc.Header.Clone()
+	restyClient.Header.Set("User-agent", generateModuleUserAgentString(d, c.neUserAgent))
+	restClient := *rc.Client
+	restClient.Client = &restyClient
+	*client = &ne.RestClient{Client: &restClient}
 }
 
 func generateFwModuleUserAgentString(ctx context.Context, meta tfsdk.Config, baseUserAgent string) string {
