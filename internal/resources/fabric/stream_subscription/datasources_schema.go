@@ -179,14 +179,17 @@ func getStreamSubscriptionSchema(ctx context.Context) map[string]schema.Attribut
 						"access_token": schema.StringAttribute{
 							Description: "Passed as Authorization header value",
 							Computed:    true,
+							Sensitive:   true,
 						},
 						"integration_key": schema.StringAttribute{
 							Description: "Passed as Authorization header value",
 							Computed:    true,
+							Sensitive:   true,
 						},
 						"api_key": schema.StringAttribute{
 							Description: "Passed as Authorization header value",
 							Computed:    true,
+							Sensitive:   true,
 						},
 						"username": schema.StringAttribute{
 							Description: "Passed as Authorization header value",
@@ -195,6 +198,7 @@ func getStreamSubscriptionSchema(ctx context.Context) map[string]schema.Attribut
 						"password": schema.StringAttribute{
 							Description: "Passed as Authorization header value",
 							Computed:    true,
+							Sensitive:   true,
 						},
 					},
 				},
@@ -213,7 +217,8 @@ func getStreamSubscriptionSchema(ctx context.Context) map[string]schema.Attribut
 							Computed: true,
 						},
 						"application_key": schema.StringAttribute{
-							Computed: true,
+							Computed:  true,
+							Sensitive: true,
 						},
 						"event_uri": schema.StringAttribute{
 							Computed: true,

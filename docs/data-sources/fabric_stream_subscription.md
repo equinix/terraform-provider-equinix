@@ -98,10 +98,10 @@ Read-Only:
 
 Read-Only:
 
-- `access_token` (String) Passed as Authorization header value
-- `api_key` (String) Passed as Authorization header value
-- `integration_key` (String) Passed as Authorization header value
-- `password` (String) Passed as Authorization header value
+- `access_token` (String, Sensitive) Passed as Authorization header value
+- `api_key` (String, Sensitive) Passed as Authorization header value
+- `integration_key` (String, Sensitive) Passed as Authorization header value
+- `password` (String, Sensitive) Passed as Authorization header value
 - `type` (String) Type of the credential being passed
 - `username` (String) Passed as Authorization header value
 
@@ -111,7 +111,7 @@ Read-Only:
 
 Read-Only:
 
-- `application_key` (String)
+- `application_key` (String, Sensitive)
 - `event_index` (String)
 - `event_uri` (String)
 - `format` (String)

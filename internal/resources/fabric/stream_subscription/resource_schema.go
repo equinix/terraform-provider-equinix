@@ -163,6 +163,7 @@ Additional Documentation:
 								Description: "Passed as Authorization header value",
 								Optional:    true,
 								Computed:    true,
+								Sensitive:   true,
 								PlanModifiers: []planmodifier.String{
 									stringplanmodifier.UseStateForUnknown(),
 								},
@@ -171,6 +172,7 @@ Additional Documentation:
 								Description: "Passed as Authorization header value",
 								Optional:    true,
 								Computed:    true,
+								Sensitive:   true,
 								PlanModifiers: []planmodifier.String{
 									stringplanmodifier.UseStateForUnknown(),
 								},
@@ -179,6 +181,7 @@ Additional Documentation:
 								Description: "Passed as Authorization header value",
 								Optional:    true,
 								Computed:    true,
+								Sensitive:   true,
 								PlanModifiers: []planmodifier.String{
 									stringplanmodifier.UseStateForUnknown(),
 								},
@@ -195,6 +198,7 @@ Additional Documentation:
 								Description: "Passed as Authorization header value",
 								Optional:    true,
 								Computed:    true,
+								Sensitive:   true,
 								PlanModifiers: []planmodifier.String{
 									stringplanmodifier.UseStateForUnknown(),
 								},
@@ -232,8 +236,9 @@ Additional Documentation:
 								},
 							},
 							"application_key": schema.StringAttribute{
-								Optional: true,
-								Computed: true,
+								Optional:  true,
+								Computed:  true,
+								Sensitive: true,
 								PlanModifiers: []planmodifier.String{
 									stringplanmodifier.UseStateForUnknown(),
 								},
