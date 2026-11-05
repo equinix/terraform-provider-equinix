@@ -229,3 +229,13 @@ func checkRoutingProtocolDelete(s *terraform.State) error {
 	}
 	return nil
 }
+
+func TestFabricRoutingProtocolBgpAuthKeyIsSensitive(t *testing.T) {
+	p := equinix.Provider()
+	if !p.ResourcesMap["equinix_fabric_routing_protocol"].Schema["bgp_auth_key"].Sensitive {
+		t.Error("resource bgp_auth_key is not sensitive")
+	}
+	if !p.DataSourcesMap["equinix_fabric_routing_protocol"].Schema["bgp_auth_key"].Sensitive {
+		t.Error("data source bgp_auth_key is not sensitive")
+	}
+}
