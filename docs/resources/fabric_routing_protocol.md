@@ -96,7 +96,7 @@ resource "equinix_fabric_routing_protocol" "bgp" {
 
 - `as_override_enabled` (Boolean) Enable AS number override
 - `bfd` (Block Set) Bidirectional Forwarding Detection (see [below for nested schema](#nestedblock--bfd))
-- `bgp_auth_key` (String) BGP authorization key
+- `bgp_auth_key` (String, Sensitive) BGP authorization key
 - `bgp_ipv4` (Block Set) Routing Protocol BGP IPv4 (see [below for nested schema](#nestedblock--bgp_ipv4))
 - `bgp_ipv6` (Block Set) Routing Protocol BGP IPv6 (see [below for nested schema](#nestedblock--bgp_ipv6))
 - `customer_asn` (Number) Customer-provided ASN
