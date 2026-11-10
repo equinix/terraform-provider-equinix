@@ -31,7 +31,11 @@ Additional documentation:
 func dataSourceFabricConnectionRead(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	uuid, _ := d.Get("uuid").(string)
 	d.SetId(uuid)
-	return resourceFabricConnectionRead(ctx, d, meta)
+	diags := resourceFabricConnectionRead(ctx, d, meta)
+	if !diags.HasError() && d.Id() == "" {
+		return diag.Errorf("Fabric connection %s not found", uuid)
+	}
+	return diags
 }
 
 // DataSourceSearch returns the schema.Resource for searching Fabric connections.
