@@ -386,9 +386,7 @@ func buildPhysicalPorts(ctx context.Context, physicalPortsObject fwtypes.ListNes
 				mDiags.Append(diags...)
 				return []fabricv4.PhysicalPort{}, mDiags
 			}
-			portInterface := fabricv4.PortInterface{}
-			portInterface.SetType(interfaceModel.Type.ValueString())
-			physicalPorts[i].SetInterface(portInterface)
+			physicalPorts[i].SetInterfaceType(interfaceModel.Type.ValueString())
 		}
 
 		var demarcationPoint demarcationPointModel

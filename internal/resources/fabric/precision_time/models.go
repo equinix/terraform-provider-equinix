@@ -3,6 +3,7 @@ package precisiontime
 
 import (
 	"context"
+	"encoding/json"
 	"reflect"
 
 	"github.com/equinix/equinix-sdk-go/services/fabricv4"
@@ -275,7 +276,7 @@ func (m *basePrecisionTimeModel) parse(ctx context.Context, ept *fabricv4.Precis
 		return mDiags
 	}
 
-	m.PrecisionTimePrice, diags = parsePrecisionTimePrice(ctx, ept.GetPricing())
+	m.PrecisionTimePrice, diags = parsePrecisionTimePrice(ctx, pricingFromResponse(ept))
 	if diags.HasError() {
 		mDiags.Append(diags...)
 		return mDiags
@@ -529,7 +530,36 @@ func parseOrder(ctx context.Context, order fabricv4.PrecisionTimeOrder) (fwtypes
 	return fwtypes.NewObjectValueOf[orderModel](ctx, &result), diags
 }
 
-func parsePrecisionTimePrice(ctx context.Context, price fabricv4.PrecisionTimePrice) (fwtypes.ObjectValueOf[precisionTimePriceModel], diag.Diagnostics) {
+// precisionTimePricing mirrors the `pricing` object of a Precision Time service.
+// equinix-sdk-go v0.69.0 dropped it from the generated model, so it is decoded
+// from the response's additional properties.
+type precisionTimePricing struct {
+	Currency *string                `json:"currency,omitempty"`
+	Charges  []fabricv4.PriceCharge `json:"charges,omitempty"`
+}
+
+func (p precisionTimePricing) GetCurrency() string {
+	if p.Currency == nil {
+		return ""
+	}
+	return *p.Currency
+}
+
+func (p precisionTimePricing) GetCharges() []fabricv4.PriceCharge { return p.Charges }
+
+func pricingFromResponse(ept *fabricv4.PrecisionTimeServiceResponse) precisionTimePricing {
+	var result precisionTimePricing
+	raw, ok := ept.AdditionalProperties["pricing"]
+	if !ok {
+		return result
+	}
+	if b, err := json.Marshal(raw); err == nil {
+		_ = json.Unmarshal(b, &result)
+	}
+	return result
+}
+
+func parsePrecisionTimePrice(ctx context.Context, price precisionTimePricing) (fwtypes.ObjectValueOf[precisionTimePriceModel], diag.Diagnostics) {
 	result := precisionTimePriceModel{}
 
 	if price.Currency != nil {

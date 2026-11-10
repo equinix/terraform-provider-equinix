@@ -11,6 +11,7 @@ import (
 
 	"github.com/equinix/equinix-sdk-go/services/fabricv4"
 	equinix_errors "github.com/equinix/terraform-provider-equinix/internal/errors"
+	"github.com/equinix/terraform-provider-equinix/internal/fabric/sdkcompat"
 	"github.com/equinix/terraform-provider-equinix/internal/fabric/sweep"
 	testinghelpers "github.com/equinix/terraform-provider-equinix/internal/fabric/testing_helpers"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/retry"
@@ -23,22 +24,22 @@ import (
 // active ones, so they are swept too. DEPROVISIONING connections are not
 // deleted again but are waited on.
 //
-// The connections search only accepts a subset of fabricv4.ConnectionState
+// The connections search only accepts a subset of sdkcompat.ConnectionState
 // (it rejects PROVISIONED and REPROVISIONING, which GET can still return).
 var sweepableConnectionSearchStates = []string{
-	string(fabricv4.CONNECTIONSTATE_ACTIVE),
-	string(fabricv4.CONNECTIONSTATE_DEPROVISIONING),
-	string(fabricv4.CONNECTIONSTATE_DRAFT),
-	string(fabricv4.CONNECTIONSTATE_FAILED),
-	string(fabricv4.CONNECTIONSTATE_PENDING),
-	string(fabricv4.CONNECTIONSTATE_PROVISIONING),
+	string(sdkcompat.CONNECTIONSTATE_ACTIVE),
+	string(sdkcompat.CONNECTIONSTATE_DEPROVISIONING),
+	string(sdkcompat.CONNECTIONSTATE_DRAFT),
+	string(sdkcompat.CONNECTIONSTATE_FAILED),
+	string(sdkcompat.CONNECTIONSTATE_PENDING),
+	string(sdkcompat.CONNECTIONSTATE_PROVISIONING),
 }
 
 // deprovisionPendingStates are the states GET may report while a swept
 // connection is on its way to DEPROVISIONED.
 var deprovisionPendingStates = append([]string{
-	string(fabricv4.CONNECTIONSTATE_PROVISIONED),
-	string(fabricv4.CONNECTIONSTATE_REPROVISIONING),
+	string(sdkcompat.CONNECTIONSTATE_PROVISIONED),
+	string(sdkcompat.CONNECTIONSTATE_REPROVISIONING),
 }, sweepableConnectionSearchStates...)
 
 // connectionSweepTimeout bounds the whole connection sweep. Connections are
@@ -62,7 +63,7 @@ func remainingSweepTime(ctx context.Context) time.Duration {
 func AddTestSweeper() {
 	resource.AddTestSweepers("equinix_fabric_connection", &resource.Sweeper{
 		Name:         "equinix_fabric_connection",
-		Dependencies: []string{},
+		Dependencies: []string{"equinix_fabric_internet_access_service"},
 		F:            testSweepConnections,
 	})
 }
@@ -145,7 +146,7 @@ func testSweepConnections(region string) error {
 func sweepConnection(ctx context.Context, fabric *fabricv4.APIClient, connection fabricv4.Connection) error {
 	name, uuid := connection.GetName(), connection.GetUuid()
 
-	if connection.GetState() != fabricv4.CONNECTIONSTATE_DEPROVISIONING {
+	if sdkcompat.GetConnectionState(&connection) != sdkcompat.CONNECTIONSTATE_DEPROVISIONING {
 		log.Printf("[DEBUG] Deleting Connection: %s", name)
 		alreadyDeleted := false
 		err := retry.RetryContext(ctx, remainingSweepTime(ctx), func() *retry.RetryError {
@@ -175,9 +176,9 @@ func sweepConnection(ctx context.Context, fabric *fabricv4.APIClient, connection
 	log.Printf("[DEBUG] Waiting for Connection %s (%s) to deprovision", name, uuid)
 	_, err := waitForConnection(ctx, fabric, uuid,
 		deprovisionPendingStates,
-		[]string{string(fabricv4.CONNECTIONSTATE_DEPROVISIONED)},
+		[]string{string(sdkcompat.CONNECTIONSTATE_DEPROVISIONED)},
 		remainingSweepTime(ctx),
-		withNotFoundAs(string(fabricv4.CONNECTIONSTATE_DEPROVISIONED)),
+		withNotFoundAs(string(sdkcompat.CONNECTIONSTATE_DEPROVISIONED)),
 		withPollInterval(connectionSweepPollInterval),
 	)
 	if err != nil {
