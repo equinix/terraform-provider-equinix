@@ -1,0 +1,105 @@
+name: "Validate PR Comment"
+
+# Posts (or clears) the PR validation comments. Runs in the context of the default
+# branch with a write token, so it must never check out or execute PR code. The only
+# data taken from the PR is a validated PR number and the error text, which is only
+# rendered as a comment body.
+on:
+  workflow_run:
+    workflows: ["Validate PR"]
+    types:
+      - completed
+
+permissions:
+  actions: read
+  pull-requests: write
+
+jobs:
+  comment:
+    name: Comment on PR validation
+    runs-on: ubuntu-latest
+    if: github.event.workflow_run.event == 'pull_request'
+    steps:
+      # Each validation job uploads its own artifact (validation-title and
+      # validation-packages); download them into separate directories.
+      - uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
+        with:
+          pattern: validation-*
+          path: validation
+          run-id: ${{ github.event.workflow_run.id }}
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Read validation results
+        id: result
+        run: |
+          pr_number=$(tr -cd '0-9' < validation/validation-title/pr-number)
+          if [ -z "$pr_number" ]; then
+            echo "Missing PR number" >&2
+            exit 1
+          fi
+          echo "pr_number=$pr_number" >> "$GITHUB_OUTPUT"
+
+          if [ -s validation/validation-title/error-message ]; then
+            {
+              echo "Hey there and thank you for opening this pull request! 👋🏼"
+              echo
+              echo "We require pull request titles to follow the [Conventional Commits specification](https://www.conventionalcommits.org/en/v1.0.0/) and it looks like your proposed title needs to be adjusted."
+              echo
+              echo "Details:"
+              echo
+              echo '```'
+              cat validation/validation-title/error-message
+              echo
+              echo '```'
+            } > validation/title-comment.md
+            echo "title_failed=true" >> "$GITHUB_OUTPUT"
+          fi
+
+          if [ -s validation/validation-packages/error-message ]; then
+            {
+              echo "We are actively working to reduce the amount of code in the \`equinix\`"
+              echo "package to avoid unintentional code sharing."
+              echo
+              echo "New files should be added in an isolated package instead of adding"
+              echo "more code to the \`equinix\` package.  You may need to refactor and/or"
+              echo "temporarily duplicate existing code in order to move your new code"
+              echo "to an isolated package."
+              echo
+              echo "Details:"
+              echo
+              echo '```'
+              cat validation/validation-packages/error-message
+              echo
+              echo '```'
+            } > validation/packages-comment.md
+            echo "packages_failed=true" >> "$GITHUB_OUTPUT"
+          fi
+
+      - uses: marocchino/sticky-pull-request-comment@5770ad5eb8f42dd2c4f34da00c94c5381e49af88 # v3.0.5
+        if: steps.result.outputs.title_failed == 'true'
+        with:
+          header: pr-title-lint-error
+          number: ${{ steps.result.outputs.pr_number }}
+          path: validation/title-comment.md
+
+      # Delete a previous comment when the issue has been resolved
+      - uses: marocchino/sticky-pull-request-comment@5770ad5eb8f42dd2c4f34da00c94c5381e49af88 # v3.0.5
+        if: steps.result.outputs.title_failed != 'true'
+        with:
+          header: pr-title-lint-error
+          number: ${{ steps.result.outputs.pr_number }}
+          delete: true
+
+      - uses: marocchino/sticky-pull-request-comment@5770ad5eb8f42dd2c4f34da00c94c5381e49af88 # v3.0.5
+        if: steps.result.outputs.packages_failed == 'true'
+        with:
+          header: files-added-to-equinix-error
+          number: ${{ steps.result.outputs.pr_number }}
+          path: validation/packages-comment.md
+
+      - uses: marocchino/sticky-pull-request-comment@5770ad5eb8f42dd2c4f34da00c94c5381e49af88 # v3.0.5
+        if: steps.result.outputs.packages_failed != 'true'
+        with:
+          header: files-added-to-equinix-error
+          number: ${{ steps.result.outputs.pr_number }}
+          delete: true

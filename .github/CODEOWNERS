@@ -8,3 +8,7 @@
 edge-networking              @equinix/governor-ne-network-edge-engineering
 network_*                    @equinix/governor-ne-network-edge-engineering
 equinix_network_*            @equinix/governor-ne-network-edge-engineering
+
+# Keep this last: the last matching pattern wins, so it overrides the patterns above
+# for everything under .github/ (e.g. workflows matching *fabric*).
+/.github/                    @equinix/governor-devrel-engineering

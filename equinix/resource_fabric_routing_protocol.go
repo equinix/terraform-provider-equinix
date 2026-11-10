@@ -280,6 +280,7 @@ func createFabricRoutingProtocolResourceSchema() map[string]*schema.Schema {
 			Type:        schema.TypeString,
 			Optional:    true,
 			Computed:    true,
+			Sensitive:   true,
 			Description: "BGP authorization key",
 		},
 		"as_override_enabled": {
