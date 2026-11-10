@@ -483,7 +483,7 @@ func parseAccount(ctx context.Context, account fabricv4.SimplifiedAccount) (fwty
 		result.OrgID = types.Int64Value(account.GetOrgId())
 	}
 	if account.OrganizationName != nil {
-		result.OrganizationName = types.StringValue(account.GetAccountName())
+		result.OrganizationName = types.StringValue(account.GetOrganizationName())
 	}
 	if account.GlobalOrgId != nil {
 		result.GlobalOrgID = types.StringValue(account.GetGlobalOrgId())
@@ -521,7 +521,7 @@ func parseOrder(ctx context.Context, order fabricv4.PrecisionTimeOrder) (fwtypes
 		result.PurchaseOrderNumber = types.StringValue(order.GetPurchaseOrderNumber())
 	}
 	if order.CustomerReferenceNumber != nil {
-		result.PurchaseOrderNumber = types.StringValue(order.GetCustomerReferenceNumber())
+		result.CustomerReferenceNumber = types.StringValue(order.GetCustomerReferenceNumber())
 	}
 	if order.OrderNumber != nil {
 		result.OrderNumber = types.StringValue(order.GetOrderNumber())
