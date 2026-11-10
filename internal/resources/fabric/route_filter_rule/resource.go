@@ -3,7 +3,7 @@ package route_filter_rule
 import (
 	"context"
 	"log"
-	"strings"
+	"net/http"
 	"time"
 
 	"github.com/equinix/terraform-provider-equinix/internal/config"
@@ -44,11 +44,12 @@ Additional Documentation:
 func resourceRead(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	client := meta.(*config.Config).NewFabricClientForSDK(ctx, d)
 	routeFilterID := d.Get("route_filter_id").(string)
-	routeFilterRule, _, err := client.RouteFilterRulesApi.GetRouteFilterRuleByUuid(ctx, routeFilterID, d.Id()).Execute()
+	routeFilterRule, resp, err := client.RouteFilterRulesApi.GetRouteFilterRuleByUuid(ctx, routeFilterID, d.Id()).Execute()
 	if err != nil {
-		log.Printf("[WARN] Route Filter Rule %s not found on Route Filter %s, error %s", d.Id(), routeFilterID, err)
-		if !strings.Contains(err.Error(), "500") {
+		if resp != nil && resp.StatusCode == http.StatusNotFound {
+			log.Printf("[WARN] Route Filter Rule %s not found on Route Filter %s, removing from state", d.Id(), routeFilterID)
 			d.SetId("")
+			return nil
 		}
 		return diag.FromErr(equinix_errors.FormatFabricError(err))
 	}
