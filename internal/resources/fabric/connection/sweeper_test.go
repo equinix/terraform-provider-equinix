@@ -8,6 +8,7 @@ import (
 	"time"
 
 	"github.com/equinix/equinix-sdk-go/services/fabricv4"
+	"github.com/equinix/terraform-provider-equinix/internal/fabric/sdkcompat"
 )
 
 // expectMethod fails the test if the request isn't the given method, then
@@ -21,11 +22,11 @@ func expectMethod(t *testing.T, method string, response testResponse) testRespon
 	}
 }
 
-func sweepTestConnection(state fabricv4.ConnectionState) fabricv4.Connection {
+func sweepTestConnection(state sdkcompat.ConnectionState) fabricv4.Connection {
 	conn := fabricv4.Connection{}
 	conn.SetUuid(testConnectionUUID)
 	conn.SetName("tfacc_sweep_PFCR")
-	conn.SetState(state)
+	sdkcompat.SetConnectionState(&conn, state)
 	return conn
 }
 
@@ -39,12 +40,12 @@ func useFastSweepPolling(t *testing.T) {
 func TestSweepConnection_DeletesAndWaits(t *testing.T) {
 	useFastSweepPolling(t)
 	client, calls := newTestFabricClient(t,
-		expectMethod(t, http.MethodDelete, withState(fabricv4.CONNECTIONSTATE_DEPROVISIONING)),
-		expectMethod(t, http.MethodGet, withState(fabricv4.CONNECTIONSTATE_DEPROVISIONING)),
-		expectMethod(t, http.MethodGet, withState(fabricv4.CONNECTIONSTATE_DEPROVISIONED)),
+		expectMethod(t, http.MethodDelete, withState(sdkcompat.CONNECTIONSTATE_DEPROVISIONING)),
+		expectMethod(t, http.MethodGet, withState(sdkcompat.CONNECTIONSTATE_DEPROVISIONING)),
+		expectMethod(t, http.MethodGet, withState(sdkcompat.CONNECTIONSTATE_DEPROVISIONED)),
 	)
 
-	if err := sweepConnection(context.Background(), client, sweepTestConnection(fabricv4.CONNECTIONSTATE_ACTIVE)); err != nil {
+	if err := sweepConnection(context.Background(), client, sweepTestConnection(sdkcompat.CONNECTIONSTATE_ACTIVE)); err != nil {
 		t.Fatalf("unexpected error: %v", err)
 	}
 	if got := calls.Load(); got != 3 {
@@ -57,11 +58,11 @@ func TestSweepConnection_RetriesTransientState(t *testing.T) {
 	transient := statusResponse(http.StatusBadRequest, fabricErrorBody("EQ-3142510", "Connection is in transient state"))
 	client, calls := newTestFabricClient(t,
 		expectMethod(t, http.MethodDelete, transient),
-		expectMethod(t, http.MethodDelete, withState(fabricv4.CONNECTIONSTATE_DEPROVISIONING)),
-		expectMethod(t, http.MethodGet, withState(fabricv4.CONNECTIONSTATE_DEPROVISIONED)),
+		expectMethod(t, http.MethodDelete, withState(sdkcompat.CONNECTIONSTATE_DEPROVISIONING)),
+		expectMethod(t, http.MethodGet, withState(sdkcompat.CONNECTIONSTATE_DEPROVISIONED)),
 	)
 
-	if err := sweepConnection(context.Background(), client, sweepTestConnection(fabricv4.CONNECTIONSTATE_PROVISIONING)); err != nil {
+	if err := sweepConnection(context.Background(), client, sweepTestConnection(sdkcompat.CONNECTIONSTATE_PROVISIONING)); err != nil {
 		t.Fatalf("unexpected error: %v", err)
 	}
 	if got := calls.Load(); got != 3 {
@@ -78,7 +79,7 @@ func TestSweepConnection_TransientStateUntilDeadline(t *testing.T) {
 
 	ctx, cancel := context.WithTimeout(context.Background(), 1500*time.Millisecond)
 	defer cancel()
-	err := sweepConnection(ctx, client, sweepTestConnection(fabricv4.CONNECTIONSTATE_PROVISIONING))
+	err := sweepConnection(ctx, client, sweepTestConnection(sdkcompat.CONNECTIONSTATE_PROVISIONING))
 	if err == nil {
 		t.Fatal("expected an error when the connection stays in a transient state")
 	}
@@ -96,7 +97,7 @@ func TestSweepConnection_AlreadyDeletedSkipsWait(t *testing.T) {
 			statusResponse(http.StatusBadRequest, fabricErrorBody("EQ-3142509", "Connection already deleted"))),
 	)
 
-	if err := sweepConnection(context.Background(), client, sweepTestConnection(fabricv4.CONNECTIONSTATE_ACTIVE)); err != nil {
+	if err := sweepConnection(context.Background(), client, sweepTestConnection(sdkcompat.CONNECTIONSTATE_ACTIVE)); err != nil {
 		t.Fatalf("unexpected error: %v", err)
 	}
 	if got := calls.Load(); got != 1 {
@@ -111,7 +112,7 @@ func TestSweepConnection_DeprovisioningOnlyWaits(t *testing.T) {
 			statusResponse(http.StatusNotFound, fabricErrorBody("EQ-3142102", "Connection not found"))),
 	)
 
-	if err := sweepConnection(context.Background(), client, sweepTestConnection(fabricv4.CONNECTIONSTATE_DEPROVISIONING)); err != nil {
+	if err := sweepConnection(context.Background(), client, sweepTestConnection(sdkcompat.CONNECTIONSTATE_DEPROVISIONING)); err != nil {
 		t.Fatalf("unexpected error: %v", err)
 	}
 	if got := calls.Load(); got != 1 {
@@ -126,7 +127,7 @@ func TestSweepConnection_DeleteErrorIsNotRetried(t *testing.T) {
 			statusResponse(http.StatusBadRequest, fabricErrorBody("EQ-3142231", "some other validation error"))),
 	)
 
-	err := sweepConnection(context.Background(), client, sweepTestConnection(fabricv4.CONNECTIONSTATE_ACTIVE))
+	err := sweepConnection(context.Background(), client, sweepTestConnection(sdkcompat.CONNECTIONSTATE_ACTIVE))
 	if err == nil || !strings.Contains(err.Error(), "error deleting fabric connection tfacc_sweep_PFCR") {
 		t.Fatalf("err = %v, want delete error naming the connection", err)
 	}
@@ -139,10 +140,10 @@ func TestSweepConnection_ForbiddenIsIgnored(t *testing.T) {
 	useFastSweepPolling(t)
 	client, _ := newTestFabricClient(t,
 		expectMethod(t, http.MethodDelete, statusResponse(http.StatusForbidden, fabricErrorBody("EQ-3155114", "Authorization error"))),
-		expectMethod(t, http.MethodGet, withState(fabricv4.CONNECTIONSTATE_DEPROVISIONED)),
+		expectMethod(t, http.MethodGet, withState(sdkcompat.CONNECTIONSTATE_DEPROVISIONED)),
 	)
 
-	if err := sweepConnection(context.Background(), client, sweepTestConnection(fabricv4.CONNECTIONSTATE_ACTIVE)); err != nil {
+	if err := sweepConnection(context.Background(), client, sweepTestConnection(sdkcompat.CONNECTIONSTATE_ACTIVE)); err != nil {
 		t.Fatalf("unexpected error: %v", err)
 	}
 }

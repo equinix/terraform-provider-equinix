@@ -342,7 +342,7 @@ func buildStreamSubscriptionSink(ctx context.Context, sinkObject fwtypes.ObjectV
 
 	var sink fabricv4.StreamSubscriptionSink
 
-	sink.SetType(fabricv4.StreamSubscriptionSinkType(sinkValue.Type.ValueString()))
+	sink.SetType(fabricv4.StreamSubscriptionSinkResponseType(sinkValue.Type.ValueString()))
 	if !sinkValue.URI.IsNull() && !sinkValue.URI.IsUnknown() {
 		sink.SetUri(sinkValue.URI.ValueString())
 	}

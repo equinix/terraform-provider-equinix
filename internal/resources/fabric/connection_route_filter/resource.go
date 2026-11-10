@@ -8,6 +8,7 @@ import (
 
 	"github.com/equinix/terraform-provider-equinix/internal/config"
 	equinix_errors "github.com/equinix/terraform-provider-equinix/internal/errors"
+	"github.com/equinix/terraform-provider-equinix/internal/fabric/sdkcompat"
 
 	"github.com/equinix/equinix-sdk-go/services/fabricv4"
 
@@ -188,7 +189,7 @@ func WaitForDeletion(ctx context.Context, connectionID, routeFilterID string, me
 			if err != nil {
 				if body.StatusCode >= 400 && body.StatusCode <= 499 {
 					// Already deleted resource
-					return connectionRouteFilter, string(fabricv4.ROUTEFILTERSTATE_DEPROVISIONED), nil
+					return connectionRouteFilter, string(sdkcompat.ROUTEFILTERSTATE_DEPROVISIONED), nil
 				}
 				return "", "", equinix_errors.FormatFabricError(err)
 			}

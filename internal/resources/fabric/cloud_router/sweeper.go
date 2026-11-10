@@ -41,14 +41,12 @@ func testSweepCloudRouters(region string) error {
 	equalOperator := string(fabricv4.EXPRESSIONOPERATOR_EQUAL)
 	limit := int32(100)
 	cloudRouterSearchRequest := fabricv4.CloudRouterSearchRequest{
-		Filter: &fabricv4.CloudRouterFilters{
-			And: []fabricv4.CloudRouterFilter{
+		Filter: &fabricv4.CloudRouterExpression{
+			And: []fabricv4.CloudRouterExpression{
 				{
-					CloudRouterSimpleExpression: &fabricv4.CloudRouterSimpleExpression{
-						Property: &equinixStatus,
-						Operator: &equalOperator,
-						Values:   []string{string(fabricv4.EQUINIXSTATUS_PROVISIONED)},
-					},
+					Property: &equinixStatus,
+					Operator: &equalOperator,
+					Values:   []string{string(fabricv4.EQUINIXSTATUS_PROVISIONED)},
 				},
 			},
 		},

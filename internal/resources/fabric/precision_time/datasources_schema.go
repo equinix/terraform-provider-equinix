@@ -120,8 +120,8 @@ func getEptServiceSchema(ctx context.Context) map[string]schema.Attribute {
 			Computed:    true,
 			Validators: []validator.String{
 				stringvalidator.OneOf(
-					string(fabricv4.PRECISIONTIMESERVICEREQUESTTYPE_NTP),
-					string(fabricv4.PRECISIONTIMESERVICEREQUESTTYPE_PTP),
+					string(fabricv4.TIMESERVICEPRICETYPE_NTP),
+					string(fabricv4.TIMESERVICEPRICETYPE_PTP),
 				),
 			},
 		},

@@ -254,7 +254,7 @@ func ErrorGoToTerraform(errors []fabricv4.Error) []any {
 	return mappedErrors
 }
 
-func ErrorAdditionalInfoGoToTerraform(additionalInfol []fabricv4.PriceErrorAdditionalInfo) []any {
+func ErrorAdditionalInfoGoToTerraform(additionalInfol []fabricv4.ErrorAdditionalInfoInner) []any {
 	if additionalInfol == nil {
 		return nil
 	}

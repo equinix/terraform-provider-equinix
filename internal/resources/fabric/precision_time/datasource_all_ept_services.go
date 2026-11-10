@@ -54,7 +54,7 @@ func (r *DataSourceAllEptServices) Read(ctx context.Context, request datasource.
 		return
 	}
 
-	eptServices, _, err := client.PrecisionTimeApi.SearchTimeServices(ctx).TimeServicesSearchRequest(searchRequest).Execute()
+	eptServices, _, err := client.PrecisionTimeServicesApi.SearchTimeServices(ctx).TimeServicesSearchRequest(searchRequest).Execute()
 
 	if err != nil {
 		response.State.RemoveResource(ctx)
