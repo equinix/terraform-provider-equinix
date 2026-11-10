@@ -780,7 +780,7 @@ Optional:
 
 Optional:
 
-- `authentication_key` (String) Authentication key for provider based connections or Metal-Fabric Integration connections
+- `authentication_key` (String, Sensitive) Authentication key for provider based connections or Metal-Fabric Integration connections
 - `gateway` (Block Set, Max: 1, Deprecated) **Deprecated** `gateway` Use `router` attribute instead (see [below for nested schema](#nestedblock--a_side--access_point--gateway))
 - `interface` (Block Set, Max: 1) Virtual device interface (see [below for nested schema](#nestedblock--a_side--access_point--interface))
 - `link_protocol` (Block Set, Max: 1) Connection link protocol (see [below for nested schema](#nestedblock--a_side--access_point--link_protocol))
@@ -1001,7 +1001,7 @@ Optional:
 
 Optional:
 
-- `authentication_key` (String) Authentication key for provider based connections or Metal-Fabric Integration connections
+- `authentication_key` (String, Sensitive) Authentication key for provider based connections or Metal-Fabric Integration connections
 - `gateway` (Block Set, Max: 1, Deprecated) **Deprecated** `gateway` Use `router` attribute instead (see [below for nested schema](#nestedblock--z_side--access_point--gateway))
 - `interface` (Block Set, Max: 1) Virtual device interface (see [below for nested schema](#nestedblock--z_side--access_point--interface))
 - `link_protocol` (Block Set, Max: 1) Connection link protocol (see [below for nested schema](#nestedblock--z_side--access_point--link_protocol))
