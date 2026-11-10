@@ -197,13 +197,13 @@ func buildStreamAlertRuleDetectionMethod(ctx context.Context, detectionMethodObj
 
 	var detectionMethod fabricv4.DetectionMethod
 	if !detectionMethodValue.Type.IsNull() {
-		detectionMethod.SetType(fabricv4.DetectionMethodType(detectionMethodValue.Type.ValueString()))
+		detectionMethod.SetType(fabricv4.DetectionMethodResponseType(detectionMethodValue.Type.ValueString()))
 	}
 	if !detectionMethodValue.WindowSize.IsNull() {
 		detectionMethod.SetWindowSize(detectionMethodValue.WindowSize.ValueString())
 	}
 	if !detectionMethodValue.Operand.IsNull() {
-		detectionMethod.SetOperand(fabricv4.DetectionMethodOperand(detectionMethodValue.Operand.ValueString()))
+		detectionMethod.SetOperand(fabricv4.DetectionMethodResponseOperand(detectionMethodValue.Operand.ValueString()))
 	}
 	if !detectionMethodValue.WarningThreshold.IsNull() {
 		detectionMethod.SetWarningThreshold(detectionMethodValue.WarningThreshold.ValueString())

@@ -13,7 +13,7 @@ const (
 	FabricConnectionsTestDataEnvVar = "TF_ACC_FABRIC_CONNECTIONS_TEST_DATA"
 	FabricSubscriptionEnvVar        = "TF_ACC_FABRIC_MARKET_PLACE_SUBSCRIPTION_ID"
 	FabricStreamEnvVar              = "TF_ACC_FABRIC_STREAM_TEST_DATA"
-	FabricIpBlockEnvVar             = "TF_ACC_FABRIC_IP_BLOCK_TEST_DATA"
+	FabricEiaEnvVar                 = "TF_ACC_FABRIC_EIA_TEST_DATA"
 )
 
 type EnvPorts map[string]map[string][]fabricv4.Port
@@ -50,13 +50,17 @@ func GetFabricStreamTestData(t *testing.T) map[string]map[string]string {
 	return streamTestData
 }
 
-// GetFabricIpBlockTestData reads IP block test data from the TF_ACC_FABRIC_IP_BLOCK_TEST_DATA env var.
-// Expected JSON format: {"pfcr": {"uuid": "<ip-block-uuid>", "prefix": "<prefix>", "ownership": "<ownership>"}}
-func GetFabricIpBlockTestData(t *testing.T) map[string]map[string]string {
-	var ipBlockTestData map[string]map[string]string
-	ipBlockJSON := os.Getenv(FabricIpBlockEnvVar)
-	if err := json.Unmarshal([]byte(ipBlockJSON), &ipBlockTestData); ipBlockJSON != "" && err != nil {
-		t.Fatalf("failed reading ip block data from environment: %v, %s", err, ipBlockJSON)
+// GetFabricEiaTestData reads the shared test data of the IP block, ASN and Internet Access (EIA)
+// tests from the TF_ACC_FABRIC_EIA_TEST_DATA env var.
+// Expected JSON format:
+//
+//	{"pfcr": {"project_id": "<uuid>", "account_number": "<number>", "port_uuid": "<physical port uuid>",
+//	          "service_profile_uuid": "<uuid of the Equinix Internet Access service profile>", "metro_code": "<metro of the port>"}}
+func GetFabricEiaTestData(t *testing.T) map[string]map[string]string {
+	var testData map[string]map[string]string
+	raw := os.Getenv(FabricEiaEnvVar)
+	if err := json.Unmarshal([]byte(raw), &testData); raw != "" && err != nil {
+		t.Fatalf("failed reading EIA test data from environment: %v, %s", err, raw)
 	}
-	return ipBlockTestData
+	return testData
 }
