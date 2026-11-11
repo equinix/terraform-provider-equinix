@@ -58,7 +58,7 @@ jobs:
 
     - name: Upload coverage to Codecov
       if: ${{ always() }}
-      uses: codecov/codecov-action@75cd11691c0faa626561e295848008c8a7dddffe # v5
+      uses: codecov/codecov-action@0fb7174895f61a3b6b78fc075e0cd60383518dac # v5
       with:
         token: ${{ secrets.CODECOV_TOKEN }}
         files: ./coverage.txt
