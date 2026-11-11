@@ -5,7 +5,7 @@ go 1.26.0
 require (
 	github.com/equinix/equinix-sdk-go v0.69.0
 	github.com/equinix/ne-go v1.21.0
-	github.com/equinix/rest-go v1.3.0
+	github.com/equinix/rest-go v1.4.0
 	github.com/hashicorp/go-cty v1.5.0
 	github.com/hashicorp/go-multierror v1.1.1
 	github.com/hashicorp/go-retryablehttp v0.7.8
