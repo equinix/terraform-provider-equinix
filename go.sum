@@ -41,8 +41,9 @@ github.com/equinix/equinix-sdk-go v0.69.0 h1:qFJGQzTsReY1UXFgyezJmDfWALUuxTy4ijH
 github.com/equinix/equinix-sdk-go v0.69.0/go.mod h1:QokAmUtlYlD4gJ1s5UL1nZ4e6XALV0ftl5ZCwdPYp5M=
 github.com/equinix/ne-go v1.21.0 h1:+OxxK7YcfmBTBsSPYgHnHUF9JqQ34YBFzMboXr094wI=
 github.com/equinix/ne-go v1.21.0/go.mod h1:eHkkxM4nbTB7DZ9X9zGnwfYnxIJWIsU3aHA+FAoZ1EI=
-github.com/equinix/rest-go v1.3.0 h1:m38scYTOfV6N+gcrwchgVDutDffYd+QoYCMm9Jn6jyk=
 github.com/equinix/rest-go v1.3.0/go.mod h1:7pjEgOdG2MZO9BGkQzSurSgVQxRfzc1enceXJS6hYDw=
+github.com/equinix/rest-go v1.4.0 h1:zvGdFi1q2Cpb0PckI1zNZyFPPEvL2+ZSeYl3zzcz+jY=
+github.com/equinix/rest-go v1.4.0/go.mod h1:fV0LNvsguqoUdrlUUg7Nbhh+osXaJAlKPW0ZYIcYDFw=
 github.com/fatih/color v1.13.0/go.mod h1:kLAiJbzzSOZDVNGyDpeOxJ47H46qBXwg5ILebYFFOfk=
 github.com/fatih/color v1.16.0 h1:zmkK9Ngbjj+K0yRhTVONQh1p/HknKYSlNT+vZCzyokM=
 github.com/fatih/color v1.16.0/go.mod h1:fL2Sau1YI5c0pdGEVCbKQbLXB6edEj1ZgiY4NijnWvE=
