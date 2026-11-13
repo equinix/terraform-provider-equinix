@@ -3,11 +3,14 @@ package equinix_test
 import (
 	"context"
 	"fmt"
+	"net/http"
+	"net/http/httptest"
 	"testing"
 	"time"
 
 	"github.com/equinix/terraform-provider-equinix/equinix"
 	"github.com/equinix/terraform-provider-equinix/internal/acceptance"
+	"github.com/equinix/terraform-provider-equinix/internal/config"
 	testinghelpers "github.com/equinix/terraform-provider-equinix/internal/fabric/testing_helpers"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -237,5 +240,68 @@ func TestFabricRoutingProtocolBgpAuthKeyIsSensitive(t *testing.T) {
 	}
 	if !p.DataSourcesMap["equinix_fabric_routing_protocol"].Schema["bgp_auth_key"].Sensitive {
 		t.Error("data source bgp_auth_key is not sensitive")
+	}
+}
+
+func testRoutingProtocolReadConfig(t *testing.T, status int) *config.Config {
+	t.Helper()
+	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
+		w.Header().Set("Content-Type", "application/json")
+		w.WriteHeader(status)
+		_, _ = w.Write([]byte(`[{"errorCode":"EQ-3041011","errorMessage":"Routing protocol does not exist"}]`))
+	}))
+	t.Cleanup(srv.Close)
+	return &config.Config{BaseURL: srv.URL, Token: "test-token"}
+}
+
+func testRoutingProtocolResourceData(t *testing.T, r *schema.Resource) *schema.ResourceData {
+	t.Helper()
+	d := r.TestResourceData()
+	d.SetId("00000000-0000-0000-0000-000000000000")
+	if err := d.Set("connection_uuid", "11111111-1111-1111-1111-111111111111"); err != nil {
+		t.Fatal(err)
+	}
+	return d
+}
+
+func TestRoutingProtocolRead_notFoundRemovesFromState(t *testing.T) {
+	r := equinix.Provider().ResourcesMap["equinix_fabric_routing_protocol"]
+	d := testRoutingProtocolResourceData(t, r)
+
+	diags := r.ReadContext(context.Background(), d, testRoutingProtocolReadConfig(t, http.StatusNotFound))
+
+	if diags.HasError() {
+		t.Fatalf("expected no error on 404, got %v", diags)
+	}
+	if d.Id() != "" {
+		t.Errorf("expected routing protocol to be removed from state, got id %q", d.Id())
+	}
+}
+
+func TestRoutingProtocolRead_otherErrorsAreReturned(t *testing.T) {
+	r := equinix.Provider().ResourcesMap["equinix_fabric_routing_protocol"]
+	d := testRoutingProtocolResourceData(t, r)
+
+	diags := r.ReadContext(context.Background(), d, testRoutingProtocolReadConfig(t, http.StatusForbidden))
+
+	if !diags.HasError() {
+		t.Fatal("expected an error on 403")
+	}
+}
+
+func TestRoutingProtocolDataSourceRead_notFoundIsAnError(t *testing.T) {
+	ds := equinix.Provider().DataSourcesMap["equinix_fabric_routing_protocol"]
+	d := ds.TestResourceData()
+	if err := d.Set("uuid", "00000000-0000-0000-0000-000000000000"); err != nil {
+		t.Fatal(err)
+	}
+	if err := d.Set("connection_uuid", "11111111-1111-1111-1111-111111111111"); err != nil {
+		t.Fatal(err)
+	}
+
+	diags := ds.ReadContext(context.Background(), d, testRoutingProtocolReadConfig(t, http.StatusNotFound))
+
+	if !diags.HasError() {
+		t.Fatal("expected the data source to fail when the routing protocol does not exist")
 	}
 }
