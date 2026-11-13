@@ -3,6 +3,8 @@ package equinix_test
 import (
 	"context"
 	"fmt"
+	"net/http"
+	"net/http/httptest"
 	"testing"
 	"time"
 
@@ -10,6 +12,7 @@ import (
 
 	"github.com/equinix/terraform-provider-equinix/equinix"
 	"github.com/equinix/terraform-provider-equinix/internal/acceptance"
+	"github.com/equinix/terraform-provider-equinix/internal/config"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/hashicorp/terraform-plugin-testing/terraform"
 )
@@ -173,4 +176,56 @@ func checkCloudRouterDelete(s *terraform.State) error {
 		}
 	}
 	return nil
+}
+
+func testCloudRouterReadConfig(t *testing.T, status int) *config.Config {
+	t.Helper()
+	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
+		w.Header().Set("Content-Type", "application/json")
+		w.WriteHeader(status)
+		_, _ = w.Write([]byte(`[{"errorCode":"EQ-2040012","errorMessage":"Cloud Router does not exist"}]`))
+	}))
+	t.Cleanup(srv.Close)
+	return &config.Config{BaseURL: srv.URL, Token: "test-token"}
+}
+
+func TestCloudRouterRead_notFoundRemovesFromState(t *testing.T) {
+	r := equinix.Provider().ResourcesMap["equinix_fabric_cloud_router"]
+	d := r.TestResourceData()
+	d.SetId("00000000-0000-0000-0000-000000000000")
+
+	diags := r.ReadContext(context.Background(), d, testCloudRouterReadConfig(t, http.StatusNotFound))
+
+	if diags.HasError() {
+		t.Fatalf("expected no error on 404, got %v", diags)
+	}
+	if d.Id() != "" {
+		t.Errorf("expected cloud router to be removed from state, got id %q", d.Id())
+	}
+}
+
+func TestCloudRouterRead_otherErrorsAreReturned(t *testing.T) {
+	r := equinix.Provider().ResourcesMap["equinix_fabric_cloud_router"]
+	d := r.TestResourceData()
+	d.SetId("00000000-0000-0000-0000-000000000000")
+
+	diags := r.ReadContext(context.Background(), d, testCloudRouterReadConfig(t, http.StatusForbidden))
+
+	if !diags.HasError() {
+		t.Fatal("expected an error on 403")
+	}
+}
+
+func TestCloudRouterDataSourceRead_notFoundIsAnError(t *testing.T) {
+	ds := equinix.Provider().DataSourcesMap["equinix_fabric_cloud_router"]
+	d := ds.TestResourceData()
+	if err := d.Set("uuid", "00000000-0000-0000-0000-000000000000"); err != nil {
+		t.Fatal(err)
+	}
+
+	diags := ds.ReadContext(context.Background(), d, testCloudRouterReadConfig(t, http.StatusNotFound))
+
+	if !diags.HasError() {
+		t.Fatal("expected the data source to fail when the cloud router does not exist")
+	}
 }
