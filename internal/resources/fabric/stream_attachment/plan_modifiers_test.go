@@ -67,11 +67,11 @@ func minimalConfig(t *testing.T, assetValue string, metricsEnabled bool) tfsdk.C
 
 func TestMetricsEnabledModifier(t *testing.T) {
 	tests := []struct {
-		name          string
-		asset         string
-		planValue     bool
-		wantValue     bool
-		wantWarning   bool
+		name        string
+		asset       string
+		planValue   bool
+		wantValue   bool
+		wantWarning bool
 	}{
 		{
 			name:        "projects with true gets forced to false with warning",
