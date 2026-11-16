@@ -4,6 +4,7 @@ import (
 	"context"
 
 	"github.com/equinix/equinix-sdk-go/services/fabricv4"
+	"github.com/equinix/terraform-provider-equinix/internal/fabric/sdkcompat"
 	fwtypes "github.com/equinix/terraform-provider-equinix/internal/framework/types"
 	"github.com/hashicorp/terraform-plugin-framework-timeouts/resource/timeouts"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
@@ -146,7 +147,7 @@ func (m *BaseRouteAggregationModel) parse(ctx context.Context, routeAggregation 
 	m.Description = types.StringValue(routeAggregation.GetDescription())
 	m.Href = types.StringValue(routeAggregation.GetHref())
 	m.UUID = types.StringValue(routeAggregation.GetUuid())
-	m.State = types.StringValue(string(routeAggregation.GetState()))
+	m.State = types.StringValue(string(sdkcompat.GetRouteAggregationState(routeAggregation)))
 	m.ConnectionsCount = types.Int32Value(routeAggregation.GetConnectionsCount())
 	m.RulesCount = types.Int32Value(routeAggregation.GetRulesCount())
 	routeAggregationProject := routeAggregation.GetProject()

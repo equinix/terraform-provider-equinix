@@ -878,9 +878,9 @@ func resourceServiceProfilesSearchRequest(ctx context.Context, d *schema.Resourc
 		serviceProfilesSearchRequest.SetSort(sort)
 	}
 
-	viewPoint := fabricv4.GetServiceProfilesViewPointParameter("aSide")
+	viewPoint := fabricv4.ListServiceProfilesViewPointParameter("aSide")
 	if viewPointSchema, ok := d.GetOk("view_point"); ok {
-		viewPoint = fabricv4.GetServiceProfilesViewPointParameter(viewPointSchema.(string))
+		viewPoint = fabricv4.ListServiceProfilesViewPointParameter(viewPointSchema.(string))
 	}
 
 	serviceProfiles, _, err := client.ServiceProfilesApi.SearchServiceProfiles(ctx).ViewPoint(viewPoint).ServiceProfileSearchRequest(serviceProfilesSearchRequest).Execute()

@@ -3,6 +3,7 @@ package route_filter
 import (
 	"github.com/equinix/terraform-provider-equinix/internal/converters"
 	equinix_fabric_schema "github.com/equinix/terraform-provider-equinix/internal/fabric/schema"
+	"github.com/equinix/terraform-provider-equinix/internal/fabric/sdkcompat"
 	equinix_schema "github.com/equinix/terraform-provider-equinix/internal/schema"
 
 	"github.com/equinix/equinix-sdk-go/services/fabricv4"
@@ -125,7 +126,7 @@ func routeFilterResponseMap(data *fabricv4.RouteFiltersData) map[string]any {
 	routeFilterMap["description"] = data.GetDescription()
 	routeFilterMap["href"] = data.GetHref()
 	routeFilterMap["uuid"] = data.GetUuid()
-	routeFilterMap["state"] = string(data.GetState())
+	routeFilterMap["state"] = string(sdkcompat.GetRouteFilterState(data))
 	routeFilterMap["not_matched_rule_action"] = data.GetNotMatchedRuleAction()
 	routeFilterMap["connections_count"] = data.GetConnectionsCount()
 	routeFilterMap["rules_count"] = data.GetRulesCount()

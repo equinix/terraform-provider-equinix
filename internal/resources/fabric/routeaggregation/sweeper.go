@@ -9,6 +9,7 @@ import (
 
 	"github.com/equinix/equinix-sdk-go/services/fabricv4"
 	equinix_errors "github.com/equinix/terraform-provider-equinix/internal/errors"
+	"github.com/equinix/terraform-provider-equinix/internal/fabric/sdkcompat"
 	"github.com/equinix/terraform-provider-equinix/internal/fabric/sweep"
 	testinghelpers "github.com/equinix/terraform-provider-equinix/internal/fabric/testing_helpers"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
@@ -50,7 +51,7 @@ func testSweepRouteAggregations(_ string) error {
 						SearchSimpleExpression: &fabricv4.SearchSimpleExpression{
 							Property: "/state",
 							Operator: "=",
-							Values:   []string{string(fabricv4.ROUTEFILTERSTATE_PROVISIONED)},
+							Values:   []string{string(sdkcompat.ROUTEFILTERSTATE_PROVISIONED)},
 						}},
 				},
 			},
@@ -76,7 +77,7 @@ func testSweepRouteAggregations(_ string) error {
 						SearchSimpleExpression: &fabricv4.SearchSimpleExpression{
 							Property: "/state",
 							Operator: "=",
-							Values:   []string{string(fabricv4.ROUTEFILTERSTATE_PROVISIONED)},
+							Values:   []string{string(sdkcompat.ROUTEFILTERSTATE_PROVISIONED)},
 						}},
 				},
 			},

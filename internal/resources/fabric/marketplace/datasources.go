@@ -2,8 +2,7 @@ package marketplace
 
 import (
 	"context"
-	"log"
-	"strings"
+	"net/http"
 
 	"github.com/equinix/terraform-provider-equinix/internal/config"
 	equinix_errors "github.com/equinix/terraform-provider-equinix/internal/errors"
@@ -27,11 +26,10 @@ func dataSourceFabricMarketplaceSubscriptionRead(ctx context.Context, d *schema.
 
 func fabricMarketplaceSubscriptionRead(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	client := meta.(*config.Config).NewFabricClientForSDK(ctx, d)
-	subscription, _, err := client.MarketplaceSubscriptionsApi.GetSubscriptionById(ctx, d.Id()).Execute()
+	subscription, resp, err := client.MarketplaceSubscriptionsApi.GetSubscriptionById(ctx, d.Id()).Execute()
 	if err != nil {
-		log.Printf("[WARN] Subscription %s not found , error %s", d.Id(), err)
-		if !strings.Contains(err.Error(), "500") {
-			d.SetId("")
+		if resp != nil && resp.StatusCode == http.StatusNotFound {
+			return diag.Errorf("Fabric marketplace subscription %s not found", d.Id())
 		}
 		return diag.FromErr(equinix_errors.FormatFabricError(err))
 	}

@@ -13,6 +13,7 @@ import (
 	"github.com/equinix/terraform-provider-equinix/internal/config"
 	equinix_errors "github.com/equinix/terraform-provider-equinix/internal/errors"
 	equinix_fabric_schema "github.com/equinix/terraform-provider-equinix/internal/fabric/schema"
+	"github.com/equinix/terraform-provider-equinix/internal/fabric/sdkcompat"
 
 	"github.com/equinix/equinix-sdk-go/services/fabricv4"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
@@ -188,11 +189,12 @@ func resourceFabricConnectionCreate(ctx context.Context, d *schema.ResourceData,
 
 func resourceFabricConnectionRead(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	client := meta.(*config.Config).NewFabricClientForSDK(ctx, d)
-	conn, _, err := client.ConnectionsApi.GetConnectionByUuid(ctx, d.Id()).Execute()
+	conn, resp, err := client.ConnectionsApi.GetConnectionByUuid(ctx, d.Id()).Execute()
 	if err != nil {
-		log.Printf("[WARN] Connection %s not found , error %s", d.Id(), err)
-		if !strings.Contains(err.Error(), "500") {
+		if resp != nil && resp.StatusCode == http.StatusNotFound {
+			log.Printf("[WARN] Fabric connection %s not found, removing from state", d.Id())
 			d.SetId("")
+			return nil
 		}
 		return diag.FromErr(equinix_errors.FormatFabricError(err))
 	}
@@ -284,7 +286,7 @@ func withPollInterval(interval time.Duration) connectionWaitOption {
 // keeps waiting through any non-target status.
 func waitForConnection(ctx context.Context, client *fabricv4.APIClient, uuid string, pending, target []string, timeout time.Duration, opts ...connectionWaitOption) (*fabricv4.Connection, error) {
 	w := connectionWait{
-		status:       func(c *fabricv4.Connection) string { return string(c.GetState()) },
+		status:       func(c *fabricv4.Connection) string { return string(sdkcompat.GetConnectionState(c)) },
 		pollInterval: 30 * time.Second,
 	}
 	for _, opt := range opts {
@@ -338,12 +340,12 @@ func waitUntilConnectionIsCreated(ctx context.Context, uuid string, meta any, d 
 	client := meta.(*config.Config).NewFabricClientForSDK(ctx, d)
 	_, err := waitForConnection(ctx, client, uuid,
 		[]string{
-			string(fabricv4.CONNECTIONSTATE_PROVISIONING),
+			string(sdkcompat.CONNECTIONSTATE_PROVISIONING),
 		},
 		[]string{
-			string(fabricv4.CONNECTIONSTATE_PENDING),
-			string(fabricv4.CONNECTIONSTATE_PROVISIONED),
-			string(fabricv4.CONNECTIONSTATE_ACTIVE),
+			string(sdkcompat.CONNECTIONSTATE_PENDING),
+			string(sdkcompat.CONNECTIONSTATE_PROVISIONED),
+			string(sdkcompat.CONNECTIONSTATE_ACTIVE),
 		},
 		timeout,
 	)
@@ -375,9 +377,9 @@ func verifyConnectionCreated(ctx context.Context, uuid string, meta any, d *sche
 	return waitForConnection(ctx, client, uuid,
 		nil,
 		[]string{
-			string(fabricv4.CONNECTIONSTATE_ACTIVE),
-			string(fabricv4.CONNECTIONSTATE_PROVISIONED),
-			string(fabricv4.CONNECTIONSTATE_PENDING),
+			string(sdkcompat.CONNECTIONSTATE_ACTIVE),
+			string(sdkcompat.CONNECTIONSTATE_PROVISIONED),
+			string(sdkcompat.CONNECTIONSTATE_PENDING),
 		},
 		timeout,
 	)
@@ -409,13 +411,13 @@ func WaitUntilConnectionDeprovisioned(ctx context.Context, uuid string, meta any
 	client := meta.(*config.Config).NewFabricClientForSDK(ctx, d)
 	_, err := waitForConnection(ctx, client, uuid,
 		[]string{
-			string(fabricv4.CONNECTIONSTATE_DEPROVISIONING),
-			string(fabricv4.CONNECTIONSTATE_ACTIVE),
-			string(fabricv4.CONNECTIONSTATE_PROVISIONED),
-			string(fabricv4.CONNECTIONSTATE_PENDING),
+			string(sdkcompat.CONNECTIONSTATE_DEPROVISIONING),
+			string(sdkcompat.CONNECTIONSTATE_ACTIVE),
+			string(sdkcompat.CONNECTIONSTATE_PROVISIONED),
+			string(sdkcompat.CONNECTIONSTATE_PENDING),
 		},
 		[]string{
-			string(fabricv4.CONNECTIONSTATE_DEPROVISIONED),
+			string(sdkcompat.CONNECTIONSTATE_DEPROVISIONED),
 		},
 		timeout,
 	)

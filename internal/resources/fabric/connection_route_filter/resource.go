@@ -3,11 +3,12 @@ package connection_route_filter
 import (
 	"context"
 	"log"
-	"strings"
+	"net/http"
 	"time"
 
 	"github.com/equinix/terraform-provider-equinix/internal/config"
 	equinix_errors "github.com/equinix/terraform-provider-equinix/internal/errors"
+	"github.com/equinix/terraform-provider-equinix/internal/fabric/sdkcompat"
 
 	"github.com/equinix/equinix-sdk-go/services/fabricv4"
 
@@ -44,11 +45,12 @@ Additional Documentation:
 func resourceRead(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	client := meta.(*config.Config).NewFabricClientForSDK(ctx, d)
 	connectionID := d.Get("connection_id").(string)
-	connectionRouteFilter, _, err := client.RouteFiltersApi.GetConnectionRouteFilterByUuid(ctx, d.Id(), connectionID).Execute()
+	connectionRouteFilter, resp, err := client.RouteFiltersApi.GetConnectionRouteFilterByUuid(ctx, d.Id(), connectionID).Execute()
 	if err != nil {
-		log.Printf("[WARN] Route Filter Policy %s not found on Connection %s, error %s", d.Id(), connectionID, err)
-		if !strings.Contains(err.Error(), "500") {
+		if resp != nil && resp.StatusCode == http.StatusNotFound {
+			log.Printf("[WARN] Route Filter Policy %s not found on Connection %s, removing from state", d.Id(), connectionID)
 			d.SetId("")
+			return nil
 		}
 		return diag.FromErr(equinix_errors.FormatFabricError(err))
 	}
@@ -188,7 +190,7 @@ func WaitForDeletion(ctx context.Context, connectionID, routeFilterID string, me
 			if err != nil {
 				if body.StatusCode >= 400 && body.StatusCode <= 499 {
 					// Already deleted resource
-					return connectionRouteFilter, string(fabricv4.ROUTEFILTERSTATE_DEPROVISIONED), nil
+					return connectionRouteFilter, string(sdkcompat.ROUTEFILTERSTATE_DEPROVISIONED), nil
 				}
 				return "", "", equinix_errors.FormatFabricError(err)
 			}

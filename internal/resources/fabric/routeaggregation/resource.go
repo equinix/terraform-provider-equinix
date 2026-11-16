@@ -9,6 +9,7 @@ import (
 
 	"github.com/equinix/equinix-sdk-go/services/fabricv4"
 	equinix_errors "github.com/equinix/terraform-provider-equinix/internal/errors"
+	"github.com/equinix/terraform-provider-equinix/internal/fabric/sdkcompat"
 	"github.com/equinix/terraform-provider-equinix/internal/framework"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
@@ -240,17 +241,17 @@ func buildCreateRequest(ctx context.Context, plan ResourceModel) (fabricv4.Route
 func getCreateUpdateWaiter(ctx context.Context, client *fabricv4.APIClient, id string, timeout time.Duration) *retry.StateChangeConf {
 	return &retry.StateChangeConf{
 		Pending: []string{
-			string(fabricv4.ROUTEAGGREGATIONSTATE_PROVISIONING),
+			string(sdkcompat.ROUTEAGGREGATIONSTATE_PROVISIONING),
 		},
 		Target: []string{
-			string(fabricv4.ROUTEAGGREGATIONSTATE_PROVISIONED),
+			string(sdkcompat.ROUTEAGGREGATIONSTATE_PROVISIONED),
 		},
 		Refresh: func() (any, string, error) {
 			routeAggregation, _, err := client.RouteAggregationsApi.GetRouteAggregationByUuid(ctx, id).Execute()
 			if err != nil {
 				return 0, "", err
 			}
-			return routeAggregation, string(routeAggregation.GetState()), nil
+			return routeAggregation, string(sdkcompat.GetRouteAggregationState(routeAggregation)), nil
 		},
 		Timeout:    timeout,
 		Delay:      30 * time.Second,
@@ -265,11 +266,11 @@ func getDeleteWaiter(ctx context.Context, client *fabricv4.APIClient, id string,
 	deletedMarker := "tf-marker-for-deleted-route-aggregation"
 	return &retry.StateChangeConf{
 		Pending: []string{
-			string(fabricv4.ROUTEAGGREGATIONSTATE_DEPROVISIONING),
+			string(sdkcompat.ROUTEAGGREGATIONSTATE_DEPROVISIONING),
 		},
 		Target: []string{
 			deletedMarker,
-			string(fabricv4.ROUTEAGGREGATIONSTATE_DEPROVISIONED),
+			string(sdkcompat.ROUTEAGGREGATIONSTATE_DEPROVISIONED),
 		},
 		Refresh: func() (any, string, error) {
 			routeAggregation, resp, err := client.RouteAggregationsApi.GetRouteAggregationByUuid(ctx, id).Execute()
@@ -279,7 +280,7 @@ func getDeleteWaiter(ctx context.Context, client *fabricv4.APIClient, id string,
 				}
 				return 0, "", err
 			}
-			return routeAggregation, string(routeAggregation.GetState()), nil
+			return routeAggregation, string(sdkcompat.GetRouteAggregationState(routeAggregation)), nil
 		},
 		Timeout:    timeout,
 		Delay:      10 * time.Second,

@@ -129,7 +129,7 @@ type StreamAsset interface {
 	GetType() string
 	GetHref() string
 	GetUuid() string
-	GetAttachmentStatus() fabricv4.StreamAssetAttachmentStatus
+	GetAttachmentStatus() fabricv4.StreamSearchAssetAttachmentStatus
 }
 
 func (m *BaseAssetModel) parse(_ context.Context, streamAsset StreamAsset) diag.Diagnostics {

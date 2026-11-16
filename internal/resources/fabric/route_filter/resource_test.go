@@ -7,10 +7,9 @@ import (
 	"time"
 
 	"github.com/equinix/terraform-provider-equinix/internal/acceptance"
+	"github.com/equinix/terraform-provider-equinix/internal/fabric/sdkcompat"
 	testinghelpers "github.com/equinix/terraform-provider-equinix/internal/fabric/testing_helpers"
 	"github.com/equinix/terraform-provider-equinix/internal/resources/fabric/route_filter"
-
-	"github.com/equinix/equinix-sdk-go/services/fabricv4"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-testing/config"
@@ -57,7 +56,7 @@ func TestAccFabricRouteFilterPolicy_PFCR(t *testing.T) {
 						"name":                    knownvalue.StringExact("RF_Policy_X_PFCR"),
 						"description":             knownvalue.StringExact("Route Filter Policy for X Purpose"),
 						"type":                    knownvalue.StringExact("BGP_IPv4_PREFIX_FILTER"),
-						"state":                   knownvalue.StringExact(string(fabricv4.ROUTEFILTERSTATE_PROVISIONED)),
+						"state":                   knownvalue.StringExact(string(sdkcompat.ROUTEFILTERSTATE_PROVISIONED)),
 						"not_matched_rule_action": knownvalue.StringExact("DENY"),
 						"rules_count":             knownvalue.Int32Exact(0),
 					}),

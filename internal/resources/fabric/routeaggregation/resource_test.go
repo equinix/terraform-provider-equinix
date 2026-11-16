@@ -5,8 +5,8 @@ import (
 	"fmt"
 	"testing"
 
-	"github.com/equinix/equinix-sdk-go/services/fabricv4"
 	"github.com/equinix/terraform-provider-equinix/internal/config"
+	"github.com/equinix/terraform-provider-equinix/internal/fabric/sdkcompat"
 
 	"github.com/equinix/terraform-provider-equinix/internal/acceptance"
 	tfconfig "github.com/hashicorp/terraform-plugin-testing/config"
@@ -92,9 +92,9 @@ func CheckRouteAggregationDelete(s *terraform.State) error {
 		}
 
 		if routeAggregation, _, err := client.RouteAggregationsApi.GetRouteAggregationByUuid(ctx, rs.Primary.ID).Execute(); err == nil {
-			if routeAggregation.GetState() == fabricv4.ROUTEAGGREGATIONSTATE_PROVISIONED {
+			if sdkcompat.GetRouteAggregationState(routeAggregation) == sdkcompat.ROUTEAGGREGATIONSTATE_PROVISIONED {
 				return fmt.Errorf("fabric route aggregation %s still exists and is %s",
-					rs.Primary.ID, routeAggregation.GetState())
+					rs.Primary.ID, sdkcompat.GetRouteAggregationState(routeAggregation))
 			}
 		}
 	}

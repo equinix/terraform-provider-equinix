@@ -167,17 +167,16 @@ func resourceFabricCloudRoutersSearch(ctx context.Context, d *schema.ResourceDat
 	return setFabricCloudRoutersData(d, cloudRouters)
 }
 
-func cloudRouterFiltersTerraformToGo(filters []any) (fabricv4.CloudRouterFilters, error) {
+func cloudRouterFiltersTerraformToGo(filters []any) (fabricv4.CloudRouterExpression, error) {
 	if len(filters) == 0 {
-		return fabricv4.CloudRouterFilters{}, fmt.Errorf("no filters passed to filtersTerraformToGoMethod")
+		return fabricv4.CloudRouterExpression{}, fmt.Errorf("no filters passed to filtersTerraformToGoMethod")
 	}
-	cloudRouterFiltersList := make([]fabricv4.CloudRouterFilter, 0)
-	cloudRouterOrFilter := fabricv4.CloudRouterOrFilter{}
+	cloudRouterFiltersList := make([]fabricv4.CloudRouterExpression, 0)
+	cloudRouterOrFilter := fabricv4.CloudRouterExpression{}
 
 	for _, filter := range filters {
 		filterMap := filter.(map[string]any)
-		cloudRouterFilter := fabricv4.CloudRouterFilter{}
-		filterExpression := fabricv4.CloudRouterSimpleExpression{}
+		filterExpression := fabricv4.CloudRouterExpression{}
 		if property, ok := filterMap["property"]; ok {
 			filterExpression.SetProperty(property.(string))
 		}
@@ -195,26 +194,23 @@ func cloudRouterFiltersTerraformToGo(filters []any) (fabricv4.CloudRouterFilters
 			orValues := cloudRouterOrFilter.GetOr()
 			orValues = append(orValues, filterExpression)
 			if len(orValues) > 3 {
-				return fabricv4.CloudRouterFilters{}, fmt.Errorf("too many OR group filters passed. Passed %d but can only have a maximum of 3", len(orValues))
+				return fabricv4.CloudRouterExpression{}, fmt.Errorf("too many OR group filters passed. Passed %d but can only have a maximum of 3", len(orValues))
 			}
 			cloudRouterOrFilter.SetOr(orValues)
 		} else {
-			cloudRouterFilter.CloudRouterSimpleExpression = &filterExpression
-			cloudRouterFiltersList = append(cloudRouterFiltersList, cloudRouterFilter)
+			cloudRouterFiltersList = append(cloudRouterFiltersList, filterExpression)
 		}
 	}
 
 	if orGroupHasValues := cloudRouterOrFilter.GetOr(); len(orGroupHasValues) > 0 {
-		cloudRouterFilter := fabricv4.CloudRouterFilter{}
-		cloudRouterFilter.CloudRouterOrFilter = &cloudRouterOrFilter
-		cloudRouterFiltersList = append(cloudRouterFiltersList, cloudRouterFilter)
+		cloudRouterFiltersList = append(cloudRouterFiltersList, cloudRouterOrFilter)
 	}
 
-	cloudRouterFilters := fabricv4.CloudRouterFilters{}
+	cloudRouterFilters := fabricv4.CloudRouterExpression{}
 	cloudRouterFilters.SetAnd(cloudRouterFiltersList)
 
 	if len(cloudRouterFilters.GetAnd()) > 8 {
-		return fabricv4.CloudRouterFilters{}, fmt.Errorf("too many filters are applied to the data source. The maximum is 8 and %d were provided. Please reduce your filter count to 8", len(cloudRouterFilters.GetAnd()))
+		return fabricv4.CloudRouterExpression{}, fmt.Errorf("too many filters are applied to the data source. The maximum is 8 and %d were provided. Please reduce your filter count to 8", len(cloudRouterFilters.GetAnd()))
 	}
 
 	return cloudRouterFilters, nil

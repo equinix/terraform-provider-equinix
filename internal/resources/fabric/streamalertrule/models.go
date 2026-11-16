@@ -187,7 +187,6 @@ func (m *dataSourceAllStreamAlertRulesModel) parse(ctx context.Context, streamAl
 	}
 
 	m.ID = types.StringValue(data[0].UUID.ValueString())
-	m.StreamID = types.StringValue(data[0].UUID.ValueString())
 	m.Pagination = fwtypes.NewObjectValueOf[paginationModel](ctx, &pagination)
 	m.Data = fwtypes.NewListNestedObjectValueOfValueSlice[baseStreamAlertRulesModel](ctx, data)
 
@@ -195,8 +194,6 @@ func (m *dataSourceAllStreamAlertRulesModel) parse(ctx context.Context, streamAl
 }
 
 func (m *dataSourceStreamAlertRuleByIDsModel) parse(ctx context.Context, streamAlertRule *fabricv4.StreamAlertRule) diag.Diagnostics {
-	m.StreamID = types.StringValue(streamAlertRule.GetUuid())
-	m.AlertRuleID = types.StringValue(streamAlertRule.GetUuid())
 	m.ID = types.StringValue(streamAlertRule.GetUuid())
 
 	diags := m.baseStreamAlertRulesModel.parse(ctx, streamAlertRule)

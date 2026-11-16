@@ -11,6 +11,7 @@ import (
 	"time"
 
 	"github.com/equinix/equinix-sdk-go/services/fabricv4"
+	"github.com/equinix/terraform-provider-equinix/internal/fabric/sdkcompat"
 )
 
 const testConnectionUUID = "11111111-2222-3333-4444-555555555555"
@@ -48,7 +49,7 @@ func connectionJSON(fields string) testResponse {
 	}
 }
 
-func withState(state fabricv4.ConnectionState) testResponse {
+func withState(state sdkcompat.ConnectionState) testResponse {
 	return connectionJSON(fmt.Sprintf(`"state":%q`, state))
 }
 
@@ -68,21 +69,21 @@ var fastPoll = withPollInterval(time.Millisecond)
 
 func TestWaitForConnection_ReachesTargetState(t *testing.T) {
 	client, calls := newTestFabricClient(t,
-		withState(fabricv4.CONNECTIONSTATE_PROVISIONING),
-		withState(fabricv4.CONNECTIONSTATE_PROVISIONING),
-		withState(fabricv4.CONNECTIONSTATE_PROVISIONED),
+		withState(sdkcompat.CONNECTIONSTATE_PROVISIONING),
+		withState(sdkcompat.CONNECTIONSTATE_PROVISIONING),
+		withState(sdkcompat.CONNECTIONSTATE_PROVISIONED),
 	)
 
 	conn, err := waitForConnection(context.Background(), client, testConnectionUUID,
-		[]string{string(fabricv4.CONNECTIONSTATE_PROVISIONING)},
-		[]string{string(fabricv4.CONNECTIONSTATE_PROVISIONED)},
+		[]string{string(sdkcompat.CONNECTIONSTATE_PROVISIONING)},
+		[]string{string(sdkcompat.CONNECTIONSTATE_PROVISIONED)},
 		time.Second, fastPoll,
 	)
 	if err != nil {
 		t.Fatalf("unexpected error: %v", err)
 	}
-	if got := conn.GetState(); got != fabricv4.CONNECTIONSTATE_PROVISIONED {
-		t.Errorf("state = %q, want %q", got, fabricv4.CONNECTIONSTATE_PROVISIONED)
+	if got := sdkcompat.GetConnectionState(conn); got != sdkcompat.CONNECTIONSTATE_PROVISIONED {
+		t.Errorf("state = %q, want %q", got, sdkcompat.CONNECTIONSTATE_PROVISIONED)
 	}
 	if got := calls.Load(); got != 3 {
 		t.Errorf("GET calls = %d, want 3", got)
@@ -90,11 +91,11 @@ func TestWaitForConnection_ReachesTargetState(t *testing.T) {
 }
 
 func TestWaitForConnection_UnexpectedStateFails(t *testing.T) {
-	client, _ := newTestFabricClient(t, withState(fabricv4.CONNECTIONSTATE_FAILED))
+	client, _ := newTestFabricClient(t, withState(sdkcompat.CONNECTIONSTATE_FAILED))
 
 	_, err := waitForConnection(context.Background(), client, testConnectionUUID,
-		[]string{string(fabricv4.CONNECTIONSTATE_PROVISIONING)},
-		[]string{string(fabricv4.CONNECTIONSTATE_PROVISIONED)},
+		[]string{string(sdkcompat.CONNECTIONSTATE_PROVISIONING)},
+		[]string{string(sdkcompat.CONNECTIONSTATE_PROVISIONED)},
 		time.Second, fastPoll,
 	)
 	if err == nil || !strings.Contains(err.Error(), "unexpected state 'FAILED'") {
@@ -104,13 +105,13 @@ func TestWaitForConnection_UnexpectedStateFails(t *testing.T) {
 
 func TestWaitForConnection_EmptyPendingWaitsThroughAnyState(t *testing.T) {
 	client, _ := newTestFabricClient(t,
-		withState(fabricv4.CONNECTIONSTATE_DRAFT),
-		withState(fabricv4.CONNECTIONSTATE_PENDING),
+		withState(sdkcompat.CONNECTIONSTATE_DRAFT),
+		withState(sdkcompat.CONNECTIONSTATE_PENDING),
 	)
 
 	_, err := waitForConnection(context.Background(), client, testConnectionUUID,
 		nil,
-		[]string{string(fabricv4.CONNECTIONSTATE_PENDING)},
+		[]string{string(sdkcompat.CONNECTIONSTATE_PENDING)},
 		time.Second, fastPoll,
 	)
 	if err != nil {
@@ -119,11 +120,11 @@ func TestWaitForConnection_EmptyPendingWaitsThroughAnyState(t *testing.T) {
 }
 
 func TestWaitForConnection_Timeout(t *testing.T) {
-	client, _ := newTestFabricClient(t, withState(fabricv4.CONNECTIONSTATE_DEPROVISIONING))
+	client, _ := newTestFabricClient(t, withState(sdkcompat.CONNECTIONSTATE_DEPROVISIONING))
 
 	_, err := waitForConnection(context.Background(), client, testConnectionUUID,
-		[]string{string(fabricv4.CONNECTIONSTATE_DEPROVISIONING)},
-		[]string{string(fabricv4.CONNECTIONSTATE_DEPROVISIONED)},
+		[]string{string(sdkcompat.CONNECTIONSTATE_DEPROVISIONING)},
+		[]string{string(sdkcompat.CONNECTIONSTATE_DEPROVISIONED)},
 		50*time.Millisecond, fastPoll,
 	)
 	if err == nil || !strings.Contains(err.Error(), "timeout") {
@@ -133,8 +134,8 @@ func TestWaitForConnection_Timeout(t *testing.T) {
 
 func TestWaitForConnection_NotFound(t *testing.T) {
 	notFound := statusResponse(http.StatusNotFound, fabricErrorBody("EQ-3142102", "Connection not found"))
-	pending := []string{string(fabricv4.CONNECTIONSTATE_DEPROVISIONING)}
-	target := []string{string(fabricv4.CONNECTIONSTATE_DEPROVISIONED)}
+	pending := []string{string(sdkcompat.CONNECTIONSTATE_DEPROVISIONING)}
+	target := []string{string(sdkcompat.CONNECTIONSTATE_DEPROVISIONED)}
 
 	t.Run("fails by default", func(t *testing.T) {
 		client, _ := newTestFabricClient(t, notFound)
@@ -148,12 +149,12 @@ func TestWaitForConnection_NotFound(t *testing.T) {
 
 	t.Run("withNotFoundAs treats 404 as target", func(t *testing.T) {
 		client, calls := newTestFabricClient(t,
-			withState(fabricv4.CONNECTIONSTATE_DEPROVISIONING),
+			withState(sdkcompat.CONNECTIONSTATE_DEPROVISIONING),
 			notFound,
 		)
 		conn, err := waitForConnection(context.Background(), client, testConnectionUUID,
 			pending, target, time.Second, fastPoll,
-			withNotFoundAs(string(fabricv4.CONNECTIONSTATE_DEPROVISIONED)),
+			withNotFoundAs(string(sdkcompat.CONNECTIONSTATE_DEPROVISIONED)),
 		)
 		if err != nil {
 			t.Fatalf("unexpected error: %v", err)
@@ -173,10 +174,10 @@ func TestWaitForConnection_ServerErrorFails(t *testing.T) {
 	)
 
 	_, err := waitForConnection(context.Background(), client, testConnectionUUID,
-		[]string{string(fabricv4.CONNECTIONSTATE_PROVISIONING)},
-		[]string{string(fabricv4.CONNECTIONSTATE_PROVISIONED)},
+		[]string{string(sdkcompat.CONNECTIONSTATE_PROVISIONING)},
+		[]string{string(sdkcompat.CONNECTIONSTATE_PROVISIONED)},
 		time.Second, fastPoll,
-		withNotFoundAs(string(fabricv4.CONNECTIONSTATE_PROVISIONED)),
+		withNotFoundAs(string(sdkcompat.CONNECTIONSTATE_PROVISIONED)),
 	)
 	if err == nil {
 		t.Fatal("expected an error for a 500 response")
@@ -230,7 +231,7 @@ func TestIsConnectionAlreadyDeleted(t *testing.T) {
 		},
 		{
 			name:     "success",
-			response: withState(fabricv4.CONNECTIONSTATE_DEPROVISIONING),
+			response: withState(sdkcompat.CONNECTIONSTATE_DEPROVISIONING),
 			want:     false,
 		},
 	}

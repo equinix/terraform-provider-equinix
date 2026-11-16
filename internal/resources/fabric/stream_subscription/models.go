@@ -109,8 +109,6 @@ type changeLogModel struct {
 }
 
 func (m *dataSourceByIDsModel) parse(ctx context.Context, streamSubscription *fabricv4.StreamSubscription) diag.Diagnostics {
-	m.StreamID = types.StringValue(streamSubscription.GetUuid())
-	m.SubscriptionID = types.StringValue(streamSubscription.GetUuid())
 	m.ID = types.StringValue(streamSubscription.GetUuid())
 
 	diags := m.baseStreamSubscriptionModel.parse(ctx, streamSubscription)
@@ -150,7 +148,6 @@ func (m *dataSourceAll) parse(ctx context.Context, streamSubscriptionsResponse *
 	}
 
 	m.ID = types.StringValue(data[0].UUID.ValueString())
-	m.StreamID = types.StringValue(data[0].UUID.ValueString())
 	m.Pagination = fwtypes.NewObjectValueOf[paginationModel](ctx, &pagination)
 	m.Data = fwtypes.NewListNestedObjectValueOfValueSlice[baseStreamSubscriptionModel](ctx, data)
 

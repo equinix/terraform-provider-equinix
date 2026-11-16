@@ -4,7 +4,7 @@ import (
 	"context"
 	"fmt"
 	"log"
-	"strings"
+	"net/http"
 	"time"
 
 	"github.com/equinix/equinix-sdk-go/services/fabricv4"
@@ -38,11 +38,12 @@ func Resource() *schema.Resource {
 
 func resourceRead(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	client := meta.(*config.Config).NewFabricClientForSDK(ctx, d)
-	serviceToken, _, err := client.ServiceTokensApi.GetServiceTokenByUuid(ctx, d.Id()).Execute()
+	serviceToken, resp, err := client.ServiceTokensApi.GetServiceTokenByUuid(ctx, d.Id()).Execute()
 	if err != nil {
-		log.Printf("[WARN] Service Token %s not found , error %s", d.Id(), err)
-		if !strings.Contains(err.Error(), "500") {
+		if resp != nil && resp.StatusCode == http.StatusNotFound {
+			log.Printf("[WARN] Service Token %s not found, removing from state", d.Id())
 			d.SetId("")
+			return nil
 		}
 		return diag.FromErr(equinix_errors.FormatFabricError(err))
 	}
