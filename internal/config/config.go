@@ -218,7 +218,7 @@ func (c *Config) newFabricClient() *fabricv4.APIClient {
 }
 
 func (c *Config) configureHTTPClient(client *http.Client) *http.Client {
-	transport := logging.NewSubsystemLoggingHTTPTransport("equinix-fabric", client.Transport)
+	transport := logging.NewLoggingHTTPTransport(client.Transport)
 
 	retryClient := retryablehttp.NewClient()
 	retryClient.HTTPClient.Transport = transport
