@@ -25,7 +25,7 @@ func TestAccFabricInternetAccessServiceCreate_PFCR(t *testing.T) {
 		t.Skip("skipping: no 'pfcr' key in TF_ACC_FABRIC_EIA_TEST_DATA")
 	}
 
-	vlan, err := testinghelpers.RandomVlan(pfcr["port_uuid"])
+	vlan, err := testinghelpers.RandomVlan(t, pfcr["port_uuid"])
 	if err != nil {
 		t.Fatalf("unable to get an available VLAN: %s", err)
 	}

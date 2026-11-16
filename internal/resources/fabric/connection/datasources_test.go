@@ -19,13 +19,13 @@ func TestAccFabricDataSourceConnection_PFCR(t *testing.T) {
 		aSidePortUUID = ports["pfcr"]["dot1q"][0].GetUuid()
 		zSidePortUUID = ports["pfcr"]["dot1q"][1].GetUuid()
 	}
-	asideVlan, err := testinghelpers.RandomVlan(aSidePortUUID)
+	asideVlan, err := testinghelpers.RandomVlan(t, aSidePortUUID)
 	if err != nil {
 		t.Fatalf("unable to get a available VLAN: %s", err)
 		return
 	}
 
-	zsideVlan, err := testinghelpers.RandomVlan(zSidePortUUID)
+	zsideVlan, err := testinghelpers.RandomVlan(t, zSidePortUUID)
 	if err != nil {
 		t.Fatalf("unable to get a available VLAN: %s", err)
 		return

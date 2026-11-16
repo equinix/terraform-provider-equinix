@@ -27,7 +27,7 @@ func TestAccFabricCreatePort2EPT_NTPConfiguration_PFCR(t *testing.T) {
 		portUuid = ports["pfcr"]["dot1q"][0].GetUuid()
 	}
 
-	targetVlan, err := testinghelpers.RandomVlan(portUuid)
+	targetVlan, err := testinghelpers.RandomVlan(t, portUuid)
 
 	if err != nil {
 		t.Fatalf("unable to get a available VLAN: %s", err)
@@ -192,7 +192,7 @@ func TestAccFabricCreatePort2EPT_PTPConfiguration_PFCR(t *testing.T) {
 		portUuid = ports["pfcr"]["dot1q"][1].GetUuid()
 	}
 
-	targetVlan, err := testinghelpers.RandomVlan(portUuid)
+	targetVlan, err := testinghelpers.RandomVlan(t, portUuid)
 
 	if err != nil {
 		t.Fatalf("unable to get a available VLAN: %s", err)
