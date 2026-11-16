@@ -222,6 +222,7 @@ func ChangeLogGoToTerraform(changeLog *fabricv4.Changelog) *schema.Set {
 		"created_date_time":    changeLog.GetCreatedDateTime().String(),
 		"updated_by":           changeLog.GetUpdatedBy(),
 		"updated_by_full_name": changeLog.GetUpdatedByFullName(),
+		"updated_by_email":     changeLog.GetUpdatedByEmail(),
 		"updated_date_time":    changeLog.GetUpdatedDateTime().String(),
 		"deleted_by":           changeLog.GetDeletedBy(),
 		"deleted_by_full_name": changeLog.GetDeletedByFullName(),
