@@ -218,6 +218,7 @@ func (c *Config) newFabricClient() *fabricv4.APIClient {
 }
 
 func (c *Config) configureHTTPClient(client *http.Client) *http.Client {
+	//nolint:staticcheck // deprecated but routes via tflog→test sink→t.Log, which keeps HTTP logs attributed per-test in go test -json output
 	transport := logging.NewLoggingHTTPTransport(client.Transport)
 
 	retryClient := retryablehttp.NewClient()

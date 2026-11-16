@@ -114,6 +114,7 @@ jobs:
         timeout-minutes: 180
         env:
           TF_ACC: "1"
+          TF_LOG: "DEBUG"
           TF_ACC_FABRIC_CONNECTIONS_TEST_DATA: ${{ secrets.TF_ACC_FABRIC_CONNECTIONS_TEST_DATA }}
           TF_ACC_FABRIC_DEDICATED_PORTS: ${{ secrets.TF_ACC_FABRIC_DEDICATED_PORTS }}
           EQUINIX_API_CLIENTID: ${{ secrets.EQUINIX_API_CLIENTID_PNFV }}
@@ -187,6 +188,7 @@ jobs:
         timeout-minutes: 180
         env:
           TF_ACC: "1"
+          TF_LOG: "DEBUG"
           TF_ACC_FABRIC_CONNECTIONS_TEST_DATA: ${{ secrets.TF_ACC_FABRIC_CONNECTIONS_TEST_DATA }}
           TF_ACC_FABRIC_DEDICATED_PORTS: ${{ secrets.TF_ACC_FABRIC_DEDICATED_PORTS }}
           TF_ACC_FABRIC_MARKET_PLACE_SUBSCRIPTION_ID: ${{ secrets.TF_ACC_FABRIC_MARKET_PLACE_SUBSCRIPTION_ID }}
@@ -287,6 +289,7 @@ jobs:
         timeout-minutes: 180
         env:
           TF_ACC: "1"
+          TF_LOG: "DEBUG"
           TF_ACC_FABRIC_CONNECTIONS_TEST_DATA: ${{ secrets.TF_ACC_FABRIC_CONNECTIONS_TEST_DATA }}
           TF_ACC_FABRIC_DEDICATED_PORTS: ${{ secrets.TF_ACC_FABRIC_DEDICATED_PORTS }}
           TF_ACC_FABRIC_MARKET_PLACE_SUBSCRIPTION_ID: ${{ secrets.TF_ACC_FABRIC_MARKET_PLACE_SUBSCRIPTION_ID }}

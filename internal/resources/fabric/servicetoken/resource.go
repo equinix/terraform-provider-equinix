@@ -112,8 +112,11 @@ func resourceDelete(ctx context.Context, d *schema.ResourceData, meta any) diag.
 	client := meta.(*config.Config).NewFabricClientForSDK(ctx, d)
 
 	start := time.Now()
-	_, _, err := client.ServiceTokensApi.DeleteServiceTokenByUuid(ctx, d.Id()).Execute()
+	_, resp, err := client.ServiceTokensApi.DeleteServiceTokenByUuid(ctx, d.Id()).Execute()
 	if err != nil {
+		if resp != nil && resp.StatusCode == http.StatusNotFound {
+			return diags
+		}
 		if genericError, ok := err.(*fabricv4.GenericOpenAPIError); ok {
 			if fabricErrs, ok := genericError.Model().([]fabricv4.Error); ok {
 				// EQ-3034019 = Service Token already deleted
