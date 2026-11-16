@@ -38,9 +38,11 @@ type paginationModel struct {
 }
 
 type resourceModel struct {
-	StreamID types.String   `tfsdk:"stream_id"`
-	ID       types.String   `tfsdk:"id"`
-	Timeouts timeouts.Value `tfsdk:"timeouts"`
+	StreamID                types.String                                        `tfsdk:"stream_id"`
+	ID                      types.String                                        `tfsdk:"id"`
+	Timeouts                timeouts.Value                                      `tfsdk:"timeouts"`
+	SinkCredentialWO        fwtypes.ObjectValueOf[sinkCredentialWriteOnlyModel] `tfsdk:"sink_credential_wo"`
+	SinkCredentialWOVersion types.Int64                                         `tfsdk:"sink_credential_wo_version"`
 	baseStreamSubscriptionModel
 }
 
@@ -80,6 +82,13 @@ type sinkCredentialModel struct {
 	IntegrationKey types.String `tfsdk:"integration_key"`
 	APIKey         types.String `tfsdk:"api_key"`
 	Username       types.String `tfsdk:"username"`
+	Password       types.String `tfsdk:"password"`
+}
+
+type sinkCredentialWriteOnlyModel struct {
+	AccessToken    types.String `tfsdk:"access_token"`
+	IntegrationKey types.String `tfsdk:"integration_key"`
+	APIKey         types.String `tfsdk:"api_key"`
 	Password       types.String `tfsdk:"password"`
 }
 

@@ -142,3 +142,26 @@ resource "equinix_fabric_stream_subscription" "grafana" {
     }
   }
 }
+
+resource "equinix_fabric_stream_subscription" "webhook_write_only" {
+  type        = "STREAM_SUBSCRIPTION"
+  name        = "<name>"
+  description = "<description>"
+  stream_id   = "<stream_id>"
+  enabled     = true
+  sink = {
+    type = "WEBHOOK"
+    settings = {
+      format     = "OPENTELEMETRY"
+      metric_uri = "<webhook_metric_uri>"
+    }
+    credential = {
+      type     = "USERNAME_PASSWORD"
+      username = "<webhook_username>"
+    }
+  }
+  sink_credential_wo = {
+    password = "<webhook_password>"
+  }
+  sink_credential_wo_version = 1
+}
