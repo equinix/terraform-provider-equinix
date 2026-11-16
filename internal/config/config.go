@@ -227,6 +227,7 @@ func (c *Config) configureHTTPClient(client *http.Client) *http.Client {
 	retryClient.RetryWaitMin = time.Second
 	retryClient.RetryWaitMax = c.MaxRetryWait
 	retryClient.Logger = nil
+	retryClient.ErrorHandler = retryablehttp.PassthroughErrorHandler
 
 	return retryClient.StandardClient()
 }
