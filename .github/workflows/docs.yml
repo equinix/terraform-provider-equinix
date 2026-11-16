@@ -1,0 +1,35 @@
+name: Docs
+on:
+  pull_request:
+    paths:
+      - 'docs/**'
+      - 'templates/**'
+      - '.markdown-link-check.json'
+      - '.github/workflows/docs.yml'
+  push:
+    branches:
+      - main
+    paths:
+      - 'docs/**'
+      - 'templates/**'
+      - '.markdown-link-check.json'
+      - '.github/workflows/docs.yml'
+  schedule:
+    # Weekly, to catch links that rot on external sites between docs changes.
+    - cron: '0 6 * * 1'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  link_check:
+    name: Check docs links
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Check out code
+        uses: actions/checkout@93cb6efe18208431cddfb8368fd83d5badbf9bfd # v5
+
+      - name: Check for broken links
+        run: make docs-link-check
