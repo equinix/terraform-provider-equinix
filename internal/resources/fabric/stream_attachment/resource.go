@@ -57,7 +57,7 @@ func (r *Resource) Create(
 	assetID, asset, streamID := plan.AssetID.ValueString(), plan.Asset.ValueString(), plan.StreamID.ValueString()
 
 	putRequest := fabricv4.StreamAssetPutRequest{}
-	putRequest.SetMetricsEnabled(plan.MetricsEnabled.ValueBool())
+	putRequest.SetMetricsEnabled(metricsEnabledForAsset(fabricv4.Asset(asset), plan.MetricsEnabled.ValueBool()))
 	_, _, err := client.StreamsApi.UpdateStreamAssetByUuid(ctx, assetID, fabricv4.Asset(asset), streamID).StreamAssetPutRequest(putRequest).Execute()
 	if err != nil {
 		resp.Diagnostics.AddError("failed creating stream attachment", equinix_errors.FormatFabricError(err).Error())
@@ -145,7 +145,7 @@ func (r *Resource) Update(
 	id, assetID, asset, streamID := state.ID.ValueString(), plan.AssetID.ValueString(), plan.Asset.ValueString(), plan.StreamID.ValueString()
 
 	putRequest := fabricv4.StreamAssetPutRequest{}
-	putRequest.SetMetricsEnabled(plan.MetricsEnabled.ValueBool())
+	putRequest.SetMetricsEnabled(metricsEnabledForAsset(fabricv4.Asset(asset), plan.MetricsEnabled.ValueBool()))
 	_, _, err := client.StreamsApi.UpdateStreamAssetByUuid(ctx, assetID, fabricv4.Asset(asset), streamID).StreamAssetPutRequest(putRequest).Execute()
 	if err != nil {
 		resp.Diagnostics.AddError(
