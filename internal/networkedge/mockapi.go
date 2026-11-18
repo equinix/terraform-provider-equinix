@@ -17,6 +17,8 @@ const (
 	BGPPath      = "/ne/v1/bgp"
 	DevicesPath  = "/ne/v1/devices"
 	LinksPath    = "/ne/v1/links"
+
+	ACLTemplatesPath = "/ne/v1/aclTemplates"
 )
 
 // MockAPI is a fake Network Edge API for unit tests. Config holds a provider
@@ -48,6 +50,9 @@ type MockAPI struct {
 
 	// Links holds the device link groups. They are provisioned as soon as they are created.
 	Links *restmock.Collection
+
+	// ACLTemplates holds the device ACL templates.
+	ACLTemplates *restmock.Collection
 }
 
 // NewMockAPI starts a fake Network Edge API that stops when the test ends.
@@ -113,5 +118,7 @@ func NewMockAPI(t *testing.T) *MockAPI {
 		BGP:      bgp,
 		Devices:  srv.AddCollection(DevicesPath),
 		Links:    links,
+
+		ACLTemplates: srv.AddCollection(ACLTemplatesPath, "name", "description"),
 	}
 }
