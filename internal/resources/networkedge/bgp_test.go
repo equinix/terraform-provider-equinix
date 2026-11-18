@@ -4,6 +4,7 @@ import (
 	"context"
 	"net/http"
 	"testing"
+	"time"
 
 	"github.com/equinix/terraform-provider-equinix/equinix"
 	"github.com/equinix/terraform-provider-equinix/internal/networkedge"
@@ -163,4 +164,33 @@ func TestBGP_createFailsOnUnexpectedStatus(t *testing.T) {
 	// then
 	require.True(t, diags.HasError(), "create returns an error")
 	assert.Contains(t, diags[0].Summary, "error waiting for BGP configuration", "error comes from the wait")
+}
+
+func TestBGP_createTimesOutWhileProvisioning(t *testing.T) {
+	t.Parallel()
+	// given
+	api := networkedge.NewMockAPI(t)
+	api.BGP.Sequence("", "provisioningStatus", "PROVISIONING") // the status never changes
+	r := bgpResource(t)
+	timeout := time.Second
+	r.Timeouts.Create = &timeout
+	// Resource data from TestResourceDataRaw ignores the timeouts of the resource.
+	d := r.Data(nil)
+	for k, v := range map[string]any{
+		"connection_id":     "6ca8d0df-c71a-4475-a835-53c2df1e6667",
+		"local_ip_address":  "1.1.1.1/32",
+		"local_asn":         15344,
+		"remote_ip_address": "2.2.2.2",
+		"remote_asn":        60421,
+	} {
+		require.NoError(t, d.Set(k, v))
+	}
+
+	// when
+	diags := r.CreateContext(context.Background(), d, api.Config)
+
+	// then
+	require.True(t, diags.HasError(), "create returns an error")
+	assert.Contains(t, diags[0].Summary, "error waiting for BGP configuration", "error comes from the wait")
+	assert.Contains(t, diags[0].Summary, "timeout while waiting for state", "wait gave up because of the timeout")
 }
