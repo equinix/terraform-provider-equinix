@@ -14,6 +14,7 @@ const (
 	SSHKeysPath  = "/ne/v1/publicKeys"
 	SSHUsersPath = "/ne/v1/sshUsers"
 	FilesPath    = "/ne/v1/files"
+	BGPPath      = "/ne/v1/bgp"
 )
 
 // MockAPI is a fake Network Edge API for unit tests. Config holds a provider
@@ -35,6 +36,9 @@ type MockAPI struct {
 	// form request and has the properties fileName, metroCode, deviceTypeCode,
 	// processType and status.
 	Files *restmock.Collection
+
+	// BGP holds the BGP configurations. They are provisioned as soon as they are created.
+	BGP *restmock.Collection
 }
 
 // NewMockAPI starts a fake Network Edge API that stops when the test ends.
@@ -73,11 +77,21 @@ func NewMockAPI(t *testing.T) *MockAPI {
 		}
 	}
 
+	bgp := srv.AddCollection(BGPPath, "connectionUuid", "localIpAddress", "localAsn", "remoteIpAddress", "remoteAsn")
+	bgp.NewDocument = func(req restmock.Request) map[string]any {
+		doc := map[string]any{"provisioningStatus": "PROVISIONED"}
+		for k, v := range req.Body {
+			doc[k] = v
+		}
+		return doc
+	}
+
 	return &MockAPI{
 		Server:   srv,
 		Config:   cfg,
 		SSHKeys:  srv.AddCollection(SSHKeysPath, "keyName", "keyValue"),
 		SSHUsers: sshUsers,
 		Files:    files,
+		BGP:      bgp,
 	}
 }

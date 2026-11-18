@@ -49,7 +49,8 @@ type Server struct {
 
 // Collection stores the JSON documents of one REST collection, for example
 // /v1/things. POST on the collection path creates a document. GET on the
-// collection path followed by an identifier returns one document.
+// collection path followed by an identifier returns one document, and PUT
+// merges the request body into it.
 type Collection struct {
 	srv      *Server
 	basePath string
@@ -179,6 +180,10 @@ func (c *Collection) serveItem(w http.ResponseWriter, rec Request) bool {
 		c.get(w, id)
 		return true
 	}
+	if !hasSub && rec.Method == http.MethodPut {
+		c.update(w, id, rec)
+		return true
+	}
 	if !hasSub {
 		return false
 	}
@@ -225,6 +230,19 @@ func (c *Collection) create(w http.ResponseWriter, rec Request) {
 		idProperty = "uuid"
 	}
 	writeJSON(w, http.StatusCreated, map[string]any{idProperty: id})
+}
+
+// update merges the request body into a document. The caller holds the server lock.
+func (c *Collection) update(w http.ResponseWriter, id string, rec Request) {
+	doc, ok := c.items[id]
+	if !ok {
+		writeError(w, http.StatusNotFound, "resource "+id+" does not exist")
+		return
+	}
+	for k, v := range rec.Body {
+		doc[k] = v
+	}
+	writeJSON(w, http.StatusOK, map[string]any{"uuid": id})
 }
 
 // get returns one document. The caller holds the server lock.
