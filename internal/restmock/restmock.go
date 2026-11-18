@@ -10,6 +10,7 @@
 package restmock
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 	"io"
@@ -45,6 +46,7 @@ type File struct {
 type Server struct {
 	srv *httptest.Server
 
+	mux         *http.ServeMux
 	mu          sync.Mutex
 	collections []*Collection
 	nextID      int
@@ -80,7 +82,7 @@ type action struct {
 // NewServer starts a fake REST API server. The server stops when the test ends.
 func NewServer(t *testing.T) *Server {
 	t.Helper()
-	s := &Server{}
+	s := &Server{mux: http.NewServeMux()}
 	s.srv = httptest.NewServer(http.HandlerFunc(s.serve))
 	t.Cleanup(s.srv.Close)
 	return s
@@ -89,6 +91,29 @@ func NewServer(t *testing.T) *Server {
 // URL returns the base URL of the server.
 func (s *Server) URL() string {
 	return s.srv.URL
+}
+
+// Handler answers a request that matches a route registered with Handle.
+// pathValue returns the value of a {name} wildcard of the route pattern. The
+// response body is encoded as JSON. A nil body sends no body. A handler runs
+// without the server lock, so it can call methods of a Collection.
+type Handler func(req Request, pathValue func(name string) string) (status int, body any)
+
+type requestKey struct{}
+
+// Handle registers a custom route. The pattern uses the net/http ServeMux
+// syntax, for example "GET /v1/things/{id}/status". Custom routes take
+// precedence over collections.
+func (s *Server) Handle(pattern string, h Handler) {
+	s.mux.HandleFunc(pattern, func(w http.ResponseWriter, r *http.Request) {
+		rec, _ := r.Context().Value(requestKey{}).(Request)
+		status, body := h(rec, r.PathValue)
+		if body == nil {
+			w.WriteHeader(status)
+			return
+		}
+		writeJSON(w, status, body)
+	})
 }
 
 // AddCollection registers a collection at basePath. POST requests must contain
@@ -129,6 +154,68 @@ func (c *Collection) AddAction(method, prefix string, fn func(doc map[string]any
 	c.actions = append(c.actions, action{method: method, prefix: prefix, fn: fn})
 }
 
+// Add stores a new document under a new identifier and returns the identifier.
+// The "uuid" property is set to the identifier.
+func (c *Collection) Add(doc map[string]any) string {
+	c.srv.mu.Lock()
+	defer c.srv.mu.Unlock()
+	return c.add(doc)
+}
+
+// add stores a new document. The caller holds the server lock.
+func (c *Collection) add(doc map[string]any) string {
+	c.srv.nextID++
+	id := fmt.Sprintf("00000000-0000-4000-8000-%012d", c.srv.nextID)
+	cp := make(map[string]any, len(doc)+1)
+	for k, v := range doc {
+		cp[k] = v
+	}
+	cp["uuid"] = id
+	c.items[id] = cp
+	return id
+}
+
+// Merge copies fields into a stored document. It returns false if the document does not exist.
+func (c *Collection) Merge(id string, fields map[string]any) bool {
+	c.srv.mu.Lock()
+	defer c.srv.mu.Unlock()
+	doc, ok := c.items[id]
+	if !ok {
+		return false
+	}
+	for k, v := range fields {
+		doc[k] = v
+	}
+	return true
+}
+
+// Get returns a copy of a stored document, and false if it does not exist.
+func (c *Collection) Get(id string) (map[string]any, bool) {
+	c.srv.mu.Lock()
+	defer c.srv.mu.Unlock()
+	doc, ok := c.items[id]
+	if !ok {
+		return nil, false
+	}
+	cp := make(map[string]any, len(doc))
+	for k, v := range doc {
+		cp[k] = v
+	}
+	return cp, true
+}
+
+// IDs returns the identifiers of all stored documents, sorted.
+func (c *Collection) IDs() []string {
+	c.srv.mu.Lock()
+	defer c.srv.mu.Unlock()
+	ids := make([]string, 0, len(c.items))
+	for id := range c.items {
+		ids = append(ids, id)
+	}
+	sort.Strings(ids)
+	return ids
+}
+
 // Seed stores a document under a given identifier, as if something outside
 // of the test had created it. The "uuid" property is set to id.
 func (c *Collection) Seed(id string, doc map[string]any) {
@@ -156,12 +243,21 @@ func (s *Server) serve(w http.ResponseWriter, r *http.Request) {
 	}
 
 	s.mu.Lock()
-	defer s.mu.Unlock()
 	s.requests = append(s.requests, rec)
+	s.mu.Unlock()
 	if err != nil {
 		writeError(w, http.StatusBadRequest, "request body is not valid JSON: "+err.Error())
 		return
 	}
+
+	r = r.WithContext(context.WithValue(r.Context(), requestKey{}, rec))
+	if _, pattern := s.mux.Handler(r); pattern != "" {
+		s.mux.ServeHTTP(w, r)
+		return
+	}
+
+	s.mu.Lock()
+	defer s.mu.Unlock()
 	for _, c := range s.collections {
 		switch {
 		case r.URL.Path == c.basePath && r.Method == http.MethodPost:
@@ -238,18 +334,11 @@ func (c *Collection) create(w http.ResponseWriter, rec Request) {
 			return
 		}
 	}
-	c.srv.nextID++
-	id := fmt.Sprintf("00000000-0000-4000-8000-%012d", c.srv.nextID)
 	body := rec.Body
 	if c.NewDocument != nil {
 		body = c.NewDocument(rec)
 	}
-	doc := make(map[string]any, len(body)+1)
-	for k, v := range body {
-		doc[k] = v
-	}
-	doc["uuid"] = id
-	c.items[id] = doc
+	id := c.add(body)
 	w.Header().Set("Location", c.basePath+"/"+id)
 	idProperty := c.CreatedIDProperty
 	if idProperty == "" {

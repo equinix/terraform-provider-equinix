@@ -53,6 +53,9 @@ type MockAPI struct {
 
 	// ACLTemplates holds the device ACL templates.
 	ACLTemplates *restmock.Collection
+
+	// LicenseFiles holds the device license files that were uploaded.
+	LicenseFiles *restmock.Collection
 }
 
 // NewMockAPI starts a fake Network Edge API that stops when the test ends.
@@ -109,7 +112,7 @@ func NewMockAPI(t *testing.T) *MockAPI {
 		return doc
 	}
 
-	return &MockAPI{
+	api := &MockAPI{
 		Server:   srv,
 		Config:   cfg,
 		SSHKeys:  srv.AddCollection(SSHKeysPath, "keyName", "keyValue"),
@@ -121,4 +124,6 @@ func NewMockAPI(t *testing.T) *MockAPI {
 
 		ACLTemplates: srv.AddCollection(ACLTemplatesPath, "name", "description"),
 	}
+	api.addDeviceRoutes()
+	return api
 }
