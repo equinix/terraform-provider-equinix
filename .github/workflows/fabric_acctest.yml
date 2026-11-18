@@ -1,18 +1,17 @@
 name: Fabric Acceptance Tests
 # This workflow determines whether a PR comes from an external fork
-# (which requires approval from us) or from a branch on this repository
-# (which means it was made by us and can run immediately).  Once a PR
-# is approved, the PR code gains access to secrets referenced in this
-# workflow.
+# or from a branch on this repository.  A PR from a fork cannot access
+# GitHub secrets, so this workflow is guaranteed to fail if we attempt
+# to run it for external PRs.
 
-# The 'build' job and subsequent jobs, are executed only when the pull
-# request is not a draft, regardless of whether it is from an internal
-# branch or external fork.
+# The 'build' job and subsequent jobs are executed only when a pull
+# request is from an internal branch and is not a draft.
 
-# Any changes to this job, even from internal contributors, require heavy scrutiny.
+# A manual run is internal by definition, so all jobs will execute when
+# this workflow is run manually on any branch in this repository.
 
 on:
-  pull_request_target:
+  pull_request:
     types: [ opened, synchronize, reopened, ready_for_review ]
     paths:
       - 'go.mod'
@@ -26,23 +25,22 @@ on:
   workflow_dispatch:
 
 permissions:
-  #actions: write required to update OIDC subject claim template
   pull-requests: read
   contents: read
-  id-token: write
+  id-token: write # NOTE: this has no effect for PRs from forks
+
+concurrency:
+  group: ${{ github.event_name == 'pull_request' && format('fabric-acctest-pr-{0}', github.event.pull_request.number) || format('fabric-acctest-{0}', github.ref) }}
+  cancel-in-progress: true
 
 jobs:
 
-  authorize:
-    if: (github.event_name == 'workflow_dispatch') || (github.event_name == 'pull_request_target' && github.event.pull_request.draft == false)
-    environment:
-      ${{ github.event_name == 'pull_request_target' &&
-      github.event.pull_request.head.repo.full_name != github.repository &&
-      'external' || 'internal' }}
+  workflow_can_run:
+    if: (github.event_name == 'workflow_dispatch') ||
+          (github.event_name == 'pull_request' &&
+           github.event.pull_request.draft == false &&
+           github.event.pull_request.head.repo.full_name == github.repository)
     runs-on: ubuntu-latest
-    concurrency:
-      group: ${{ github.event_name == 'pull_request_target' && format('fabric-acctest-authorize-pr-{0}', github.event.pull_request.number) || 'fabric-acctest-authorize' }}
-      cancel-in-progress: true
     steps:
       - run: true
 
@@ -50,7 +48,7 @@ jobs:
 
   build:
     name: Build
-    needs: authorize
+    needs: workflow_can_run
     runs-on: ubuntu-latest
     timeout-minutes: 10
     steps:
