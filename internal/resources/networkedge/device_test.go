@@ -418,3 +418,154 @@ func TestDevice_update(t *testing.T) {
 	// Update waits until the additional bandwidth is provisioned.
 	assert.NotEmpty(t, api.RequestsFor(http.MethodGet, networkedge.DevicesPath+"/"+id+"/additionalBandwidths"), "additional bandwidth status was checked")
 }
+
+func newDeviceCreateData(t *testing.T, extra map[string]any) *schema.ResourceData {
+	t.Helper()
+	raw := map[string]any{
+		"name":       "device",
+		"type_code":  "CSR1000V",
+		"metro_code": "SV",
+	}
+	for k, v := range extra {
+		raw[k] = v
+	}
+	return schema.TestResourceDataRaw(t, deviceResource(t).Schema, raw)
+}
+
+// newDeviceUpdateData returns resource data with a stored state and a changed configuration.
+func newDeviceUpdateData(t *testing.T, id string, state map[string]string, config map[string]any) *schema.ResourceData {
+	t.Helper()
+	r := deviceResource(t)
+	instanceState := &terraform.InstanceState{ID: id, Attributes: state}
+	diff, err := schema.InternalMap(r.Schema).Diff(context.Background(), instanceState, terraform.NewResourceConfigRaw(config), nil, nil, false)
+	require.NoError(t, err)
+	d, err := schema.InternalMap(r.Schema).Data(instanceState, diff)
+	require.NoError(t, err)
+	return d
+}
+
+func TestDevice_createWaitsUntilProvisioned(t *testing.T) {
+	t.Parallel()
+	// given
+	api := networkedge.NewMockAPI(t)
+	api.Devices.Sequence("", "status", "PROVISIONING", "PROVISIONED")
+	d := newDeviceCreateData(t, nil)
+
+	// when
+	diags := deviceResource(t).CreateContext(context.Background(), d, api.Config)
+
+	// then
+	require.False(t, diags.HasError(), "create does not return errors: %v", diags)
+	assert.Equal(t, "PROVISIONED", d.Get("status"), "status matches")
+	assert.GreaterOrEqual(t, len(api.RequestsFor(http.MethodGet, networkedge.DevicesPath+"/"+d.Id())), 3,
+		"create kept checking the status until the device was provisioned")
+}
+
+func TestDevice_createWaitsUntilLicensed(t *testing.T) {
+	t.Parallel()
+	// given
+	api := networkedge.NewMockAPI(t)
+	// The first check belongs to the wait for provisioning. The next ones belong to the wait for the license.
+	api.Devices.Sequence("", "licenseStatus", "APPLYING_LICENSE", "APPLYING_LICENSE", "APPLIED")
+	d := newDeviceCreateData(t, nil)
+
+	// when
+	diags := deviceResource(t).CreateContext(context.Background(), d, api.Config)
+
+	// then
+	require.False(t, diags.HasError(), "create does not return errors: %v", diags)
+	assert.Equal(t, "APPLIED", d.Get("license_status"), "license status matches")
+	assert.GreaterOrEqual(t, len(api.RequestsFor(http.MethodGet, networkedge.DevicesPath+"/"+d.Id())), 4,
+		"create kept checking the license status until the license was applied")
+}
+
+func TestDevice_createWaitsUntilACLTemplateProvisioned(t *testing.T) {
+	t.Parallel()
+	// given
+	api := networkedge.NewMockAPI(t)
+	api.Devices.Script("", "aclStatus", "PROVISIONING", "PROVISIONED")
+	d := newDeviceCreateData(t, map[string]any{"acl_template_id": "a624178c-6d59-4798-9a7f-2ddf2c7c5881"})
+
+	// when
+	diags := deviceResource(t).CreateContext(context.Background(), d, api.Config)
+
+	// then
+	require.False(t, diags.HasError(), "create does not return errors: %v", diags)
+	assert.Len(t, api.RequestsFor(http.MethodGet, networkedge.DevicesPath+"/"+d.Id()+"/acl"), 2,
+		"create checked the ACL template status until it was provisioned")
+}
+
+func TestDevice_createFailsOnUnexpectedStatus(t *testing.T) {
+	t.Parallel()
+	// given
+	api := networkedge.NewMockAPI(t)
+	api.Devices.Sequence("", "status", "FAILED")
+	d := newDeviceCreateData(t, nil)
+
+	// when
+	diags := deviceResource(t).CreateContext(context.Background(), d, api.Config)
+
+	// then
+	require.True(t, diags.HasError(), "create returns an error")
+	assert.Contains(t, diags[0].Summary, "error waiting for network device", "error comes from the wait")
+}
+
+func TestDevice_deleteWaitsUntilDeprovisioned(t *testing.T) {
+	t.Parallel()
+	// given
+	const id = "0452fa68-8246-48b1-a1b2-817fb4baddcb"
+	api := networkedge.NewMockAPI(t)
+	api.Devices.Seed(id, map[string]any{"name": "device", "status": "PROVISIONED"})
+	api.Devices.Sequence(id, "status", "DEPROVISIONING", "DEPROVISIONED")
+	d := schema.TestResourceDataRaw(t, deviceResource(t).Schema, map[string]any{})
+	d.SetId(id)
+
+	// when
+	diags := deviceResource(t).DeleteContext(context.Background(), d, api.Config)
+
+	// then
+	require.False(t, diags.HasError(), "delete does not return errors: %v", diags)
+	assert.Len(t, api.RequestsFor(http.MethodGet, networkedge.DevicesPath+"/"+id), 2,
+		"delete checked the status until the device was deprovisioned")
+}
+
+func TestDevice_updateWaitsUntilResourceUpgradeFinished(t *testing.T) {
+	t.Parallel()
+	// given
+	const id = "0452fa68-8246-48b1-a1b2-817fb4baddcb"
+	api := networkedge.NewMockAPI(t)
+	api.Devices.Seed(id, map[string]any{"name": "device", "status": "PROVISIONED", "core": map[string]any{"core": 2}})
+	api.Devices.Sequence(id, "status", "RESOURCE_UPGRADE_IN_PROGRESS", "PROVISIONED")
+	d := newDeviceUpdateData(t, id,
+		map[string]string{"id": id, "name": "device", "core_count": "2"},
+		map[string]any{"name": "device", "core_count": 4})
+
+	// when
+	diags := deviceResource(t).UpdateContext(context.Background(), d, api.Config)
+
+	// then
+	require.False(t, diags.HasError(), "update does not return errors: %v", diags)
+	assert.Equal(t, "PROVISIONED", d.Get("status"), "status matches")
+	assert.GreaterOrEqual(t, len(api.RequestsFor(http.MethodGet, networkedge.DevicesPath+"/"+id)), 3,
+		"update kept checking the status until the resource upgrade finished")
+}
+
+func TestDevice_updateWaitsUntilAdditionalBandwidthProvisioned(t *testing.T) {
+	t.Parallel()
+	// given
+	const id = "0452fa68-8246-48b1-a1b2-817fb4baddcb"
+	api := networkedge.NewMockAPI(t)
+	api.Devices.Seed(id, map[string]any{"name": "device", "status": "PROVISIONED", "additionalBandwidth": 50})
+	api.Devices.Script(id, "additionalBandwidthStatus", "PROVISIONING", "PROVISIONED")
+	d := newDeviceUpdateData(t, id,
+		map[string]string{"id": id, "name": "device", "additional_bandwidth": "50"},
+		map[string]any{"name": "device", "additional_bandwidth": 100})
+
+	// when
+	diags := deviceResource(t).UpdateContext(context.Background(), d, api.Config)
+
+	// then
+	require.False(t, diags.HasError(), "update does not return errors: %v", diags)
+	assert.Len(t, api.RequestsFor(http.MethodGet, networkedge.DevicesPath+"/"+id+"/additionalBandwidths"), 2,
+		"update checked the additional bandwidth status until it was provisioned")
+}

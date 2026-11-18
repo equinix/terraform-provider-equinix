@@ -57,7 +57,7 @@ func (m *MockAPI) addDeviceRoutes() {
 		if _, ok := m.Devices.Get(id("id")); !ok {
 			return http.StatusNotFound, nil
 		}
-		return http.StatusOK, map[string]any{"status": "PROVISIONED"}
+		return http.StatusOK, map[string]any{"status": m.scripted(id("id"), "aclStatus")}
 	})
 
 	m.Handle("PATCH "+DevicesPath+"/{id}/acl", func(req restmock.Request, id func(string) string) (int, any) {
@@ -75,12 +75,22 @@ func (m *MockAPI) addDeviceRoutes() {
 		if !ok {
 			return http.StatusNotFound, nil
 		}
-		return http.StatusOK, map[string]any{"status": "PROVISIONED", "additionalBandwidth": doc["additionalBandwidth"]}
+		return http.StatusOK, map[string]any{"status": m.scripted(id("id"), "additionalBandwidthStatus"), "additionalBandwidth": doc["additionalBandwidth"]}
 	})
 
 	m.Handle("PUT "+DevicesPath+"/{id}/additionalBandwidths", func(req restmock.Request, id func(string) string) (int, any) {
 		return updated(m.Devices.Merge(id("id"), map[string]any{"additionalBandwidth": req.Body["additionalBandwidth"]}))
 	})
+}
+
+// scripted returns the next scripted status of a device, or PROVISIONED if the test scripted none.
+// Tests script a status with m.Devices.Script(id, "aclStatus", ...) or
+// m.Devices.Script(id, "additionalBandwidthStatus", ...).
+func (m *MockAPI) scripted(deviceID, key string) any {
+	if v, ok := m.Devices.Next(deviceID, key); ok {
+		return v
+	}
+	return "PROVISIONED"
 }
 
 // newDevice builds the stored document of a device that a create request describes.
