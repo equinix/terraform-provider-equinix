@@ -121,7 +121,7 @@ jobs:
 
       - name: Upload PNFV Testing Log
         if: ${{ always() }}
-        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
           name: pnfv_test_logs
           path: pnfv_test_output.json
@@ -197,7 +197,7 @@ jobs:
 
       - name: Upload PFCR Testing Log
         if: ${{ always() }}
-        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
           name: pfcr_test_logs
           path: pfcr_test_output.json
@@ -386,7 +386,7 @@ jobs:
                     *Responsibility:* <@U06QU7NE0G7>
 
       - name: Upload HTML Testing Report
-        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
           name: UAT Terraform Acceptance Test Reports
           path: |
