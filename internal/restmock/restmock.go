@@ -24,8 +24,17 @@ import (
 type Request struct {
 	Method string
 	Path   string
-	// Body is the decoded JSON request body. It is nil if the request had no body.
+	// Body is the decoded JSON request body. For a multipart form request it
+	// holds the text fields of the form. It is nil if the request had no body.
 	Body map[string]any
+	// Files holds the files of a multipart form request, by form field name.
+	Files map[string]File
+}
+
+// File is a file that a multipart form request uploaded.
+type File struct {
+	Name    string
+	Content string
 }
 
 // Server is a fake REST API server.
@@ -48,9 +57,13 @@ type Collection struct {
 	items    map[string]map[string]any
 	actions  []action
 
-	// NewDocument converts the body of a create request into the stored
-	// document. If it is nil, the request body is stored as it is.
-	NewDocument func(body map[string]any) map[string]any
+	// NewDocument converts a create request into the stored document. If it
+	// is nil, the request body is stored as it is.
+	NewDocument func(req Request) map[string]any
+
+	// CreatedIDProperty is the property of the create response that holds the
+	// identifier of the new document. The default is "uuid".
+	CreatedIDProperty string
 }
 
 type action struct {
@@ -126,9 +139,15 @@ func (c *Collection) Seed(id string, doc map[string]any) {
 
 func (s *Server) serve(w http.ResponseWriter, r *http.Request) {
 	rec := Request{Method: r.Method, Path: r.URL.Path}
-	raw, err := io.ReadAll(r.Body)
-	if err == nil && len(raw) > 0 {
-		err = json.Unmarshal(raw, &rec.Body)
+	var err error
+	if strings.HasPrefix(r.Header.Get("Content-Type"), "multipart/form-data") {
+		err = readMultipart(r, &rec)
+	} else {
+		var raw []byte
+		raw, err = io.ReadAll(r.Body)
+		if err == nil && len(raw) > 0 {
+			err = json.Unmarshal(raw, &rec.Body)
+		}
 	}
 
 	s.mu.Lock()
@@ -192,7 +211,7 @@ func (c *Collection) create(w http.ResponseWriter, rec Request) {
 	id := fmt.Sprintf("00000000-0000-4000-8000-%012d", c.srv.nextID)
 	body := rec.Body
 	if c.NewDocument != nil {
-		body = c.NewDocument(rec.Body)
+		body = c.NewDocument(rec)
 	}
 	doc := make(map[string]any, len(body)+1)
 	for k, v := range body {
@@ -201,7 +220,11 @@ func (c *Collection) create(w http.ResponseWriter, rec Request) {
 	doc["uuid"] = id
 	c.items[id] = doc
 	w.Header().Set("Location", c.basePath+"/"+id)
-	writeJSON(w, http.StatusCreated, map[string]any{"uuid": id})
+	idProperty := c.CreatedIDProperty
+	if idProperty == "" {
+		idProperty = "uuid"
+	}
+	writeJSON(w, http.StatusCreated, map[string]any{idProperty: id})
 }
 
 // get returns one document. The caller holds the server lock.
@@ -212,6 +235,31 @@ func (c *Collection) get(w http.ResponseWriter, id string) {
 		return
 	}
 	writeJSON(w, http.StatusOK, doc)
+}
+
+// readMultipart copies the fields and files of a multipart form request into rec.
+func readMultipart(r *http.Request, rec *Request) error {
+	if err := r.ParseMultipartForm(10 << 20); err != nil {
+		return err
+	}
+	rec.Body = make(map[string]any)
+	for k, v := range r.MultipartForm.Value {
+		rec.Body[k] = v[0]
+	}
+	rec.Files = make(map[string]File)
+	for field, headers := range r.MultipartForm.File {
+		f, err := headers[0].Open()
+		if err != nil {
+			return err
+		}
+		content, err := io.ReadAll(f)
+		_ = f.Close()
+		if err != nil {
+			return err
+		}
+		rec.Files[field] = File{Name: headers[0].Filename, Content: string(content)}
+	}
+	return nil
 }
 
 func writeJSON(w http.ResponseWriter, status int, body any) {

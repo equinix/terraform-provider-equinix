@@ -13,6 +13,7 @@ import (
 const (
 	SSHKeysPath  = "/ne/v1/publicKeys"
 	SSHUsersPath = "/ne/v1/sshUsers"
+	FilesPath    = "/ne/v1/files"
 )
 
 // MockAPI is a fake Network Edge API for unit tests. Config holds a provider
@@ -29,6 +30,11 @@ type MockAPI struct {
 	// SSHUsers holds the SSH users. A user created through the API has the
 	// properties username and deviceUUIDs. The API does not return passwords.
 	SSHUsers *restmock.Collection
+
+	// Files holds the uploaded files. A file is uploaded with a multipart
+	// form request and has the properties fileName, metroCode, deviceTypeCode,
+	// processType and status.
+	Files *restmock.Collection
 }
 
 // NewMockAPI starts a fake Network Edge API that stops when the test ends.
@@ -43,10 +49,10 @@ func NewMockAPI(t *testing.T) *MockAPI {
 
 	sshUsers := srv.AddCollection(SSHUsersPath, "username", "password", "deviceUuid")
 	// The create request names one device and a password. The stored user lists its devices.
-	sshUsers.NewDocument = func(body map[string]any) map[string]any {
+	sshUsers.NewDocument = func(req restmock.Request) map[string]any {
 		return map[string]any{
-			"username":    body["username"],
-			"deviceUUIDs": []any{body["deviceUuid"]},
+			"username":    req.Body["username"],
+			"deviceUUIDs": []any{req.Body["deviceUuid"]},
 		}
 	}
 	// POST /ne/v1/sshUsers/{id}/devices/{deviceId} gives the user access to a device.
@@ -55,10 +61,23 @@ func NewMockAPI(t *testing.T) *MockAPI {
 		doc["deviceUUIDs"] = append(devices, deviceID)
 	})
 
+	files := srv.AddCollection(FilesPath, "metroCode", "deviceTypeCode", "processType")
+	files.CreatedIDProperty = "fileUuid"
+	files.NewDocument = func(req restmock.Request) map[string]any {
+		return map[string]any{
+			"fileName":       req.Files["file"].Name,
+			"metroCode":      req.Body["metroCode"],
+			"deviceTypeCode": req.Body["deviceTypeCode"],
+			"processType":    req.Body["processType"],
+			"status":         "SUCCESS",
+		}
+	}
+
 	return &MockAPI{
 		Server:   srv,
 		Config:   cfg,
 		SSHKeys:  srv.AddCollection(SSHKeysPath, "keyName", "keyValue"),
 		SSHUsers: sshUsers,
+		Files:    files,
 	}
 }
