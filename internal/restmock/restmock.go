@@ -46,6 +46,17 @@ type Collection struct {
 	basePath string
 	required []string
 	items    map[string]map[string]any
+	actions  []action
+
+	// NewDocument converts the body of a create request into the stored
+	// document. If it is nil, the request body is stored as it is.
+	NewDocument func(body map[string]any) map[string]any
+}
+
+type action struct {
+	method string
+	prefix string
+	fn     func(doc map[string]any, rest string)
 }
 
 // NewServer starts a fake REST API server. The server stops when the test ends.
@@ -91,6 +102,15 @@ func (s *Server) RequestsFor(method, path string) []Request {
 	return out
 }
 
+// AddAction registers a handler for requests with a given method on
+// basePath/{id}/{prefix}{rest}, where {id} is the identifier of a stored
+// document. The handler receives the document, which it can change, and {rest}.
+func (c *Collection) AddAction(method, prefix string, fn func(doc map[string]any, rest string)) {
+	c.srv.mu.Lock()
+	defer c.srv.mu.Unlock()
+	c.actions = append(c.actions, action{method: method, prefix: prefix, fn: fn})
+}
+
 // Seed stores a document under a given identifier, as if something outside
 // of the test had created it. The "uuid" property is set to id.
 func (c *Collection) Seed(id string, doc map[string]any) {
@@ -123,12 +143,41 @@ func (s *Server) serve(w http.ResponseWriter, r *http.Request) {
 		case r.URL.Path == c.basePath && r.Method == http.MethodPost:
 			c.create(w, rec)
 			return
-		case strings.HasPrefix(r.URL.Path, c.basePath+"/") && r.Method == http.MethodGet:
-			c.get(w, strings.TrimPrefix(r.URL.Path, c.basePath+"/"))
-			return
+		case strings.HasPrefix(r.URL.Path, c.basePath+"/"):
+			if c.serveItem(w, rec) {
+				return
+			}
 		}
 	}
 	writeError(w, http.StatusNotFound, fmt.Sprintf("restmock has no route for %s %s", r.Method, r.URL.Path))
+}
+
+// serveItem handles requests below a document path. It returns false if it has no handler
+// for the request. The caller holds the server lock.
+func (c *Collection) serveItem(w http.ResponseWriter, rec Request) bool {
+	id, sub, hasSub := strings.Cut(strings.TrimPrefix(rec.Path, c.basePath+"/"), "/")
+	if !hasSub && rec.Method == http.MethodGet {
+		c.get(w, id)
+		return true
+	}
+	if !hasSub {
+		return false
+	}
+	for _, a := range c.actions {
+		rest, ok := strings.CutPrefix(sub, a.prefix)
+		if !ok || a.method != rec.Method {
+			continue
+		}
+		doc, found := c.items[id]
+		if !found {
+			writeError(w, http.StatusNotFound, "resource "+id+" does not exist")
+			return true
+		}
+		a.fn(doc, rest)
+		w.WriteHeader(http.StatusNoContent)
+		return true
+	}
+	return false
 }
 
 // create stores the request body as a new document. The caller holds the server lock.
@@ -141,8 +190,12 @@ func (c *Collection) create(w http.ResponseWriter, rec Request) {
 	}
 	c.srv.nextID++
 	id := fmt.Sprintf("00000000-0000-4000-8000-%012d", c.srv.nextID)
-	doc := make(map[string]any, len(rec.Body)+1)
-	for k, v := range rec.Body {
+	body := rec.Body
+	if c.NewDocument != nil {
+		body = c.NewDocument(rec.Body)
+	}
+	doc := make(map[string]any, len(body)+1)
+	for k, v := range body {
 		doc[k] = v
 	}
 	doc["uuid"] = id

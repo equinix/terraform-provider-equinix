@@ -2,6 +2,7 @@ package networkedge
 
 import (
 	"context"
+	"net/http"
 	"testing"
 
 	"github.com/equinix/terraform-provider-equinix/internal/config"
@@ -10,7 +11,8 @@ import (
 
 // Paths of the Network Edge API collections that MockAPI serves.
 const (
-	SSHKeysPath = "/ne/v1/publicKeys"
+	SSHKeysPath  = "/ne/v1/publicKeys"
+	SSHUsersPath = "/ne/v1/sshUsers"
 )
 
 // MockAPI is a fake Network Edge API for unit tests. Config holds a provider
@@ -23,6 +25,10 @@ type MockAPI struct {
 
 	// SSHKeys holds the SSH public keys.
 	SSHKeys *restmock.Collection
+
+	// SSHUsers holds the SSH users. A user created through the API has the
+	// properties username and deviceUUIDs. The API does not return passwords.
+	SSHUsers *restmock.Collection
 }
 
 // NewMockAPI starts a fake Network Edge API that stops when the test ends.
@@ -35,9 +41,24 @@ func NewMockAPI(t *testing.T) *MockAPI {
 		t.Fatalf("loading provider config for the mock Network Edge API: %v", err)
 	}
 
+	sshUsers := srv.AddCollection(SSHUsersPath, "username", "password", "deviceUuid")
+	// The create request names one device and a password. The stored user lists its devices.
+	sshUsers.NewDocument = func(body map[string]any) map[string]any {
+		return map[string]any{
+			"username":    body["username"],
+			"deviceUUIDs": []any{body["deviceUuid"]},
+		}
+	}
+	// POST /ne/v1/sshUsers/{id}/devices/{deviceId} gives the user access to a device.
+	sshUsers.AddAction(http.MethodPost, "devices/", func(doc map[string]any, deviceID string) {
+		devices, _ := doc["deviceUUIDs"].([]any)
+		doc["deviceUUIDs"] = append(devices, deviceID)
+	})
+
 	return &MockAPI{
-		Server:  srv,
-		Config:  cfg,
-		SSHKeys: srv.AddCollection(SSHKeysPath, "keyName", "keyValue"),
+		Server:   srv,
+		Config:   cfg,
+		SSHKeys:  srv.AddCollection(SSHKeysPath, "keyName", "keyValue"),
+		SSHUsers: sshUsers,
 	}
 }
