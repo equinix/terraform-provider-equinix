@@ -15,6 +15,8 @@ import (
 	"io"
 	"net/http"
 	"net/http/httptest"
+	"net/url"
+	"sort"
 	"strings"
 	"sync"
 	"testing"
@@ -24,6 +26,8 @@ import (
 type Request struct {
 	Method string
 	Path   string
+	// Query holds the query parameters of the request.
+	Query url.Values
 	// Body is the decoded JSON request body. For a multipart form request it
 	// holds the text fields of the form. It is nil if the request had no body.
 	Body map[string]any
@@ -139,7 +143,7 @@ func (c *Collection) Seed(id string, doc map[string]any) {
 }
 
 func (s *Server) serve(w http.ResponseWriter, r *http.Request) {
-	rec := Request{Method: r.Method, Path: r.URL.Path}
+	rec := Request{Method: r.Method, Path: r.URL.Path, Query: r.URL.Query()}
 	var err error
 	if strings.HasPrefix(r.Header.Get("Content-Type"), "multipart/form-data") {
 		err = readMultipart(r, &rec)
@@ -163,6 +167,9 @@ func (s *Server) serve(w http.ResponseWriter, r *http.Request) {
 		case r.URL.Path == c.basePath && r.Method == http.MethodPost:
 			c.create(w, rec)
 			return
+		case r.URL.Path == c.basePath && r.Method == http.MethodGet:
+			c.list(w)
+			return
 		case strings.HasPrefix(r.URL.Path, c.basePath+"/"):
 			if c.serveItem(w, rec) {
 				return
@@ -170,6 +177,25 @@ func (s *Server) serve(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 	writeError(w, http.StatusNotFound, fmt.Sprintf("restmock has no route for %s %s", r.Method, r.URL.Path))
+}
+
+// list returns all documents in one page, in the pagination format of the
+// Network Edge API. Tests that use it must keep the collection smaller than
+// one page. The caller holds the server lock.
+func (c *Collection) list(w http.ResponseWriter) {
+	ids := make([]string, 0, len(c.items))
+	for id := range c.items {
+		ids = append(ids, id)
+	}
+	sort.Strings(ids)
+	data := make([]map[string]any, 0, len(ids))
+	for _, id := range ids {
+		data = append(data, c.items[id])
+	}
+	writeJSON(w, http.StatusOK, map[string]any{
+		"pagination": map[string]any{"offset": 0, "limit": len(data), "total": len(data)},
+		"data":       data,
+	})
 }
 
 // serveItem handles requests below a document path. It returns false if it has no handler
