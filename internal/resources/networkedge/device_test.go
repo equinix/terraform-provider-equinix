@@ -6,6 +6,7 @@ import (
 	"os"
 	"path/filepath"
 	"testing"
+	"time"
 
 	"github.com/equinix/terraform-provider-equinix/equinix"
 	"github.com/equinix/terraform-provider-equinix/internal/converters"
@@ -568,4 +569,49 @@ func TestDevice_updateWaitsUntilAdditionalBandwidthProvisioned(t *testing.T) {
 	require.False(t, diags.HasError(), "update does not return errors: %v", diags)
 	assert.Len(t, api.RequestsFor(http.MethodGet, networkedge.DevicesPath+"/"+id+"/additionalBandwidths"), 2,
 		"update checked the additional bandwidth status until it was provisioned")
+}
+
+func TestDevice_createTimesOutWhileProvisioning(t *testing.T) {
+	t.Parallel()
+	// given
+	api := networkedge.NewMockAPI(t)
+	api.Devices.Sequence("", "status", "PROVISIONING") // the status never changes
+	r := deviceResource(t)
+	timeout := time.Second
+	r.Timeouts.Create = &timeout
+	// Resource data from TestResourceDataRaw ignores the timeouts of the resource.
+	d := r.Data(nil)
+	for k, v := range map[string]any{"name": "device", "type_code": "CSR1000V", "metro_code": "SV"} {
+		require.NoError(t, d.Set(k, v))
+	}
+
+	// when
+	diags := r.CreateContext(context.Background(), d, api.Config)
+
+	// then
+	require.True(t, diags.HasError(), "create returns an error")
+	assert.Contains(t, diags[0].Summary, "error waiting for network device", "error comes from the wait")
+	assert.Contains(t, diags[0].Summary, "timeout while waiting for state", "wait gave up because of the timeout")
+}
+
+func TestDevice_deleteTimesOutWhileDeprovisioning(t *testing.T) {
+	t.Parallel()
+	// given
+	const id = "0452fa68-8246-48b1-a1b2-817fb4baddcb"
+	api := networkedge.NewMockAPI(t)
+	api.Devices.Seed(id, map[string]any{"name": "device", "status": "PROVISIONED"})
+	api.Devices.Sequence(id, "status", "DEPROVISIONING") // the status never changes
+	r := deviceResource(t)
+	timeout := time.Second
+	r.Timeouts.Delete = &timeout
+	d := r.Data(nil)
+	d.SetId(id)
+
+	// when
+	diags := r.DeleteContext(context.Background(), d, api.Config)
+
+	// then
+	require.True(t, diags.HasError(), "delete returns an error")
+	assert.Contains(t, diags[0].Summary, "error waiting for network device", "error comes from the wait")
+	assert.Contains(t, diags[0].Summary, "timeout while waiting for state", "wait gave up because of the timeout")
 }
