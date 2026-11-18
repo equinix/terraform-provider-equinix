@@ -64,6 +64,11 @@ type Collection struct {
 	items    map[string]map[string]any
 	actions  []action
 
+	// sequences and scripts map a document identifier to a list of values by
+	// name. The empty identifier stands for the next document that is created.
+	sequences map[string]map[string][]any
+	scripts   map[string]map[string][]any
+
 	// NewDocument converts a create request into the stored document. If it
 	// is nil, the request body is stored as it is.
 	NewDocument func(req Request) map[string]any
@@ -124,6 +129,9 @@ func (s *Server) AddCollection(basePath string, required ...string) *Collection 
 		basePath: strings.TrimSuffix(basePath, "/"),
 		required: required,
 		items:    make(map[string]map[string]any),
+
+		sequences: make(map[string]map[string][]any),
+		scripts:   make(map[string]map[string][]any),
 	}
 	s.mu.Lock()
 	defer s.mu.Unlock()
@@ -172,7 +180,53 @@ func (c *Collection) add(doc map[string]any) string {
 	}
 	cp["uuid"] = id
 	c.items[id] = cp
+	for _, queued := range []map[string]map[string][]any{c.sequences, c.scripts} {
+		if values, ok := queued[""]; ok {
+			queued[id] = values
+			delete(queued, "")
+		}
+	}
 	return id
+}
+
+// Sequence makes a property of a document change between GET requests, to
+// simulate an asynchronous operation. Each GET of the document returns the
+// next value, and the last value repeats. Use the empty id for the next
+// document that is created.
+func (c *Collection) Sequence(id, property string, values ...any) {
+	c.srv.mu.Lock()
+	defer c.srv.mu.Unlock()
+	queue(c.sequences, id, property, values)
+}
+
+// Script queues values for a custom route. The route takes them one by one
+// with Next, and the last value repeats. Use the empty id for the next
+// document that is created.
+func (c *Collection) Script(id, key string, values ...any) {
+	c.srv.mu.Lock()
+	defer c.srv.mu.Unlock()
+	queue(c.scripts, id, key, values)
+}
+
+// Next returns the next scripted value for a document, and false if there is none.
+func (c *Collection) Next(id, key string) (any, bool) {
+	c.srv.mu.Lock()
+	defer c.srv.mu.Unlock()
+	values := c.scripts[id][key]
+	if len(values) == 0 {
+		return nil, false
+	}
+	if len(values) > 1 {
+		c.scripts[id][key] = values[1:]
+	}
+	return values[0], true
+}
+
+func queue(target map[string]map[string][]any, id, name string, values []any) {
+	if target[id] == nil {
+		target[id] = make(map[string][]any)
+	}
+	target[id][name] = values
 }
 
 // Merge copies fields into a stored document. It returns false if the document does not exist.
@@ -366,6 +420,12 @@ func (c *Collection) get(w http.ResponseWriter, id string) {
 	if !ok {
 		writeError(w, http.StatusNotFound, "resource "+id+" does not exist")
 		return
+	}
+	for property, values := range c.sequences[id] {
+		doc[property] = values[0]
+		if len(values) > 1 {
+			c.sequences[id][property] = values[1:]
+		}
 	}
 	writeJSON(w, http.StatusOK, doc)
 }

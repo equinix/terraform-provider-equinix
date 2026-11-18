@@ -120,3 +120,47 @@ func TestBGP_update(t *testing.T) {
 		"authenticationKey": "secret",
 	}, puts[0].Body, "update request body matches the API contract")
 }
+
+func newBGPCreateData(t *testing.T) *schema.ResourceData {
+	t.Helper()
+	return schema.TestResourceDataRaw(t, bgpResource(t).Schema, map[string]any{
+		"connection_id":     "6ca8d0df-c71a-4475-a835-53c2df1e6667",
+		"local_ip_address":  "1.1.1.1/32",
+		"local_asn":         15344,
+		"remote_ip_address": "2.2.2.2",
+		"remote_asn":        60421,
+	})
+}
+
+func TestBGP_createWaitsUntilProvisioned(t *testing.T) {
+	t.Parallel()
+	// given
+	api := networkedge.NewMockAPI(t)
+	api.BGP.Sequence("", "provisioningStatus", "PROVISIONING", "PROVISIONED")
+	d := newBGPCreateData(t)
+
+	// when
+	diags := bgpResource(t).CreateContext(context.Background(), d, api.Config)
+
+	// then
+	require.False(t, diags.HasError(), "create does not return errors: %v", diags)
+	assert.Equal(t, "PROVISIONED", d.Get("provisioning_status"), "provisioning status matches")
+	// Two status checks while waiting, and one read.
+	assert.GreaterOrEqual(t, len(api.RequestsFor(http.MethodGet, networkedge.BGPPath+"/"+d.Id())), 3,
+		"create kept checking the status until it was provisioned")
+}
+
+func TestBGP_createFailsOnUnexpectedStatus(t *testing.T) {
+	t.Parallel()
+	// given
+	api := networkedge.NewMockAPI(t)
+	api.BGP.Sequence("", "provisioningStatus", "FAILED")
+	d := newBGPCreateData(t)
+
+	// when
+	diags := bgpResource(t).CreateContext(context.Background(), d, api.Config)
+
+	// then
+	require.True(t, diags.HasError(), "create returns an error")
+	assert.Contains(t, diags[0].Summary, "error waiting for BGP configuration", "error comes from the wait")
+}
