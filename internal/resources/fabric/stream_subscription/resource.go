@@ -14,7 +14,9 @@ import (
 	"github.com/equinix/equinix-sdk-go/services/fabricv4"
 
 	"github.com/hashicorp/terraform-plugin-framework/diag"
+	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
+	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/hashicorp/terraform-plugin-framework/types/basetypes"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/retry"
 )
@@ -58,11 +60,18 @@ func (r *Resource) Create(
 		return
 	}
 
+	var writeOnly fwtypes.ObjectValueOf[sinkCredentialWriteOnlyModel]
+	resp.Diagnostics.Append(req.Config.GetAttribute(ctx, path.Root("sink_credential_wo"), &writeOnly)...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
 	// Retrieve the API client from the provider metadata
 	client := r.Meta.NewFabricClientForFramework(ctx, req.ProviderMeta)
 
-	createRequest, diags := buildCreateRequest(ctx, plan)
+	createRequest, diags := buildCreateRequest(ctx, plan, writeOnly)
 	if diags.HasError() {
+		resp.Diagnostics.Append(diags...)
 		return
 	}
 
@@ -151,7 +160,7 @@ func (r *Resource) Update(
 	id := state.ID.ValueString()
 	streamID := state.StreamID.ValueString()
 
-	updateRequest, diags := buildUpdateRequest(ctx, plan)
+	updateRequest, diags := buildUpdateRequest(ctx, plan, plan.SinkCredentialWO)
 	if diags.HasError() {
 		resp.Diagnostics.Append(diags...)
 		return
@@ -232,11 +241,11 @@ func (r *Resource) Delete(
 
 }
 
-func buildUpdateRequest(ctx context.Context, plan resourceModel) (fabricv4.StreamSubscriptionPutRequest, diag.Diagnostics) {
+func buildUpdateRequest(ctx context.Context, plan resourceModel, writeOnly fwtypes.ObjectValueOf[sinkCredentialWriteOnlyModel]) (fabricv4.StreamSubscriptionPutRequest, diag.Diagnostics) {
 	var diags diag.Diagnostics
 	request := fabricv4.StreamSubscriptionPutRequest{}
 
-	postRequest, diags := buildCreateRequest(ctx, plan)
+	postRequest, diags := buildCreateRequest(ctx, plan, writeOnly)
 
 	request.SetName(postRequest.GetName())
 	request.SetDescription(postRequest.GetDescription())
@@ -260,7 +269,7 @@ func buildUpdateRequest(ctx context.Context, plan resourceModel) (fabricv4.Strea
 	return request, diags
 }
 
-func buildCreateRequest(ctx context.Context, plan resourceModel) (fabricv4.StreamSubscriptionPostRequest, diag.Diagnostics) {
+func buildCreateRequest(ctx context.Context, plan resourceModel, writeOnly fwtypes.ObjectValueOf[sinkCredentialWriteOnlyModel]) (fabricv4.StreamSubscriptionPostRequest, diag.Diagnostics) {
 	var diags diag.Diagnostics
 	request := fabricv4.StreamSubscriptionPostRequest{}
 
@@ -294,7 +303,7 @@ func buildCreateRequest(ctx context.Context, plan resourceModel) (fabricv4.Strea
 	if !plan.Sink.IsNull() && !plan.Sink.IsUnknown() {
 		// Update sink request
 		var sink fabricv4.StreamSubscriptionSink
-		sink, diags = buildStreamSubscriptionSink(ctx, plan.Sink)
+		sink, diags = buildStreamSubscriptionSink(ctx, plan.Sink, writeOnly)
 		if diags.HasError() {
 			return fabricv4.StreamSubscriptionPostRequest{}, diags
 		}
@@ -333,7 +342,7 @@ func buildStreamSubscriptionSelector(ctx context.Context, selector fwtypes.Objec
 	return streamSubscriptionSelector, diags
 }
 
-func buildStreamSubscriptionSink(ctx context.Context, sinkObject fwtypes.ObjectValueOf[sinkModel]) (fabricv4.StreamSubscriptionSink, diag.Diagnostics) {
+func buildStreamSubscriptionSink(ctx context.Context, sinkObject fwtypes.ObjectValueOf[sinkModel], writeOnlyObject fwtypes.ObjectValueOf[sinkCredentialWriteOnlyModel]) (fabricv4.StreamSubscriptionSink, diag.Diagnostics) {
 	var sinkValue sinkModel
 	diags := sinkObject.As(ctx, &sinkValue, basetypes.ObjectAsOptions{})
 	if diags.HasError() {
@@ -371,19 +380,27 @@ func buildStreamSubscriptionSink(ctx context.Context, sinkObject fwtypes.ObjectV
 			return fabricv4.StreamSubscriptionSink{}, diags
 		}
 
+		var writeOnly sinkCredentialWriteOnlyModel
+		if !writeOnlyObject.IsNull() && !writeOnlyObject.IsUnknown() {
+			diags = writeOnlyObject.As(ctx, &writeOnly, basetypes.ObjectAsOptions{})
+			if diags.HasError() {
+				return fabricv4.StreamSubscriptionSink{}, diags
+			}
+		}
+
 		var credential fabricv4.StreamSubscriptionSinkCredential
 		credential.SetType(fabricv4.StreamSubscriptionSinkCredentialType(credentialModel.Type.ValueString()))
 
 		switch credential.GetType() {
 		case fabricv4.STREAMSUBSCRIPTIONSINKCREDENTIALTYPE_ACCESS_TOKEN:
-			credential.SetAccessToken(credentialModel.AccessToken.ValueString())
+			credential.SetAccessToken(secretValue(credentialModel.AccessToken, writeOnly.AccessToken))
 		case fabricv4.STREAMSUBSCRIPTIONSINKCREDENTIALTYPE_INTEGRATION_KEY:
-			credential.SetIntegrationKey(credentialModel.IntegrationKey.ValueString())
+			credential.SetIntegrationKey(secretValue(credentialModel.IntegrationKey, writeOnly.IntegrationKey))
 		case fabricv4.STREAMSUBSCRIPTIONSINKCREDENTIALTYPE_API_KEY:
-			credential.SetApiKey(credentialModel.APIKey.ValueString())
+			credential.SetApiKey(secretValue(credentialModel.APIKey, writeOnly.APIKey))
 		case fabricv4.STREAMSUBSCRIPTIONSINKCREDENTIALTYPE_USERNAME_PASSWORD:
 			credential.SetUsername(credentialModel.Username.ValueString())
-			credential.SetPassword(credentialModel.Password.ValueString())
+			credential.SetPassword(secretValue(credentialModel.Password, writeOnly.Password))
 		default:
 			diags.AddError("sink credential type is invalid", fmt.Sprintf("update sink credential type to one of the following %v", fabricv4.AllowedStreamSubscriptionSinkCredentialTypeEnumValues))
 			return fabricv4.StreamSubscriptionSink{}, diags
@@ -423,6 +440,13 @@ func buildStreamSubscriptionSink(ctx context.Context, sinkObject fwtypes.ObjectV
 	}
 
 	return sink, diags
+}
+
+func secretValue(stateful, writeOnly types.String) string {
+	if !writeOnly.IsNull() && !writeOnly.IsUnknown() {
+		return writeOnly.ValueString()
+	}
+	return stateful.ValueString()
 }
 
 func getCreateUpdateWaiter(ctx context.Context, client *fabricv4.APIClient, streamID, streamSubscriptionID string, timeout time.Duration) *retry.StateChangeConf {
