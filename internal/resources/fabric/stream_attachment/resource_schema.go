@@ -48,10 +48,12 @@ Additional Documentation:
 				},
 			},
 			"metrics_enabled": schema.BoolAttribute{
-				Description: "Boolean value indicating enablement of metrics for this asset stream attachment",
-				Optional:    true,
-				Computed:    true,
+				Description: "Boolean value indicating enablement of metrics for this asset stream attachment. " +
+					"Not supported for projects or organizations; will always be false for those asset types.",
+				Optional: true,
+				Computed: true,
 				PlanModifiers: []planmodifier.Bool{
+					metricsEnabledModifier{},
 					boolplanmodifier.UseStateForUnknown(),
 				},
 			},

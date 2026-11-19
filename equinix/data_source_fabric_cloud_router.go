@@ -40,5 +40,9 @@ Additional documentation:
 func dataSourceFabricCloudRouterRead(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	uuid, _ := d.Get("uuid").(string)
 	d.SetId(uuid)
-	return resourceFabricCloudRouterRead(ctx, d, meta)
+	diags := resourceFabricCloudRouterRead(ctx, d, meta)
+	if !diags.HasError() && d.Id() == "" {
+		return diag.Errorf("Fabric Cloud Router %s not found", uuid)
+	}
+	return diags
 }

@@ -42,5 +42,9 @@ Additional documentation:
 func dataSourceRoutingProtocolRead(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	uuid, _ := d.Get("uuid").(string)
 	d.SetId(uuid)
-	return resourceFabricRoutingProtocolRead(ctx, d, meta)
+	diags := resourceFabricRoutingProtocolRead(ctx, d, meta)
+	if !diags.HasError() && d.Id() == "" {
+		return diag.Errorf("Fabric routing protocol %s not found", uuid)
+	}
+	return diags
 }

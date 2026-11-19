@@ -31,7 +31,7 @@ resource "equinix_fabric_stream_attachment" "asset" {
 
 ### Optional
 
-- `metrics_enabled` (Boolean) Boolean value indicating enablement of metrics for this asset stream attachment
+- `metrics_enabled` (Boolean) Boolean value indicating enablement of metrics for this asset stream attachment. Not supported for projects or organizations; will always be false for those asset types.
 - `timeouts` (Attributes) (see [below for nested schema](#nestedatt--timeouts))
 
 ### Read-Only
