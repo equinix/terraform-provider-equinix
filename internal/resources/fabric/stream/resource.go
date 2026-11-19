@@ -118,10 +118,19 @@ func (r *Resource) Read(
 	// Extract the ID of the resource from the state
 	id := state.ID.ValueString()
 
-	stream, _, err := client.StreamsApi.GetStreamByUuid(ctx, id).Execute()
+	stream, httpResp, err := client.StreamsApi.GetStreamByUuid(ctx, id).Execute()
 	if err != nil {
+		if httpResp != nil && slices.Contains([]int{http.StatusForbidden, http.StatusNotFound}, httpResp.StatusCode) {
+			resp.State.RemoveResource(ctx)
+			return
+		}
 		resp.Diagnostics.AddError(
 			fmt.Sprintf("Failed retrieving Stream %s", id), equinix_errors.FormatFabricError(err).Error())
+		return
+	}
+
+	if stream.GetState() == fabricv4.STREAMSTATE_DEPROVISIONED {
+		resp.State.RemoveResource(ctx)
 		return
 	}
 

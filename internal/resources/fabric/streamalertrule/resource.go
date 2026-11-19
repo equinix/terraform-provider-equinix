@@ -234,8 +234,12 @@ func (r *Resource) Read(
 	id := state.ID.ValueString()
 	streamAlertRuleID := state.StreamID.ValueString()
 
-	streamAlertRule, _, err := client.StreamAlertRulesApi.GetStreamAlertRuleByUuid(ctx, streamAlertRuleID, id).Execute()
+	streamAlertRule, httpResp, err := client.StreamAlertRulesApi.GetStreamAlertRuleByUuid(ctx, streamAlertRuleID, id).Execute()
 	if err != nil {
+		if httpResp != nil && slices.Contains([]int{http.StatusForbidden, http.StatusNotFound}, httpResp.StatusCode) {
+			resp.State.RemoveResource(ctx)
+			return
+		}
 		resp.Diagnostics.AddError(
 			fmt.Sprintf("failed retrieving stream alert rule %s", id), equinix_errors.FormatFabricError(err).Error())
 		return
