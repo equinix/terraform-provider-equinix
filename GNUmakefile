@@ -13,6 +13,7 @@ PKG_NAME            =equinix
 
 GOLANGCI_LINT_VERSION=v2.13.2
 GOLANGCI_LINT=go run github.com/golangci/golangci-lint/v2/cmd/golangci-lint@${GOLANGCI_LINT_VERSION}
+MARKDOWN_LINK_CHECK_VERSION=3.15.0
 LINT_BASE_REF=origin/main
 
 ifneq ($(origin TESTS_REGEXP), undefined)
@@ -106,6 +107,13 @@ docs-lint-fix:
 	@misspell -w -source=text docs/
 	@docker run -v $(PWD):/markdown 06kellyjac/markdownlint-cli --fix docs/
 
+docs-link-check:
+	@echo "==> Checking docs for broken links..."
+	@npx --yes markdown-link-check@$(MARKDOWN_LINK_CHECK_VERSION) --quiet --config .markdown-link-check.json docs/*.md docs/*/*.md || (echo; \
+		echo "Broken links found in docs Markdown files."; \
+		echo "Fix the links in the templates/ or Go schema descriptions, then run 'make docs'."; \
+		exit 1)
+
 tfproviderlint:
 	@echo "==> Checking provider code against bflad/tfproviderlint..."
 	@docker run -v $(PWD):/src bflad/tfproviderlint ./... || (echo; \
@@ -123,4 +131,4 @@ tfproviderdocs-check:
 		echo "Unexpected issues found in code with bflad/tfproviderdocs."; \
 		exit 1)
 
-.PHONY: test testacc build install clean lint fmt fmtcheck errcheck test-compile docs-lint docs-lint-fix tfproviderlint tfproviderlint-fix tfproviderdocs-check
+.PHONY: test testacc build install clean lint fmt fmtcheck errcheck test-compile docs-lint docs-lint-fix docs-link-check tfproviderlint tfproviderlint-fix tfproviderdocs-check
