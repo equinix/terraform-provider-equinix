@@ -29,7 +29,7 @@ func TestAccFabricConnectionRouteFilter_PFCR(t *testing.T) {
 		portUUID = ports["pfcr"]["dot1q"][0].GetUuid()
 	}
 
-	targetVlan, err := testinghelpers.RandomVlan(portUUID)
+	targetVlan, err := testinghelpers.RandomVlan(t, portUUID)
 
 	if err != nil {
 		t.Fatalf("unable to get a available VLAN: %s", err)

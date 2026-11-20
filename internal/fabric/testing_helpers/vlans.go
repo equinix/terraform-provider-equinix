@@ -3,19 +3,19 @@ package testinghelpers
 import (
 	"context"
 	"errors"
-	"log"
 	"os"
+	"testing"
 
 	"math/rand"
 )
 
-func RandomVlan(portUUID string) (int, error) {
+func RandomVlan(t testing.TB, portUUID string) (int, error) {
 	if os.Getenv("TF_ACC") == "" {
-		log.Print("Skip fetching VLAN because TF_ACC is not set")
+		t.Log("Skip fetching VLAN because TF_ACC is not set")
 		return 0, nil
 	}
 
-	usedVlans, err := getUsedVlans(portUUID)
+	usedVlans, err := getUsedVlans(t, portUUID)
 	if err != nil {
 		return 0, err
 	}
@@ -24,13 +24,13 @@ func RandomVlan(portUUID string) (int, error) {
 	if err != nil {
 		return 0, err
 	}
-	log.Printf("[DEBUG] Fetched VLAN: %d", targetVlan)
+	t.Logf("[DEBUG] Fetched VLAN: %d", targetVlan)
 
 	return targetVlan, nil
 }
 
-func getUsedVlans(portUUID string) ([]int, error) {
-	log.Printf("[DEBUG] Fetching vlans")
+func getUsedVlans(t testing.TB, portUUID string) ([]int, error) {
+	t.Log("[DEBUG] Fetching vlans")
 	ctx := context.Background()
 	meta, err := GetConfigForFabric()
 	if err != nil {

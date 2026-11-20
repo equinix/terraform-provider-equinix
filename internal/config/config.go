@@ -218,8 +218,8 @@ func (c *Config) newFabricClient() *fabricv4.APIClient {
 }
 
 func (c *Config) configureHTTPClient(client *http.Client) *http.Client {
-	//nolint:staticcheck // We should move to subsystem loggers, but that is a much bigger change
-	transport := logging.NewTransport("Equinix Fabric (fabricv4)", client.Transport)
+	//nolint:staticcheck // deprecated but routes via tflog→test sink→t.Log, which keeps HTTP logs attributed per-test in go test -json output
+	transport := logging.NewLoggingHTTPTransport(client.Transport)
 
 	retryClient := retryablehttp.NewClient()
 	retryClient.HTTPClient.Transport = transport
@@ -227,6 +227,8 @@ func (c *Config) configureHTTPClient(client *http.Client) *http.Client {
 	retryClient.RetryMax = c.MaxRetries
 	retryClient.RetryWaitMin = time.Second
 	retryClient.RetryWaitMax = c.MaxRetryWait
+	retryClient.Logger = nil
+	retryClient.ErrorHandler = retryablehttp.PassthroughErrorHandler
 
 	return retryClient.StandardClient()
 }

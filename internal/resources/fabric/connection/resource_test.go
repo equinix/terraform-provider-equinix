@@ -31,21 +31,21 @@ func TestAccFabricCreatePort2SPConnection_PFCR(t *testing.T) {
 		portUUID = ports["pfcr"]["dot1q"][0].GetUuid()
 	}
 
-	initialVlan, err := testinghelpers.RandomVlan(portUUID)
+	initialVlan, err := testinghelpers.RandomVlan(t, portUUID)
 
 	if err != nil {
 		t.Fatalf("unable to get a available VLAN: %s", err)
 		return
 	}
 
-	updatedVlan, err := testinghelpers.RandomVlan(portUUID)
+	updatedVlan, err := testinghelpers.RandomVlan(t, portUUID)
 	if err != nil {
 		t.Fatalf("unable to get a available VLAN: %s", err)
 		return
 	}
 
 	for updatedVlan == initialVlan && initialVlan != 0 {
-		updatedVlan, err = testinghelpers.RandomVlan(portUUID)
+		updatedVlan, err = testinghelpers.RandomVlan(t, portUUID)
 		if err != nil {
 			t.Fatalf("unable to get a available VLAN: %s", err)
 			return
@@ -302,26 +302,26 @@ func TestAccFabricCreatePort2PortConnection_PFCR(t *testing.T) {
 		zSidePortUUID = ports["pfcr"]["dot1q"][1].GetUuid()
 	}
 
-	asideVlan, err := testinghelpers.RandomVlan(aSidePortUUID)
+	asideVlan, err := testinghelpers.RandomVlan(t, aSidePortUUID)
 	if err != nil {
 		t.Fatalf("unable to get a available VLAN: %s", err)
 		return
 	}
 
-	zsideVlan, err := testinghelpers.RandomVlan(zSidePortUUID)
+	zsideVlan, err := testinghelpers.RandomVlan(t, zSidePortUUID)
 	if err != nil {
 		t.Fatalf("unable to get a available VLAN: %s", err)
 		return
 	}
 
-	updatedAsideVlan, err := testinghelpers.RandomVlan(aSidePortUUID)
+	updatedAsideVlan, err := testinghelpers.RandomVlan(t, aSidePortUUID)
 	if err != nil {
 		t.Fatalf("unable to get a available VLAN: %s", err)
 		return
 	}
 
 	for updatedAsideVlan == asideVlan && asideVlan != 0 {
-		updatedAsideVlan, err = testinghelpers.RandomVlan(aSidePortUUID)
+		updatedAsideVlan, err = testinghelpers.RandomVlan(t, aSidePortUUID)
 		if err != nil {
 			t.Fatalf("unable to get a available VLAN: %s", err)
 			return
@@ -531,7 +531,7 @@ func TestAccFabricCreateCloudRouter2PortConnection_PFCR(t *testing.T) {
 		portUUID = ports["pfcr"]["dot1q"][1].GetUuid()
 	}
 
-	targetVlan, err := testinghelpers.RandomVlan(portUUID)
+	targetVlan, err := testinghelpers.RandomVlan(t, portUUID)
 	if err != nil {
 		t.Fatalf("unable to get a available VLAN: %s", err)
 		return
@@ -797,7 +797,7 @@ func TestAccFabricCreatePort2EtreeNetworkConnection_PFCR(t *testing.T) {
 		portUUID = ports["pfcr"]["dot1q"][1].GetUuid()
 	}
 
-	targetVlan, err := testinghelpers.RandomVlan(portUUID)
+	targetVlan, err := testinghelpers.RandomVlan(t, portUUID)
 	if err != nil {
 		t.Fatalf("unable to get a available VLAN: %s", err)
 		return
