@@ -173,6 +173,10 @@ func updateNetworkSSHUserResource(user *ne.SSHUser, d *schema.ResourceData) erro
 	if err := d.Set(networkSSHUserSchemaNames["Username"], user.Username); err != nil {
 		return fmt.Errorf("error reading Username: %s", err)
 	}
+	// The ne-go client does not return a password when it reads a user from the
+	// API (ne-go v1.21.0), so user.Password is always empty for a real read and
+	// this branch only runs in tests that build an ne.SSHUser by hand. The
+	// check keeps the password from the configuration in state.
 	if ne.StringValue(user.Password) != "" {
 		if err := d.Set(networkSSHUserSchemaNames["Password"], user.Password); err != nil {
 			return fmt.Errorf("error reading Password: %s", err)

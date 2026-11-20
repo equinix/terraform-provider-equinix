@@ -290,6 +290,11 @@ func expandACLTemplateInboundRules(rules []any) []ne.ACLTemplateInboundRule {
 		ruleMap := rules[i].(map[string]any)
 		rule := ne.ACLTemplateInboundRule{}
 		rule.SeqNo = ne.Int(i + 1)
+		// Terraform sets every attribute of a nested block in the map, using the
+		// zero value for an unset attribute. The "ok" checks below are therefore
+		// always true for resource data, and an unset attribute becomes a pointer to
+		// an empty string, not nil. The false branches could only run for a map
+		// built by hand without some keys, which no real caller does.
 		if v, ok := ruleMap[networkACLTemplateInboundRuleSchemaNames["Subnet"]]; ok {
 			rule.Subnet = ne.String(v.(string))
 		}

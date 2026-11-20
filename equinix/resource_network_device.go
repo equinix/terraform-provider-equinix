@@ -1529,6 +1529,10 @@ func updateNetworkDeviceResource(primary *ne.Device, secondary *ne.Device, d *sc
 			secondary.CloudInitFileID = secondaryFromSchema.CloudInitFileID
 			secondary.PurchaseOrderNumber = secondaryFromSchema.PurchaseOrderNumber
 		}
+		// With the schema of this resource, flattenNetworkDeviceSecondary returns a
+		// value that Set accepts, so this error check is defensive. The only test
+		// that reached it replaced the Secondary attribute in the schema with a
+		// computed-only one, which a real resource never has.
 		if err := d.Set(neDeviceSchemaNames["Secondary"], flattenNetworkDeviceSecondary(secondary)); err != nil {
 			return fmt.Errorf("error reading Secondary: %s", err)
 		}
