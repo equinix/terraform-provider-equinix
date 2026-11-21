@@ -101,10 +101,19 @@ func (r *Resource) Read(
 	// Extract the ID of the resource from the state
 	id := state.ID.ValueString()
 
-	routeAggregation, _, err := client.RouteAggregationsApi.GetRouteAggregationByUuid(ctx, id).Execute()
+	routeAggregation, httpResp, err := client.RouteAggregationsApi.GetRouteAggregationByUuid(ctx, id).Execute()
 	if err != nil {
+		if httpResp != nil && slices.Contains([]int{http.StatusForbidden, http.StatusNotFound}, httpResp.StatusCode) {
+			resp.State.RemoveResource(ctx)
+			return
+		}
 		resp.Diagnostics.AddError(
 			fmt.Sprintf("Failed retrieving Route Aggregation %s", id), equinix_errors.FormatFabricError(err).Error())
+		return
+	}
+
+	if sdkcompat.GetRouteAggregationState(routeAggregation) == sdkcompat.ROUTEAGGREGATIONSTATE_DEPROVISIONED {
+		resp.State.RemoveResource(ctx)
 		return
 	}
 

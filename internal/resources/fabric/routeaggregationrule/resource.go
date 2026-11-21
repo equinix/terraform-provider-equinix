@@ -99,10 +99,19 @@ func (r *Resource) Read(
 	id := state.ID.ValueString()
 	routeAggregationID := state.RouteAggregationID.ValueString()
 
-	routeAggregationRule, _, err := client.RouteAggregationRulesApi.GetRouteAggregationRuleByUuid(ctx, routeAggregationID, id).Execute()
+	routeAggregationRule, httpResp, err := client.RouteAggregationRulesApi.GetRouteAggregationRuleByUuid(ctx, routeAggregationID, id).Execute()
 	if err != nil {
+		if httpResp != nil && slices.Contains([]int{http.StatusForbidden, http.StatusNotFound}, httpResp.StatusCode) {
+			resp.State.RemoveResource(ctx)
+			return
+		}
 		resp.Diagnostics.AddError(
 			fmt.Sprintf("Failed retrieving Route Aggregation Rule %s", id), equinix_errors.FormatFabricError(err).Error())
+		return
+	}
+
+	if routeAggregationRule.GetState() == fabricv4.ROUTEAGGREGATIONRULESTATE_DEPROVISIONED {
+		resp.State.RemoveResource(ctx)
 		return
 	}
 
