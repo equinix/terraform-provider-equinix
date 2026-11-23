@@ -1,0 +1,97 @@
+name: Acceptance tests against Folly
+
+# Runs some acceptance tests against Folly (https://github.com/equinix-labs/folly), a mock of the Equinix APIs.
+# The tests need no Equinix account and no secrets. Folly answers with the scenarios in .github/folly.
+on:
+  pull_request:
+  workflow_dispatch:
+    inputs:
+      folly_ref:
+        description: Branch, tag, or commit of equinix-labs/folly
+        default: main
+  push:
+    branches:
+      - main
+
+permissions:
+  contents: read
+
+jobs:
+  folly_acctest:
+    name: Acceptance tests (Folly)
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    env:
+      FOLLY_PORT: "4010"
+    steps:
+      - name: Check out the provider
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      - name: Check out Folly
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          repository: equinix-labs/folly
+          # Pin a commit when you want a stable run.
+          ref: ${{ inputs.folly_ref || 'main' }}
+          path: folly-src
+
+      - name: Set up Node.js
+        uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: folly-src/package-lock.json
+
+      - name: Set up Go
+        uses: actions/setup-go@d8cbb8045d7f43706b9177cceb36c1f91a6644d5 # v7.1.0
+        with:
+          go-version-file: './go.mod'
+
+      - uses: hashicorp/setup-terraform@dfe3c3f87815947d99a8997f908cb6525fc44e9e # v4.0.1
+        with:
+          terraform_version: '1.5'
+          terraform_wrapper: false
+
+      - name: Get Go dependencies
+        run: go mod download
+
+      - name: Build Folly
+        working-directory: folly-src
+        run: |
+          npm ci
+          npm run build
+
+      # Folly reads the API descriptions of the Equinix API catalog (https://docs.equinix.com/.well-known/api-catalog).
+      - name: Download the API descriptions
+        run: node folly-src/dist/cli.js sync --out folly-specs
+
+      # No marketplace action starts a background process, so this step is a shell step.
+      - name: Start Folly
+        run: |
+          nohup node folly-src/dist/cli.js serve \
+            --config .github/folly/folly.yaml \
+            --out folly-specs \
+            --host 127.0.0.1 \
+            --port "${FOLLY_PORT}" > folly.log 2>&1 &
+          curl --fail --silent --retry 60 --retry-delay 1 --retry-connrefused "http://127.0.0.1:${FOLLY_PORT}/__folly/health"
+
+      - name: Acceptance tests
+        shell: bash # with pipefail, so that a failing test fails the step
+        env:
+          TF_ACC: "1"
+          EQUINIX_API_ENDPOINT: http://127.0.0.1:${{ env.FOLLY_PORT }}
+          # Folly accepts any client ID and secret, and it issues the token itself.
+          EQUINIX_API_CLIENTID: folly
+          EQUINIX_API_CLIENTSECRET: folly
+        run: |
+          TESTS=$(grep -v '^#' .github/folly/tests.txt | paste -s -d '|' -)
+          go test -json ./... -v -count 1 -parallel 8 -timeout 30m -run "^(${TESTS})$" | tee folly_test_output.json
+
+      - name: Upload the test output and the Folly log
+        if: ${{ always() }}
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: folly_acctest_logs
+          path: |
+            folly_test_output.json
+            folly.log

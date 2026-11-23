@@ -1,0 +1,84 @@
+arazzo: 1.0.1
+info:
+  title: Fabric Route Filter policy lifecycle
+  summary: Calls that the equinix_fabric_route_filter resource makes to the Fabric API v4 during create, update, and destroy.
+  description: >-
+    Source: internal/resources/fabric/route_filter/resource.go in terraform-provider-equinix.
+    The provider waits for the state of the policy. It treats a 4xx response as DEPROVISIONED
+    after a delete.
+  version: 0.1.0
+sourceDescriptions:
+  - name: fabricV4
+    url: https://docs.equinix.com/api-catalog/fabricv4/openapi.yaml
+    type: openapi
+workflows:
+  - workflowId: routeFilterLifecycle
+    summary: Create a route filter policy and delete it (the acceptance test has one config step).
+    inputs:
+      type: object
+      required:
+        - accessToken
+      properties:
+        accessToken:
+          type: string
+    steps:
+      - stepId: createRouteFilter
+        operationId: $sourceDescriptions.fabricV4.createRouteFilter
+        parameters:
+          - name: Authorization
+            in: header
+            value: Bearer {$inputs.accessToken}
+        successCriteria:
+          - condition: $statusCode == 202
+          # The API computes these values. The test checks them.
+          - condition: $response.body#/notMatchedRuleAction == 'DENY'
+          - condition: $response.body#/rulesCount == 0
+        outputs:
+          routeFilterId: $response.body#/uuid
+      - stepId: waitProvisioned
+        operationId: $sourceDescriptions.fabricV4.getRouteFilterByUuid
+        parameters:
+          - name: Authorization
+            in: header
+            value: Bearer {$inputs.accessToken}
+          - name: routeFilterId
+            in: path
+            value: $steps.createRouteFilter.outputs.routeFilterId
+        successCriteria:
+          - condition: $statusCode == 200
+          - condition: $response.body#/state == 'PROVISIONED'
+        onFailure:
+          - name: stillProvisioning
+            type: retry
+            criteria:
+              - condition: $statusCode == 200
+              - condition: $response.body#/state == 'PROVISIONING'
+      - stepId: deleteRouteFilter
+        operationId: $sourceDescriptions.fabricV4.deleteRouteFilterByUuid
+        parameters:
+          - name: Authorization
+            in: header
+            value: Bearer {$inputs.accessToken}
+          - name: routeFilterId
+            in: path
+            value: $steps.createRouteFilter.outputs.routeFilterId
+        successCriteria:
+          - condition: $statusCode == 202
+      - stepId: waitDeprovisioned
+        operationId: $sourceDescriptions.fabricV4.getRouteFilterByUuid
+        parameters:
+          - name: Authorization
+            in: header
+            value: Bearer {$inputs.accessToken}
+          - name: routeFilterId
+            in: path
+            value: $steps.createRouteFilter.outputs.routeFilterId
+        successCriteria:
+          - condition: $statusCode == 200
+          - condition: $response.body#/state == 'DEPROVISIONED'
+        onFailure:
+          - name: stillDeprovisioning
+            type: retry
+            criteria:
+              - condition: $statusCode == 200
+              - condition: $response.body#/state == 'DEPROVISIONING'

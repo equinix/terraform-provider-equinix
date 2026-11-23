@@ -1,0 +1,6 @@
+# Acceptance tests that run against Folly, one name for each line. The workflow .github/workflows/folly_acctest.yml reads this file.
+# Each scenario in folly.yaml serves one test, so list at most one test for each resource type.
+TestAccCloudRouterCreateOnlyRequiredParameters_PFCR
+TestAccFabricNetworkCreateOnlyRequiredParameters_PFCR
+TestAccFabricRouteFilterPolicy_PFCR
+TestAccDataSourceNetworkAccount_basic

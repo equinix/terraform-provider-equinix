@@ -1,0 +1,536 @@
+arazzo: 1.0.1
+info:
+  title: Fabric Cloud Router lifecycle
+  summary: >-
+    Calls that the equinix_fabric_cloud_router Terraform resource makes to the
+    Fabric API v4 during create, update, and destroy.
+  description: >-
+    Source: equinix/terraform-provider-equinix, file
+    equinix/resource_fabric_cloud_router.go. The provider polls the router state
+    with GET /fabric/v4/routers/{routerId} after each change. Each polling step
+    in this file has a retry action. Folly uses that retry action to find the
+    loop. Folly ignores retryAfter and retryLimit. They only describe the
+    provider. The loop ends when the successCriteria of the step become true.
+    Criteria that compare $response.body with $request.body or with earlier
+    step outputs make the mock echo the values that the client sent. The
+    provider needs this: when it updates a router, it compares the router that
+    the API returns with the Terraform configuration, and it sends one patch
+    operation for each difference.
+  version: 0.1.0
+sourceDescriptions:
+  - name: fabricV4
+    url: https://docs.equinix.com/api-catalog/fabricv4/openapi.yaml
+    type: openapi
+workflows:
+  - workflowId: provisionCloudRouter
+    summary: Create a Cloud Router and wait until its state is PROVISIONED.
+    inputs:
+      type: object
+      required:
+        - accessToken
+        - name
+        - packageCode
+        - metroCode
+        - projectId
+        - notificationEmails
+      properties:
+        accessToken:
+          type: string
+        name:
+          type: string
+        packageCode:
+          type: string
+          enum: [LAB, BASIC, STANDARD, ADVANCED, PREMIUM]
+        metroCode:
+          type: string
+        projectId:
+          type: string
+        accountNumber:
+          type: integer
+        notificationEmails:
+          type: array
+          items:
+            type: string
+    steps:
+      - stepId: createRouter
+        description: POST the new router. The API returns state PROVISIONING.
+        operationId: $sourceDescriptions.fabricV4.createCloudRouter
+        parameters:
+          - name: Authorization
+            in: header
+            value: Bearer {$inputs.accessToken}
+        requestBody:
+          contentType: application/json
+          payload:
+            type: XF_ROUTER
+            name: $inputs.name
+            location:
+              metroCode: $inputs.metroCode
+            package:
+              code: $inputs.packageCode
+            project:
+              projectId: $inputs.projectId
+            account:
+              accountNumber: $inputs.accountNumber
+            notifications:
+              - type: ALL
+                emails: $inputs.notificationEmails
+        successCriteria:
+          - condition: $statusCode == 200
+          - condition: $response.body#/name == $request.body#/name
+          - condition: $response.body#/type == $request.body#/type
+          - condition: $response.body#/location/metroCode == $request.body#/location/metroCode
+          - condition: $response.body#/package/code == $request.body#/package/code
+          - condition: $response.body#/project/projectId == $request.body#/project/projectId
+          - condition: $response.body#/notifications == $request.body#/notifications
+        outputs:
+          routerId: $response.body#/uuid
+          name: $request.body#/name
+          type: $request.body#/type
+          metroCode: $request.body#/location/metroCode
+          packageCode: $request.body#/package/code
+          projectId: $request.body#/project/projectId
+          notifications: $request.body#/notifications
+      - stepId: waitProvisioned
+        description: >-
+          Poll the router. The provider waits 30 seconds before the first poll,
+          then polls until the state is PROVISIONED. Timeout: 10 minutes.
+        operationId: $sourceDescriptions.fabricV4.getCloudRouterByUuid
+        parameters:
+          - name: Authorization
+            in: header
+            value: Bearer {$inputs.accessToken}
+          - name: routerId
+            in: path
+            value: $steps.createRouter.outputs.routerId
+        successCriteria:
+          - condition: $statusCode == 200
+          - condition: $response.body#/state == 'PROVISIONED'
+          - condition: $response.body#/uuid == $steps.createRouter.outputs.routerId
+          - condition: $response.body#/name == $steps.createRouter.outputs.name
+        onFailure:
+          - name: routerStillProvisioning
+            type: retry
+            retryAfter: 30
+            retryLimit: 20
+            criteria:
+              - condition: $statusCode == 200
+              - condition: $response.body#/state == 'PROVISIONING'
+        outputs:
+          state: $response.body#/state
+      - stepId: readRouter
+        description: The provider reads the router once more to fill the Terraform state.
+        operationId: $sourceDescriptions.fabricV4.getCloudRouterByUuid
+        parameters:
+          - name: Authorization
+            in: header
+            value: Bearer {$inputs.accessToken}
+          - name: routerId
+            in: path
+            value: $steps.createRouter.outputs.routerId
+        successCriteria:
+          - condition: $statusCode == 200
+          - condition: $response.body#/uuid == $steps.createRouter.outputs.routerId
+          - condition: $response.body#/state == 'PROVISIONED'
+          - condition: $response.body#/name == $steps.createRouter.outputs.name
+          - condition: $response.body#/type == $steps.createRouter.outputs.type
+          - condition: $response.body#/location/metroCode == $steps.createRouter.outputs.metroCode
+          - condition: $response.body#/package/code == $steps.createRouter.outputs.packageCode
+          - condition: $response.body#/notifications == $steps.createRouter.outputs.notifications
+    outputs:
+      routerId: $steps.createRouter.outputs.routerId
+      name: $steps.createRouter.outputs.name
+      packageCode: $steps.createRouter.outputs.packageCode
+      notifications: $steps.createRouter.outputs.notifications
+
+  - workflowId: updateCloudRouterName
+    summary: Rename a Cloud Router and wait until the change completes.
+    description: >-
+      The inputs name, packageCode, and notifications are the current values of
+      the router. The provider sends one patch operation for each value that
+      differs from its configuration, so the router that the API returns must
+      have the values that the client sent when it created the router.
+    inputs:
+      type: object
+      required:
+        - accessToken
+        - routerId
+      properties:
+        accessToken:
+          type: string
+        routerId:
+          type: string
+        newName:
+          type: string
+        name:
+          type: string
+        packageCode:
+          type: string
+        notifications:
+          type: array
+    steps:
+      - stepId: waitReady
+        description: The provider first waits until the router is PROVISIONED.
+        operationId: $sourceDescriptions.fabricV4.getCloudRouterByUuid
+        parameters:
+          - name: Authorization
+            in: header
+            value: Bearer {$inputs.accessToken}
+          - name: routerId
+            in: path
+            value: $inputs.routerId
+        successCriteria:
+          - condition: $statusCode == 200
+          - condition: $response.body#/state == 'PROVISIONED'
+          - condition: $response.body#/uuid == $inputs.routerId
+          - condition: $response.body#/name == $inputs.name
+          - condition: $response.body#/package/code == $inputs.packageCode
+          - condition: $response.body#/notifications == $inputs.notifications
+        onFailure:
+          - name: routerNotReady
+            type: retry
+            retryAfter: 30
+            retryLimit: 20
+            criteria:
+              - condition: $statusCode == 200
+              - condition: $response.body#/state == 'PROVISIONING'
+      - stepId: patchName
+        description: Send one JSON Patch operation for the name.
+        operationId: $sourceDescriptions.fabricV4.updateCloudRouterByUuid
+        parameters:
+          - name: Authorization
+            in: header
+            value: Bearer {$inputs.accessToken}
+          - name: routerId
+            in: path
+            value: $inputs.routerId
+        requestBody:
+          contentType: application/json-patch+json
+          payload:
+            - op: replace
+              path: /name
+              value: $inputs.newName
+        successCriteria:
+          - condition: $statusCode == 200
+        outputs:
+          newName: $request.body#/0/value
+      - stepId: waitUpdated
+        description: >-
+          Poll the router until the state is PROVISIONED again. The provider
+          fills the Terraform state from the last response and does not read
+          the router again.
+        operationId: $sourceDescriptions.fabricV4.getCloudRouterByUuid
+        parameters:
+          - name: Authorization
+            in: header
+            value: Bearer {$inputs.accessToken}
+          - name: routerId
+            in: path
+            value: $inputs.routerId
+        successCriteria:
+          - condition: $statusCode == 200
+          - condition: $response.body#/state == 'PROVISIONED'
+          - condition: $response.body#/uuid == $inputs.routerId
+          - condition: $response.body#/name == $steps.patchName.outputs.newName
+          - condition: $response.body#/package/code == $inputs.packageCode
+          - condition: $response.body#/notifications == $inputs.notifications
+        onFailure:
+          - name: routerStillReprovisioning
+            type: retry
+            retryAfter: 30
+            retryLimit: 20
+            criteria:
+              - condition: $statusCode == 200
+              - condition: $response.body#/state == 'REPROVISIONING'
+    outputs:
+      name: $steps.patchName.outputs.newName
+
+  - workflowId: deprovisionCloudRouter
+    summary: Delete a Cloud Router and wait until its state is DEPROVISIONED.
+    inputs:
+      type: object
+      required:
+        - accessToken
+        - routerId
+      properties:
+        accessToken:
+          type: string
+        routerId:
+          type: string
+    steps:
+      - stepId: deleteRouter
+        operationId: $sourceDescriptions.fabricV4.deleteCloudRouterByUuid
+        parameters:
+          - name: Authorization
+            in: header
+            value: Bearer {$inputs.accessToken}
+          - name: routerId
+            in: path
+            value: $inputs.routerId
+        successCriteria:
+          - condition: $statusCode == 204
+      - stepId: waitDeprovisioned
+        description: Poll the router until the state is DEPROVISIONED.
+        operationId: $sourceDescriptions.fabricV4.getCloudRouterByUuid
+        parameters:
+          - name: Authorization
+            in: header
+            value: Bearer {$inputs.accessToken}
+          - name: routerId
+            in: path
+            value: $inputs.routerId
+        successCriteria:
+          - condition: $statusCode == 200
+          - condition: $response.body#/state == 'DEPROVISIONED'
+        onFailure:
+          - name: routerStillDeprovisioning
+            type: retry
+            retryAfter: 30
+            retryLimit: 20
+            criteria:
+              - condition: $statusCode == 200
+              - condition: $response.body#/state == 'DEPROVISIONING'
+
+  - workflowId: cloudRouterLifecycle
+    summary: Create, rename, and delete one Cloud Router (one Terraform apply, update, destroy cycle).
+    description: >-
+      This workflow does not get a token. The client gets its token from the
+      separate authenticate workflow (common/authenticate.arazzo.yaml). Folly
+      mocks that workflow as its own scenario.
+    inputs:
+      type: object
+      required:
+        - accessToken
+      properties:
+        accessToken:
+          type: string
+        name:
+          type: string
+        newName:
+          type: string
+        packageCode:
+          type: string
+        metroCode:
+          type: string
+        projectId:
+          type: string
+        accountNumber:
+          type: integer
+        notificationEmails:
+          type: array
+          items:
+            type: string
+    steps:
+      - stepId: provision
+        workflowId: $workflows.provisionCloudRouter
+        parameters:
+          - name: accessToken
+            value: $inputs.accessToken
+          - name: name
+            value: $inputs.name
+          - name: packageCode
+            value: $inputs.packageCode
+          - name: metroCode
+            value: $inputs.metroCode
+          - name: projectId
+            value: $inputs.projectId
+          - name: accountNumber
+            value: $inputs.accountNumber
+          - name: notificationEmails
+            value: $inputs.notificationEmails
+        outputs:
+          routerId: $outputs.routerId
+          name: $outputs.name
+          packageCode: $outputs.packageCode
+          notifications: $outputs.notifications
+      - stepId: rename
+        workflowId: $workflows.updateCloudRouterName
+        parameters:
+          - name: accessToken
+            value: $inputs.accessToken
+          - name: routerId
+            value: $steps.provision.outputs.routerId
+          - name: newName
+            value: $inputs.newName
+          - name: name
+            value: $steps.provision.outputs.name
+          - name: packageCode
+            value: $steps.provision.outputs.packageCode
+          - name: notifications
+            value: $steps.provision.outputs.notifications
+      - stepId: destroy
+        workflowId: $workflows.deprovisionCloudRouter
+        parameters:
+          - name: accessToken
+            value: $inputs.accessToken
+          - name: routerId
+            value: $steps.provision.outputs.routerId
+
+  - workflowId: refreshRouter
+    summary: One read of a provisioned router.
+    description: >-
+      The Terraform test framework (terraform-plugin-testing) refreshes the
+      state with a read between its steps, and the provider does not send it.
+    inputs:
+      type: object
+      required:
+        - accessToken
+        - routerId
+      properties:
+        accessToken:
+          type: string
+        routerId:
+          type: string
+    steps:
+      - stepId: read
+        operationId: $sourceDescriptions.fabricV4.getCloudRouterByUuid
+        parameters:
+          - name: Authorization
+            in: header
+            value: Bearer {$inputs.accessToken}
+          - name: routerId
+            in: path
+            value: $inputs.routerId
+        successCriteria:
+          - condition: $statusCode == 200
+          - condition: $response.body#/state == 'PROVISIONED'
+          - condition: $response.body#/uuid == $inputs.routerId
+
+  - workflowId: checkRouterDeprovisioned
+    summary: One read of a router that was deleted. The state is DEPROVISIONED.
+    description: >-
+      The acceptance test of the provider checks after the destroy that the
+      router is deprovisioned (CheckDestroy).
+    inputs:
+      type: object
+      required:
+        - accessToken
+        - routerId
+      properties:
+        accessToken:
+          type: string
+        routerId:
+          type: string
+    steps:
+      - stepId: read
+        operationId: $sourceDescriptions.fabricV4.getCloudRouterByUuid
+        parameters:
+          - name: Authorization
+            in: header
+            value: Bearer {$inputs.accessToken}
+          - name: routerId
+            in: path
+            value: $inputs.routerId
+        successCriteria:
+          - condition: $statusCode == 200
+          - condition: $response.body#/state == 'DEPROVISIONED'
+          - condition: $response.body#/uuid == $inputs.routerId
+
+  - workflowId: terraformAcceptanceCycle
+    summary: >-
+      The requests of an acceptance test that creates a router, renames it, and
+      destroys it (two config steps).
+    description: >-
+      The order is the order that the provider and terraform-plugin-testing
+      v1.13.3 send. The reads between the provider calls are refreshes of the
+      framework. The count of these reads belongs to the framework version.
+    inputs:
+      type: object
+      required:
+        - accessToken
+      properties:
+        accessToken:
+          type: string
+        name:
+          type: string
+        newName:
+          type: string
+        packageCode:
+          type: string
+        metroCode:
+          type: string
+        projectId:
+          type: string
+        accountNumber:
+          type: integer
+        notificationEmails:
+          type: array
+          items:
+            type: string
+    steps:
+      - stepId: provision
+        workflowId: $workflows.provisionCloudRouter
+        parameters:
+          - name: accessToken
+            value: $inputs.accessToken
+          - name: name
+            value: $inputs.name
+          - name: packageCode
+            value: $inputs.packageCode
+          - name: metroCode
+            value: $inputs.metroCode
+          - name: projectId
+            value: $inputs.projectId
+          - name: accountNumber
+            value: $inputs.accountNumber
+          - name: notificationEmails
+            value: $inputs.notificationEmails
+        outputs:
+          routerId: $outputs.routerId
+          name: $outputs.name
+          packageCode: $outputs.packageCode
+          notifications: $outputs.notifications
+      - stepId: refreshAfterCreate
+        description: The plan after the first apply refreshes the router.
+        workflowId: $workflows.refreshRouter
+        parameters:
+          - name: accessToken
+            value: $inputs.accessToken
+          - name: routerId
+            value: $steps.provision.outputs.routerId
+      - stepId: refreshBeforeUpdate
+        description: The plan of the second step refreshes the router.
+        workflowId: $workflows.refreshRouter
+        parameters:
+          - name: accessToken
+            value: $inputs.accessToken
+          - name: routerId
+            value: $steps.provision.outputs.routerId
+      - stepId: rename
+        workflowId: $workflows.updateCloudRouterName
+        parameters:
+          - name: accessToken
+            value: $inputs.accessToken
+          - name: routerId
+            value: $steps.provision.outputs.routerId
+          - name: newName
+            value: $inputs.newName
+          - name: name
+            value: $steps.provision.outputs.name
+          - name: packageCode
+            value: $steps.provision.outputs.packageCode
+          - name: notifications
+            value: $steps.provision.outputs.notifications
+      - stepId: refreshAfterUpdate
+        description: The plan after the second apply refreshes the router.
+        workflowId: $workflows.refreshRouter
+        parameters:
+          - name: accessToken
+            value: $inputs.accessToken
+          - name: routerId
+            value: $steps.provision.outputs.routerId
+      - stepId: destroy
+        workflowId: $workflows.deprovisionCloudRouter
+        parameters:
+          - name: accessToken
+            value: $inputs.accessToken
+          - name: routerId
+            value: $steps.provision.outputs.routerId
+      - stepId: checkDestroyed
+        description: CheckDestroy of the test waits for the state DEPROVISIONED.
+        workflowId: $workflows.checkRouterDeprovisioned
+        parameters:
+          - name: accessToken
+            value: $inputs.accessToken
+          - name: routerId
+            value: $steps.provision.outputs.routerId

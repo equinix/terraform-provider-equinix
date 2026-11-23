@@ -1,0 +1,40 @@
+arazzo: 1.0.1
+info:
+  title: Network Edge accounts
+  summary: The call that the equinix_network_account data source makes.
+  description: >-
+    Source: equinix/data_source_network_account.go in terraform-provider-equinix. The data source
+    reads the accounts of a metro and takes the one that matches its filters. The Network Edge spec
+    has no useful example for this response, so the flow sets the values that the test checks.
+  version: 0.1.0
+sourceDescriptions:
+  - name: networkEdgeV1
+    url: https://docs.equinix.com/api-catalog/networkedgev1/openapi.yaml
+    type: openapi
+workflows:
+  - workflowId: networkAccounts
+    summary: Answer every read of the accounts of a metro with one active account.
+    inputs:
+      type: object
+      required:
+        - accessToken
+      properties:
+        accessToken:
+          type: string
+    steps:
+      - stepId: getAccounts
+        operationId: $sourceDescriptions.networkEdgeV1.getAccountsWithStatus
+        parameters:
+          - name: Authorization
+            in: header
+            value: Bearer {$inputs.accessToken}
+        successCriteria:
+          - condition: $statusCode == 200
+          # The Network Edge spec describes the accounts in "data", with an integer accountNumber. The API
+          # (and the Go client of the provider) uses "accounts", with a string accountNumber and a projectId.
+          # The flow writes the shape that the client reads.
+          - condition: $response.body#/accounts/0/accountName == 'Folly Test Account'
+          - condition: $response.body#/accounts/0/accountNumber == '1234567'
+          - condition: $response.body#/accounts/0/accountUcmId == 'FOLLY-UCM-1'
+          - condition: $response.body#/accounts/0/accountStatus == 'ACTIVE'
+          - condition: $response.body#/accounts/0/projectId == '92cbcfd9-347b-4da5-901d-2cea82575941'

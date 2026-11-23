@@ -1,0 +1,44 @@
+# Scenarios that Folly (https://github.com/equinix-labs/folly) runs for the acceptance tests in .github/workflows/folly_acctest.yml.
+# One Folly process serves all of them. Each scenario owns different API operations, so the tests can run in parallel,
+# as long as each scenario serves one test (a scenario keeps its state for one run of a workflow).
+scenarios:
+  - name: auth
+    flow: flows/authenticate.arazzo.yaml
+    workflow: authenticate
+
+  - name: cloud-router
+    flow: flows/fabric-cloud-router.arazzo.yaml
+    workflow: cloudRouterLifecycle
+    auth: auth
+    tolerantReads: true   # the test framework reads the router between the provider calls
+    loops:
+      provisionCloudRouter.waitProvisioned: { iterations: 1 }
+      updateCloudRouterName.waitReady: { iterations: 0 }
+      updateCloudRouterName.waitUpdated: { iterations: 1 }
+      deprovisionCloudRouter.waitDeprovisioned: { iterations: 1 }
+
+  - name: network
+    flow: flows/fabric-network.arazzo.yaml
+    workflow: networkLifecycle
+    auth: auth
+    tolerantReads: true
+    loops:
+      networkLifecycle.waitProvisioned: { iterations: 1 }
+      networkLifecycle.waitReady: { iterations: 0 }
+      networkLifecycle.waitUpdated: { iterations: 1 }
+      networkLifecycle.waitDeprovisioned: { iterations: 1 }
+
+  - name: route-filter
+    flow: flows/fabric-route-filter.arazzo.yaml
+    workflow: routeFilterLifecycle
+    auth: auth
+    tolerantReads: true
+    loops:
+      routeFilterLifecycle.waitProvisioned: { iterations: 1 }
+      routeFilterLifecycle.waitDeprovisioned: { iterations: 1 }
+
+  # A data source: every read of the accounts gets the same answer.
+  - name: ne-account
+    flow: flows/ne-account.arazzo.yaml
+    workflow: networkAccounts
+    auth: auth

@@ -1,0 +1,137 @@
+arazzo: 1.0.1
+info:
+  title: Fabric Network lifecycle
+  summary: Calls that the equinix_fabric_network resource makes to the Fabric API v4 during create, update, and destroy.
+  description: >-
+    Source: internal/resources/fabric/network/resource.go in terraform-provider-equinix.
+    The provider waits for operation.equinixStatus. It does not read the other values
+    again, so Folly's resource store keeps the values that the client sent.
+  version: 0.1.0
+sourceDescriptions:
+  - name: fabricV4
+    url: https://docs.equinix.com/api-catalog/fabricv4/openapi.yaml
+    type: openapi
+workflows:
+  - workflowId: networkLifecycle
+    summary: Create a network, rename it, and delete it.
+    inputs:
+      type: object
+      required:
+        - accessToken
+      properties:
+        accessToken:
+          type: string
+    steps:
+      - stepId: createNetwork
+        operationId: $sourceDescriptions.fabricV4.createNetwork
+        parameters:
+          - name: Authorization
+            in: header
+            value: Bearer {$inputs.accessToken}
+        successCriteria:
+          - condition: $statusCode == 201
+          # The API computes these values. The test checks that they are set.
+          - condition: $response.body#/connectionsCount == 0
+          - condition: $response.body#/changeLog/createdBy == 'folly'
+          - condition: $response.body#/changeLog/createdByFullName == 'Folly Test User'
+          - condition: $response.body#/changeLog/createdByEmail == 'folly@example.com'
+          - condition: $response.body#/changeLog/createdDateTime == '2026-01-01T00:00:00.000Z'
+        outputs:
+          networkId: $response.body#/uuid
+      - stepId: waitProvisioned
+        description: The provider polls until operation.equinixStatus is PROVISIONED.
+        operationId: $sourceDescriptions.fabricV4.getNetworkByUuid
+        parameters:
+          - name: Authorization
+            in: header
+            value: Bearer {$inputs.accessToken}
+          - name: networkId
+            in: path
+            value: $steps.createNetwork.outputs.networkId
+        successCriteria:
+          - condition: $statusCode == 200
+          - condition: $response.body#/operation/equinixStatus == 'PROVISIONED'
+        onFailure:
+          - name: stillProvisioning
+            type: retry
+            criteria:
+              - condition: $statusCode == 200
+              - condition: $response.body#/operation/equinixStatus == 'PROVISIONING'
+      - stepId: waitReady
+        description: The update waits until the network is PROVISIONED.
+        operationId: $sourceDescriptions.fabricV4.getNetworkByUuid
+        parameters:
+          - name: Authorization
+            in: header
+            value: Bearer {$inputs.accessToken}
+          - name: networkId
+            in: path
+            value: $steps.createNetwork.outputs.networkId
+        successCriteria:
+          - condition: $statusCode == 200
+          - condition: $response.body#/operation/equinixStatus == 'PROVISIONED'
+        onFailure:
+          - name: notReady
+            type: retry
+            criteria:
+              - condition: $statusCode == 200
+              - condition: $response.body#/operation/equinixStatus == 'PROVISIONING'
+      - stepId: patchNetwork
+        operationId: $sourceDescriptions.fabricV4.updateNetworkByUuid
+        parameters:
+          - name: Authorization
+            in: header
+            value: Bearer {$inputs.accessToken}
+          - name: networkId
+            in: path
+            value: $steps.createNetwork.outputs.networkId
+        successCriteria:
+          - condition: $statusCode == 200
+      - stepId: waitUpdated
+        operationId: $sourceDescriptions.fabricV4.getNetworkByUuid
+        parameters:
+          - name: Authorization
+            in: header
+            value: Bearer {$inputs.accessToken}
+          - name: networkId
+            in: path
+            value: $steps.createNetwork.outputs.networkId
+        successCriteria:
+          - condition: $statusCode == 200
+          - condition: $response.body#/operation/equinixStatus == 'PROVISIONED'
+        onFailure:
+          - name: stillUpdating
+            type: retry
+            criteria:
+              - condition: $statusCode == 200
+              - condition: $response.body#/operation/equinixStatus == 'PROVISIONING'
+      - stepId: deleteNetwork
+        operationId: $sourceDescriptions.fabricV4.deleteNetworkByUuid
+        parameters:
+          - name: Authorization
+            in: header
+            value: Bearer {$inputs.accessToken}
+          - name: networkId
+            in: path
+            value: $steps.createNetwork.outputs.networkId
+        successCriteria:
+          - condition: $statusCode == 202
+      - stepId: waitDeprovisioned
+        description: The provider polls until operation.equinixStatus is DEPROVISIONED.
+        operationId: $sourceDescriptions.fabricV4.getNetworkByUuid
+        parameters:
+          - name: Authorization
+            in: header
+            value: Bearer {$inputs.accessToken}
+          - name: networkId
+            in: path
+            value: $steps.createNetwork.outputs.networkId
+        successCriteria:
+          - condition: $statusCode == 200
+          - condition: $response.body#/operation/equinixStatus == 'DEPROVISIONED'
+        onFailure:
+          - name: stillDeprovisioning
+            type: retry
+            criteria:
+              - condition: $statusCode == 200
+              - condition: $response.body#/operation/equinixStatus == 'DEPROVISIONING'

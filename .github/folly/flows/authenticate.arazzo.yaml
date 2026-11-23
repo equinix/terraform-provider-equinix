@@ -1,0 +1,43 @@
+arazzo: 1.0.1
+info:
+  title: Equinix API authentication
+  summary: Get an OAuth2 bearer token. Every other Folly flow starts with this workflow.
+  version: 0.1.0
+sourceDescriptions:
+  - name: accessTokenV1
+    url: https://docs.equinix.com/api-catalog/accesstokenv1/openapi.yaml
+    type: openapi
+workflows:
+  - workflowId: authenticate
+    summary: Exchange a client ID and client secret for a bearer token.
+    description: >-
+      The Terraform provider (through equinixoauth2 in equinix-sdk-go) sends this
+      request with grant_type client_credentials. It calls the endpoint when it
+      needs its first token, and again after the token expires. A client that
+      uses a static token (EQUINIX_API_TOKEN) never calls it.
+    inputs:
+      type: object
+      required:
+        - clientId
+        - clientSecret
+      properties:
+        clientId:
+          type: string
+        clientSecret:
+          type: string
+    steps:
+      - stepId: getToken
+        description: Request a token with the client_credentials grant.
+        operationId: $sourceDescriptions.accessTokenV1.GetOAuth2AccessToken
+        requestBody:
+          contentType: application/json
+          payload:
+            grant_type: client_credentials
+            client_id: $inputs.clientId
+            client_secret: $inputs.clientSecret
+        successCriteria:
+          - condition: $statusCode == 200
+        outputs:
+          accessToken: $response.body#/access_token
+    outputs:
+      accessToken: $steps.getToken.outputs.accessToken
