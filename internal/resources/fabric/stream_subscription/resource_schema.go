@@ -6,12 +6,15 @@ import (
 	"github.com/equinix/terraform-provider-equinix/internal/framework"
 	fwtypes "github.com/equinix/terraform-provider-equinix/internal/framework/types"
 	"github.com/hashicorp/terraform-plugin-framework-timeouts/resource/timeouts"
+	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
+	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/boolplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/int32planmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/objectplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
+	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 )
 
@@ -30,6 +33,54 @@ Additional Documentation:
 				Update: true,
 				Delete: true,
 			}),
+			"sink_credential_wo": schema.SingleNestedAttribute{
+				Description: "Write-only secrets for sink.credential, sent to Equinix but never stored in the plan or state. Set the field that matches sink.credential.type instead of the field of the same name in sink.credential. Terraform does not detect a change to these values: change sink_credential_wo_version to send a new one",
+				Optional:    true,
+				WriteOnly:   true,
+				CustomType:  fwtypes.NewObjectTypeOf[sinkCredentialWriteOnlyModel](ctx),
+				Attributes: map[string]schema.Attribute{
+					"access_token": schema.StringAttribute{
+						Description: "Write-only access token; conflicts with sink.credential.access_token",
+						Optional:    true,
+						Sensitive:   true,
+						WriteOnly:   true,
+						Validators: []validator.String{
+							stringvalidator.ConflictsWith(path.MatchRoot("sink").AtName("credential").AtName("access_token")),
+						},
+					},
+					"integration_key": schema.StringAttribute{
+						Description: "Write-only integration key; conflicts with sink.credential.integration_key",
+						Optional:    true,
+						Sensitive:   true,
+						WriteOnly:   true,
+						Validators: []validator.String{
+							stringvalidator.ConflictsWith(path.MatchRoot("sink").AtName("credential").AtName("integration_key")),
+						},
+					},
+					"api_key": schema.StringAttribute{
+						Description: "Write-only API key; conflicts with sink.credential.api_key",
+						Optional:    true,
+						Sensitive:   true,
+						WriteOnly:   true,
+						Validators: []validator.String{
+							stringvalidator.ConflictsWith(path.MatchRoot("sink").AtName("credential").AtName("api_key")),
+						},
+					},
+					"password": schema.StringAttribute{
+						Description: "Write-only password; conflicts with sink.credential.password",
+						Optional:    true,
+						Sensitive:   true,
+						WriteOnly:   true,
+						Validators: []validator.String{
+							stringvalidator.ConflictsWith(path.MatchRoot("sink").AtName("credential").AtName("password")),
+						},
+					},
+				},
+			},
+			"sink_credential_wo_version": schema.Int64Attribute{
+				Description: "Change this value to send the current sink_credential_wo values to Equinix",
+				Optional:    true,
+			},
 			"stream_id": schema.StringAttribute{
 				Description: "The uuid of the stream that is the target of the stream subscription",
 				Required:    true,
@@ -160,30 +211,33 @@ Additional Documentation:
 								Required:    true,
 							},
 							"access_token": schema.StringAttribute{
-								Description: "Passed as Authorization header value",
+								Description: "Passed as Authorization header value. Use sink_credential_wo.access_token to keep it out of state",
 								Optional:    true,
 								Computed:    true,
 								Sensitive:   true,
 								PlanModifiers: []planmodifier.String{
 									stringplanmodifier.UseStateForUnknown(),
+									clearWhenWriteOnlySet(path.Root("sink_credential_wo").AtName("access_token")),
 								},
 							},
 							"integration_key": schema.StringAttribute{
-								Description: "Passed as Authorization header value",
+								Description: "Passed as Authorization header value. Use sink_credential_wo.integration_key to keep it out of state",
 								Optional:    true,
 								Computed:    true,
 								Sensitive:   true,
 								PlanModifiers: []planmodifier.String{
 									stringplanmodifier.UseStateForUnknown(),
+									clearWhenWriteOnlySet(path.Root("sink_credential_wo").AtName("integration_key")),
 								},
 							},
 							"api_key": schema.StringAttribute{
-								Description: "Passed as Authorization header value",
+								Description: "Passed as Authorization header value. Use sink_credential_wo.api_key to keep it out of state",
 								Optional:    true,
 								Computed:    true,
 								Sensitive:   true,
 								PlanModifiers: []planmodifier.String{
 									stringplanmodifier.UseStateForUnknown(),
+									clearWhenWriteOnlySet(path.Root("sink_credential_wo").AtName("api_key")),
 								},
 							},
 							"username": schema.StringAttribute{
@@ -195,12 +249,13 @@ Additional Documentation:
 								},
 							},
 							"password": schema.StringAttribute{
-								Description: "Passed as Authorization header value",
+								Description: "Passed as Authorization header value. Use sink_credential_wo.password to keep it out of state",
 								Optional:    true,
 								Computed:    true,
 								Sensitive:   true,
 								PlanModifiers: []planmodifier.String{
 									stringplanmodifier.UseStateForUnknown(),
+									clearWhenWriteOnlySet(path.Root("sink_credential_wo").AtName("password")),
 								},
 							},
 						},
