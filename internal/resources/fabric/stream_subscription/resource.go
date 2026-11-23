@@ -115,10 +115,19 @@ func (r *Resource) Read(
 	id := state.ID.ValueString()
 	streamID := state.StreamID.ValueString()
 
-	streamSubscription, _, err := client.StreamSubscriptionsApi.GetStreamSubscriptionByUuid(ctx, streamID, id).Execute()
+	streamSubscription, httpResp, err := client.StreamSubscriptionsApi.GetStreamSubscriptionByUuid(ctx, streamID, id).Execute()
 	if err != nil {
+		if httpResp != nil && slices.Contains([]int{http.StatusForbidden, http.StatusNotFound}, httpResp.StatusCode) {
+			resp.State.RemoveResource(ctx)
+			return
+		}
 		resp.Diagnostics.AddError(
 			fmt.Sprintf("failed retrieving stream subscription %s", id), equinix_errors.FormatFabricError(err).Error())
+		return
+	}
+
+	if streamSubscription.GetState() == fabricv4.STREAMSUBSCRIPTIONSTATE_DEPROVISIONED {
+		resp.State.RemoveResource(ctx)
 		return
 	}
 
